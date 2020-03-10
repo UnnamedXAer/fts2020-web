@@ -2,12 +2,10 @@ import React from 'react';
 import 'typeface-roboto';
 import './App.css';
 import SignIn from './containers/Auth/SignIn/SignIn';
-import {
-	ThemeProvider,
-	createMuiTheme,
-	styled
-} from '@material-ui/core';
+import { ThemeProvider, createMuiTheme, styled } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
+import { Provider } from 'react-redux';
+import store from './store/store';
 
 const theme = createMuiTheme({
 	palette: {
@@ -27,9 +25,11 @@ const StyledApp = styled('div')({
 function App() {
 	return (
 		<ThemeProvider theme={theme}>
-			<StyledApp className="App" id="AppRootComponent">
-				<SignIn />
-			</StyledApp>
+			<Provider store={store}>
+				<StyledApp className="App" id="AppRootComponent">
+					<SignIn />
+				</StyledApp>
+			</Provider>
 		</ThemeProvider>
 	);
 }

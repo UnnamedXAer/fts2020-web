@@ -1,1 +1,1 @@
-export const INIT = 'INIT'; 
+export const AUTHORIZE = 'AUTHORIZE'; 
