@@ -12,11 +12,12 @@ import {
 	Theme,
 	Link,
 	IconButton,
-	Slide
+	Slide,
+	CircularProgress
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import PhotoCamera from '@material-ui/icons/PhotoCamera';
-import useForm, { FormState, Action, ActionType } from '../../../hooks/useForm';
+import { ErrorOutline, PhotoCamera } from '@material-ui/icons';
+import useForm, { FormState, FormAction, ActionType } from '../../../hooks/useForm';
 import validateAuthFormField from '../../../utils/authFormValidator';
 import { authorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
@@ -24,7 +25,6 @@ import { Credentials } from '../../../models/auth';
 const useStyle = makeStyles((theme: Theme) => ({
 	container: {
 		height: '100vh',
-
 		display: 'flex',
 		justifyContent: 'stretch',
 		alignItems: 'center'
@@ -61,6 +61,10 @@ const useStyle = makeStyles((theme: Theme) => ({
 		justifyContent: 'center',
 		alignItems: 'center',
 		display: 'flex'
+	},
+	formErrorText: {
+		color: theme.palette.error.main,
+		fontWeight: 'bold'
 	}
 }));
 
@@ -119,15 +123,12 @@ const SignIn = () => {
 		};
 	});
 
-	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
-		ev
-	) => {
+	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = ev => {
 		const { name, value } = ev.target;
 
-		const action: Action = {
+		const action: FormAction = {
 			type: ActionType.UpdateValue,
 			fieldId: name,
-			isValid: value.trim().length === 0,
 			value: value
 		};
 
@@ -138,29 +139,65 @@ const SignIn = () => {
 		const { name } = ev.target;
 		let error = validateAuthFormField(name, formState.values, isSignIn);
 
-		const action: Action = {
+		const action: FormAction = {
 			type: ActionType.SetError,
 			fieldId: name,
 			error: error
 		};
 
 		formDispatch(action);
+
+		if (name === 'password') {
+			let error = validateAuthFormField(
+				'confirmPassword',
+				formState.values,
+				isSignIn
+			);
+			const action: FormAction = {
+				type: ActionType.SetError,
+				fieldId: 'confirmPassword',
+				error: error
+			};
+
+			formDispatch(action);
+		}
 	};
 
 	const submitHandler: React.FormEventHandler = async () => {
-		
 		setError(null);
 		setLoading(true);
+
+		for (const name in formState.values) {
+			let error = validateAuthFormField(name, formState.values, isSignIn);
+
+			const action: FormAction = {
+				type: ActionType.SetError,
+				fieldId: name,
+				error: error
+			};
+
+			formDispatch(action);
+		}
+
+		if (!formState.formValidity) {
+			setError('Please correct marked fields.');
+			setLoading(false);
+			return;
+		}
+
 		const credentials = new Credentials({
 			userName: formState.values.name,
 			emailAddress: formState.values.emailAddress,
 			password: formState.values.password,
-			confirmPassword: formState.values.confirmPassword,
+			confirmPassword: formState.values.confirmPassword
 		});
 		try {
 			await dispatch(authorize(credentials, isSignIn));
 		} catch (err) {
 			setError(err.message);
+			if (err.isAxiosError) {
+				const data = {}
+			}
 			setLoading(false);
 		}
 	};
@@ -305,6 +342,7 @@ const SignIn = () => {
 						<Grid item>
 							<Link
 								onClick={() => {
+									setError(null);
 									setIsSignIn(prevState => !prevState);
 									resizeHandler();
 								}}
@@ -316,21 +354,41 @@ const SignIn = () => {
 								}`}
 							</Link>
 						</Grid>
-
+						<Grid item>
+							{error && (
+								<Box
+									display="flex"
+									flexDirection="row"
+									alignItems="center"
+								>
+									<ErrorOutline
+										style={{ marginInlineEnd: 20 }}
+										color="error"
+									/>
+									<p className={classes.formErrorText}>
+										{error}
+									</p>
+								</Box>
+							)}
+						</Grid>
 						<Grid item>
 							<Box className={classes.submitWrapper}>
-								<Button
-									style={{
-										paddingLeft: 40,
-										paddingRight: 40
-									}}
-									onClick={submitHandler}
-									variant="contained"
-									color="primary"
-									type="submit"
-								>
-									Sign Up
-								</Button>
+								{loading ? (
+									<CircularProgress size={36} />
+								) : (
+									<Button
+										style={{
+											paddingLeft: 40,
+											paddingRight: 40
+										}}
+										onClick={submitHandler}
+										variant="contained"
+										color="primary"
+										type="submit"
+									>
+										Sign Up
+									</Button>
+								)}
 							</Box>
 						</Grid>
 					</Grid>

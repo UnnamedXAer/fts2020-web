@@ -36,7 +36,11 @@ export default function validateAuthFormField(
 		case 'password':
 			if (!formValues[fieldId]) {
 				error = 'Please enter Password.';
-			} else if (formValues[fieldId]) {
+			} else if (
+				!new RegExp(/^(?=\S*[a-z])(?=\S*\d)\S{6,}$/).test(
+					formValues[fieldId]
+				)
+			) {
 				error =
 					'The Password must be minimum 6 chars long, contains at least one letter and number.';
 			}

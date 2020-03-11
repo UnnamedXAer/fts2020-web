@@ -5,12 +5,18 @@ export enum ActionType {
 	SetError
 }
 
-export interface Action {
-	type: ActionType;
+export type FormAction = SetValueAction | SetErrorAction;
+
+interface SetValueAction {
+	type: ActionType.UpdateValue;
 	fieldId: string;
-	value?: string;
-	isValid?: boolean;
-	error?: string | null
+	value: string;
+}
+
+interface SetErrorAction {
+	type: ActionType.SetError;
+	fieldId: string;
+	error: string | null;
 }
 
 export interface FormState {
@@ -23,7 +29,7 @@ export interface FormState {
 	};
 }
 
-const formReducer = (state: FormState, action: Action): FormState => {
+const formReducer = (state: FormState, action: FormAction): FormState => {
 	switch (action.type) {
 		case ActionType.UpdateValue:
 			const updatedValues = {
@@ -37,17 +43,28 @@ const formReducer = (state: FormState, action: Action): FormState => {
 			};
 
 		case ActionType.SetError:
+			const updatedErrors = {
+				...state.errors,
+				[action.fieldId]: action.error
+			};
 
-		return {
+			const updatedFormValidity = !Object.values(updatedErrors).some(
+				x => x !== null
+			);
+
+			return {
 				...state,
-				errors: {...state.errors, [action.fieldId] : action.error!}
+				errors: updatedErrors,
+				formValidity: updatedFormValidity
 			};
 		default:
 			return state;
 	}
 };
 
-const useForm = (initialState: FormState): [FormState, Dispatch<Action>] => {
+const useForm = (
+	initialState: FormState
+): [FormState, Dispatch<FormAction>] => {
 	const [state, dispatch] = useReducer(formReducer, initialState);
 
 	return [state, dispatch];
