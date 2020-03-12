@@ -17,10 +17,15 @@ import {
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { ErrorOutline, PhotoCamera } from '@material-ui/icons';
-import useForm, { FormState, FormAction, ActionType } from '../../../hooks/useForm';
+import useForm, {
+	FormState,
+	FormAction,
+	ActionType
+} from '../../../hooks/useForm';
 import validateAuthFormField from '../../../utils/authFormValidator';
 import { authorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
+import HttpErrorParser from '../../../utils/parseError';
 
 const useStyle = makeStyles((theme: Theme) => ({
 	container: {
@@ -194,10 +199,17 @@ const SignIn = () => {
 		try {
 			await dispatch(authorize(credentials, isSignIn));
 		} catch (err) {
-			setError(err.message);
-			if (err.isAxiosError) {
-				const data = {}
-			}
+			const errorData = new HttpErrorParser(err);
+			const fieldsErrors = errorData.getFieldsErrors();
+			fieldsErrors.forEach(x =>
+				formDispatch({
+					type: ActionType.SetError,
+					fieldId: x.param,
+					error: x.msg
+				})
+			);
+
+			setError(errorData.getMessage());
 			setLoading(false);
 		}
 	};
