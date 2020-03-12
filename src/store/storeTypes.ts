@@ -1,16 +1,24 @@
+import User from '../models/user';
+import { Action } from 'redux';
+
 export type RootState = {
-	auth: AuthState
-}
+	auth: AuthState;
+};
 
 export type AuthState = {
-	emailAddress: string | null,
-	userName: string | null,
-	expirationTime: number | null,
-}
-export default RootState;
+	user: User | null;
+};
 
-
-export type AppReducer<TState> = (
+export type AppReducer<TState, APayload = any, AType = string> = (
 	state: TState,
-	action: { type: string; [key: string]: any }
+	action: StoreAction<APayload, AType>
 ) => TState;
+
+type StoreActionPayload<T> = {
+	payload: T;
+};
+
+export type StoreAction<P = any, A = string> = StoreActionPayload<P> &
+	Action<A>;
+
+export default RootState;

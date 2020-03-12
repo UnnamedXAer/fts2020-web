@@ -10,11 +10,12 @@ export class Credentials{
 			userName,
 			emailAddress,
 			password,
-			confirmPassword
+			confirmPassword,
 		} = params;
 
 		this.userName = userName;
 		this.emailAddress = emailAddress;
 		this.password = password;
-		this.confirmPassword = confirmPassword;	}
+		this.confirmPassword = confirmPassword;
+	}
 }
