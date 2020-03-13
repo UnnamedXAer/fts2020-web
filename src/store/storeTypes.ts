@@ -1,18 +1,26 @@
 import User from '../models/user';
 import { Action } from 'redux';
+import Flat from '../models/flat';
 
 export type RootState = {
 	auth: AuthState;
+	flats: FlatState;
 };
 
 export type AuthState = {
 	user: User | null;
 };
 
-export type AppReducer<TState, APayload = any, AType = string> = (
+export type FlatState = {
+	flats: Flat[]
+};
+
+export type AppReducer<TState, AType = string, APayload = any> = (
 	state: TState,
 	action: StoreAction<APayload, AType>
 ) => TState;
+
+export type SimpleReducer<S, P, A> = (state: S, action: StoreAction<P, A>) => S;
 
 type StoreActionPayload<T> = {
 	payload: T;
