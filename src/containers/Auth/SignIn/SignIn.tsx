@@ -27,51 +27,7 @@ import { authorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
 
-const useStyle = makeStyles((theme: Theme) => ({
-	container: {
-		height: '100vh',
-		display: 'flex',
-		justifyContent: 'stretch',
-		alignItems: 'center'
-	},
-	paper: {
-		width: '100%',
-		padding: 30
-	},
-	header: {
-		paddingBottom: theme.spacing(2)
-	},
-	avatarBox: {
-		position: 'relative',
-		width: theme.spacing(12),
-		height: theme.spacing(12)
-	},
-	avatar: {
-		width: '100%',
-		height: '100%'
-	},
-	avatarCamera: {
-		position: 'absolute',
-		bottom: -10,
-		right: -10,
-		background: 'white'
-	},
-	fieldError: {
-		color: theme.palette.error.main,
-		fontSize: '0.7em',
-		height: '0.8em',
-		marginBlockStart: '0.2em'
-	},
-	submitWrapper: {
-		justifyContent: 'center',
-		alignItems: 'center',
-		display: 'flex'
-	},
-	formErrorText: {
-		color: theme.palette.error.main,
-		fontWeight: 'bold'
-	}
-}));
+
 
 const initialState: FormState = {
 	formValidity: false,
@@ -409,5 +365,51 @@ const SignIn = () => {
 		</Container>
 	);
 };
+
+const useStyle = makeStyles((theme: Theme) => ({
+	container: {
+		height: '100vh',
+		display: 'flex',
+		justifyContent: 'stretch',
+		alignItems: 'center'
+	},
+	paper: {
+		width: '100%',
+		padding: 30
+	},
+	header: {
+		paddingBottom: theme.spacing(2)
+	},
+	avatarBox: {
+		position: 'relative',
+		width: theme.spacing(12),
+		height: theme.spacing(12)
+	},
+	avatar: {
+		width: '100%',
+		height: '100%'
+	},
+	avatarCamera: {
+		position: 'absolute',
+		bottom: -10,
+		right: -10,
+		background: 'white'
+	},
+	fieldError: {
+		color: theme.palette.error.main,
+		fontSize: '0.7em',
+		height: '0.8em',
+		marginBlockStart: '0.2em'
+	},
+	submitWrapper: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		display: 'flex'
+	},
+	formErrorText: {
+		color: theme.palette.error.main,
+		fontWeight: 'bold'
+	}
+}));
 
 export default SignIn;
