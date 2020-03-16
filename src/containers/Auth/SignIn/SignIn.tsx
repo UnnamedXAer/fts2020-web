@@ -27,8 +27,6 @@ import { authorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
 
-
-
 const initialState: FormState = {
 	formValidity: false,
 	values: {

@@ -7,6 +7,7 @@ import { Provider } from 'react-redux';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
 import Flat from './containers/Flat/Flat';
+import FlatDetails from './containers/Flat/FlatDetails';
 
 const theme = createMuiTheme({
 	palette: {
@@ -29,7 +30,8 @@ function App() {
 			<Provider store={store}>
 				<StyledApp className="App" id="AppRootComponent">
 					<AppNavBar title="Flat">
-						<Flat />
+						{/* <Flat /> */}
+						<FlatDetails flatId={3} />
 					</AppNavBar>
 				</StyledApp>
 			</Provider>

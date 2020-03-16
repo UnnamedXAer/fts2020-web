@@ -25,6 +25,10 @@ const Flat = () => {
 		state => state.flats.flats
 	);
 
+	const flatClickHandler = (flatId: number) => {
+		console.log(flatId);
+	};
+
 	return (
 		<Container>
 			<Grid container spacing={2} justify="center">
@@ -35,15 +39,15 @@ const Flat = () => {
 					<div className={classes.listContainer}>
 						<List dense={false}>
 							{flats.map(flat => (
-								<ListItem key={flat.id} button>
+								<ListItem key={flat.id} button onClick={() => flatClickHandler(flat.id)}>
 									<ListItemAvatar>
 										<Avatar>
 											<HomeIcon color="primary" />
 										</Avatar>
 									</ListItemAvatar>
 									<ListItemText
-										primary={flat.address}
-										secondary={flat.name}
+										primary={flat.name}
+										secondary={flat.description}
 									/>
 								</ListItem>
 							))}
