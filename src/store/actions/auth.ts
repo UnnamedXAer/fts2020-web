@@ -19,7 +19,7 @@ export const authorize = (
 			const { data } = await axios.post(url, credentials);
 			console.log('auth data: ', data);
 
-			const user = new User(data.id, data.emailAddress, data.userName, new Date(data.joinDate), data.active);
+			const user = new User(data.id, data.emailAddress, data.userName, data.provider, new Date(data.joinDate), data.avatarUtl, data.active);
 
 			dispatch({
 				type: AUTHORIZE,

@@ -18,7 +18,11 @@ export default function validateFlatFormField(
 				error = 'This value is not allowed as Name.';
 			}
 			break;
-
+		case 'description':
+			if (formValues[fieldId].length > 500) {
+				error = 'The Description can be max 500 characters long.';
+			}
+			break;
 		default:
 			break;
 	}

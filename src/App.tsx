@@ -6,7 +6,7 @@ import * as colors from '@material-ui/core/colors/';
 import { Provider } from 'react-redux';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
-import Flat from './containers/Flat/Flat';
+// import Flats from './containers/Flat/Flats';
 import FlatDetails from './containers/Flat/FlatDetails';
 
 const theme = createMuiTheme({
@@ -30,7 +30,7 @@ function App() {
 			<Provider store={store}>
 				<StyledApp className="App" id="AppRootComponent">
 					<AppNavBar title="Flat">
-						{/* <Flat /> */}
+						{/* <Flats /> */}
 						<FlatDetails flatId={3} />
 					</AppNavBar>
 				</StyledApp>

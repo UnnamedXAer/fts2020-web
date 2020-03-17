@@ -1,10 +1,10 @@
 export default class Flat {
-	id: number;
+	id?: number;
 	name: string;
 	description: string;
 	members: number[];
-	createBy: number;
-	createAt: Date;
+	createBy?: number;
+	createAt?: Date;
 
 	constructor(prams: Flat = {} as Flat) {
 		const { id, name, description, members, createBy, createAt } = prams;

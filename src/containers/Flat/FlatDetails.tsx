@@ -11,7 +11,9 @@ import {
 	IconButton,
 	CircularProgress,
 	Button,
-	Paper
+	Paper,
+	useMediaQuery,
+	useTheme
 } from '@material-ui/core';
 import { useSelector, useDispatch } from 'react-redux';
 import RootState from '../../store/storeTypes';
@@ -25,20 +27,25 @@ import { PhotoCamera, ErrorOutline } from '@material-ui/icons';
 import { setFlat } from '../../store/actions/flat';
 import Flat from '../../models/flat';
 import validateFlatFormField from '../../utils/flatFormValidator';
+import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
+import User from '../../models/user';
 
 interface Props {
 	flatId: number | undefined;
 }
 
 const FlatDetails: React.FC<Props> = props => {
+	const { flatId } = props;
 	const classes = useStyles();
 
+	const flat = useSelector((state: RootState) =>
+		state.flats.flats.find(x => x.id === flatId)
+	);
 	const initialStateRef = useRef<FormState>({
-		formValidity: false,
+		formValidity: !!flatId,
 		values: {
-			name: '',
-			description: '',
-			avatarUrl: ''
+			name: flat ? flat.name : '',
+			description: flat ? flat.description : ''
 		},
 		errors: {
 			name: null,
@@ -47,18 +54,18 @@ const FlatDetails: React.FC<Props> = props => {
 		}
 	});
 
-	const flat = useSelector((state: RootState) =>
-		state.flats.flats.find(x => x.id === props.flatId)
-	);
 	const dispatch = useDispatch();
 
 	const [formState, formDispatch] = useForm(initialStateRef.current);
+	const [members, setMembers] = useState<User[]>([]);
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
+	const theme = useTheme();
+	const matchesSMSize = useMediaQuery(theme.breakpoints.up('sm'));
 
 	const resizeHandler = useCallback(() => {
 		let updatedSize: 'small' | 'medium' = 'small';
@@ -101,7 +108,7 @@ const FlatDetails: React.FC<Props> = props => {
 		formDispatch(action);
 	};
 
-	const submitHandler: React.FormEventHandler = async () => {
+	const submitHandler: React.FormEventHandler = async (ev) => {
 		setError(null);
 		setLoading(true);
 
@@ -123,10 +130,15 @@ const FlatDetails: React.FC<Props> = props => {
 			return;
 		}
 
-		const newFlat = new Flat();
+		const newFlat = new Flat({
+			id: flat?.id,
+			members: members.map(x => x.id),
+			description: formState.values.description,
+			name: formState.values.name,
+		});
 
 		try {
-			await dispatch(setFlat(newFlat, !!props.flatId));
+			await dispatch(setFlat(newFlat));
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
@@ -151,18 +163,13 @@ const FlatDetails: React.FC<Props> = props => {
 						{props.flatId ? 'Edit flat' : 'Add Flat'}
 					</Typography>
 				</Box>
-				<form noValidate onSubmit={ev => ev.preventDefault()}>
 					<Grid container spacing={2} direction="column">
 						<Grid item>
 							<Grid
 								item
 								container
 								spacing={2}
-								direction={
-									textFieldSize === 'medium'
-										? 'row'
-										: 'column'
-								}
+								direction={matchesSMSize ? 'row' : 'column'}
 								justify="space-between"
 								alignItems="stretch"
 							>
@@ -262,7 +269,7 @@ const FlatDetails: React.FC<Props> = props => {
 									</Grid>
 								</Grid>
 
-								<Grid item md={3}>
+								<Grid item md={3} style={{ display: 'none' }}>
 									<Box justifyContent="center" display="flex">
 										<Box
 											className={classes.avatarBox}
@@ -290,7 +297,7 @@ const FlatDetails: React.FC<Props> = props => {
 							</Grid>
 						</Grid>
 						<Grid item>
-							<p>members</p>
+							<FlatMembersSearch />
 							{formState.errors.name && (
 								<p className={classes.fieldError}>
 									{formState.errors.name}
@@ -318,7 +325,6 @@ const FlatDetails: React.FC<Props> = props => {
 							</Box>
 						</Grid>
 					</Grid>
-				</form>
 			</Paper>
 		</Container>
 	);

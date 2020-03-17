@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux';
 import FlatModel from '../../models/flat';
 import RootState from '../../store/storeTypes';
 
-const Flat = () => {
+const Flats = () => {
 	const classes = useStyles();
 	const flats = useSelector<RootState, FlatModel[]>(
 		state => state.flats.flats
@@ -39,7 +39,7 @@ const Flat = () => {
 					<div className={classes.listContainer}>
 						<List dense={false}>
 							{flats.map(flat => (
-								<ListItem key={flat.id} button onClick={() => flatClickHandler(flat.id)}>
+								<ListItem key={flat.id} button onClick={() => flatClickHandler(flat.id!)}>
 									<ListItemAvatar>
 										<Avatar>
 											<HomeIcon color="primary" />
@@ -72,4 +72,4 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 }));
 
-export default Flat;
+export default Flats;

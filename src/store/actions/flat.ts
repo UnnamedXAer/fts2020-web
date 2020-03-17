@@ -15,21 +15,17 @@ export const fetchFlats = () => {
 
 export const setFlat = (
 			flat: Flat,
-			editing: boolean
 		): ThunkAction<Promise<void>, RootState, any, SetFlatAction> => {
 			return async (dispatch, getState) => {
-				const url = `/flats/${editing ? flat.id : ''}`;
-
+				const url = `/flats/${flat.id ? flat.id : ''}`;
 				try {
-					let data: any;
-					if (editing) {
-
+					let data: Flat;
+					if (flat.id) {
+						data = flat;
 					}
 					else {
 						data = (await axios.post(url, flat)).data;
-
 					}
-
 					const savedFlat = new Flat({
 						id: data.id,
 						name: data.name,
