@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
 	CircularProgress,
 	TextField,
@@ -14,20 +14,31 @@ import {
 	createStyles,
 	ListItemIcon,
 	ListItemSecondaryAction,
-	IconButton
+	IconButton,
+	Box
 } from '@material-ui/core';
 import User from '../../models/user';
 import axios from '../../axios/axios';
-import { ErrorOutline, Delete as DeleteIcon } from '@material-ui/icons';
+import {
+	AddRounded,
+	HighlightOffRounded,
+	CheckRounded,
+	ClearRounded
+} from '@material-ui/icons';
 
 enum MembersState {
 	'loading',
 	'not_fount',
+	'accepted',
 	'ok',
 	'error'
 }
 
-const FlatMembersSearch = () => {
+interface Props {
+	updateMembers: (newMembers: number[]) => void;
+}
+
+const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 	const classes = useStyles();
 
 	const [inputValue, setInputValue] = useState('');
@@ -36,6 +47,22 @@ const FlatMembersSearch = () => {
 	const [membersState, setMembersState] = useState<{
 		[key: string]: MembersState;
 	}>({});
+
+	const inputRef = useRef<HTMLInputElement>();
+
+	useEffect(() => {
+		updateMembers(members.map(x => x.id));
+		console.log('pushing members');
+	}, [members, updateMembers]);
+
+	const submitMemberHandler = () => {
+		const value = inputValue.trim().toLowerCase();
+		if (value !== '' && !membersEmails.includes(value)) {
+			submitMember(value);
+		}
+		setInputValue('');
+		inputRef.current!.focus();
+	};
 
 	const submitMember = (value: string) => {
 		setMembersEmails(prevSate => prevSate.concat(value));
@@ -46,6 +73,7 @@ const FlatMembersSearch = () => {
 
 		setTimeout(() => fetchUserByEmail(value), 1000);
 	};
+
 	const fetchUserByEmail = async (value: string) => {
 		const url = `/users/emailAddress`;
 		try {
@@ -61,8 +89,14 @@ const FlatMembersSearch = () => {
 			} else {
 				setMembersState(prevState => ({
 					...prevState,
-					[value]: MembersState.ok
+					[value]: MembersState.accepted
 				}));
+				setTimeout(() => {
+					setMembersState(prevState => ({
+						...prevState,
+						[value]: MembersState.ok
+					}));
+				}, 1200);
 				setMembers(prevSate => prevSate.concat(response.data));
 			}
 		} catch (err) {
@@ -74,30 +108,59 @@ const FlatMembersSearch = () => {
 		}
 	};
 
+	const removeMemberHandler = (email: string) => {
+		setMembers(prevMembers => {
+			const updatedMembers = prevMembers.filter(
+				x => x.emailAddress.toLowerCase() !== email
+			);
+			return updatedMembers;
+		});
+
+		setMembersState(prevState => {
+			const updatedState = { ...prevState };
+			delete updatedState[email];
+			return updatedState;
+		});
+
+		setMembersEmails(prevState => prevState.filter(x => x !== email));
+	};
+
 	return (
-		<div>
-			<TextField
-				onChange={ev => {
-					setInputValue(ev.target.value);
-				}}
-				onKeyDown={ev => {
-					const value = inputValue.trim().toLowerCase();
-					if (
-						ev.key === 'Enter' &&
-						value !== '' &&
-						!membersEmails.includes(value)
-					) {
-						submitMember(value);
-					}
-				}}
-				value={inputValue}
-				fullWidth
-				name="addMember"
-				helperText="Type email address of user that you want to add to flat."
-				type="email"
-				placeholder="type email address and press enter to add"
-			/>
-			<List className={classes.root}>
+		<div className={classes.container}>
+			<Box
+				display="flex"
+				flexDirection="row"
+				alignItems="flex-start"
+				justifyContent="space-around"
+				width="100%"
+			>
+				<TextField
+					inputRef={inputRef}
+					onChange={ev => {
+						setInputValue(ev.target.value);
+					}}
+					onKeyDown={ev => {
+						if (ev.key === 'Enter') {
+							submitMemberHandler();
+						}
+					}}
+					value={inputValue}
+					fullWidth
+					name="addMember"
+					helperText="Type email address of user that you want to add as flat member."
+					type="email"
+					placeholder="Type email address and press enter to add"
+				/>
+				<IconButton
+					type="submit"
+					aria-label="search"
+					onClick={submitMemberHandler}
+				>
+					<AddRounded />
+				</IconButton>
+			</Box>
+
+			<List className={classes.list}>
 				{membersEmails.map((email, i) => {
 					const member = members.find(x => {
 						return (
@@ -105,55 +168,62 @@ const FlatMembersSearch = () => {
 						);
 					});
 
-					let color:
+					let secondaryTextColor:
 						| 'initial'
 						| 'inherit'
 						| 'primary'
 						| 'secondary'
 						| 'textPrimary'
 						| 'textSecondary'
-						| 'error';
+						| 'error' = 'textSecondary';
 					let sateIndicator: React.ReactNode;
+					let secondaryText = '';
 					switch (membersState[email]) {
 						case MembersState.loading:
-							color = 'textSecondary';
 							sateIndicator = (
-								<ListItemIcon
-									style={{
-										display: 'flex',
-										justifyContent: 'center',
-										alignItems: 'center'
-									}}
-								>
+								<ListItemIcon className={classes.itemAvatar}>
 									<CircularProgress size={25} />
 								</ListItemIcon>
 							);
 							break;
 						case MembersState.ok:
-							color = 'textPrimary';
+							secondaryTextColor = 'primary';
 							sateIndicator = (
-								<ListItemAvatar>
+								<ListItemAvatar className={classes.itemAvatar}>
 									<Avatar
 										alt={`${member?.userName}'s avatar`}
 										src={member?.avatarUrl}
 									/>
 								</ListItemAvatar>
 							);
-
+							secondaryText = member ? member.userName : '';
 							break;
-						default:
-							color = 'error';
+						case MembersState.accepted:
+							secondaryTextColor = 'primary';
 							sateIndicator = (
-								<ListItemAvatar
-									style={{
-										display: 'flex',
-										justifyContent: 'center',
-										alignItems: 'center'
-									}}
-								>
-									<ErrorOutline color="error" scale={4} />
+								<ListItemAvatar className={classes.itemAvatar}>
+									<CheckRounded
+										color="primary"
+										fontSize="large"
+									/>
 								</ListItemAvatar>
 							);
+							secondaryText = member ? member.userName : '';
+							break;
+						default:
+							secondaryTextColor = 'error';
+							sateIndicator = (
+								<ListItemAvatar
+									className={classes.itemAvatar}
+									style={{ height: '100%' }}
+								>
+									<HighlightOffRounded
+										color="error"
+										fontSize="large"
+									/>
+								</ListItemAvatar>
+							);
+							secondaryText = 'Email address not found.';
 							break;
 					}
 
@@ -167,17 +237,27 @@ const FlatMembersSearch = () => {
 										<React.Fragment>
 											<Typography
 												component="span"
-												// variant="body2"
+												variant="body2"
 												className={classes.inline}
-												color={color}
 											></Typography>
-											{member?.userName}
+											<Typography
+												component="span"
+												color={secondaryTextColor}
+											>
+												{secondaryText}
+											</Typography>
 										</React.Fragment>
 									}
 								/>
 								<ListItemSecondaryAction>
-									<IconButton edge="end" aria-label="delete">
-										<DeleteIcon />
+									<IconButton
+										edge="end"
+										aria-label="delete"
+										onClick={() =>
+											removeMemberHandler(email)
+										}
+									>
+										<ClearRounded />
 									</IconButton>
 								</ListItemSecondaryAction>
 							</ListItem>
@@ -186,19 +266,46 @@ const FlatMembersSearch = () => {
 					);
 				})}
 			</List>
+			<p className={classes.summary}>
+				{members.length === 0
+					? 'No members added'
+					: `${members.length} ${
+							members.length === 1
+								? 'user will be added as member'
+								: 'users will be added as members'
+					  }`}
+				.
+			</p>
 		</div>
 	);
 };
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
-		root: {
+		container: {
+			display: 'flex',
+			flexDirection: 'column',
+			justifyContent: 'flex-start',
+			alignItems: 'center'
+		},
+		list: {
 			width: '100%',
-			maxWidth: 360,
-			backgroundColor: theme.palette.background.paper
+			backgroundColor: theme.palette.background.paper,
+			overflow: 'auto'
 		},
 		inline: {
 			display: 'inline'
+		},
+		itemAvatar: {
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center'
+		},
+		summary: {
+			color: theme.palette.info.light,
+			fontStyle: 'italic',
+			fontSize: 12,
+			alignSelf: 'flex-end'
 		}
 	})
 );

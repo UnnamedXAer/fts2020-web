@@ -28,10 +28,9 @@ import { setFlat } from '../../store/actions/flat';
 import Flat from '../../models/flat';
 import validateFlatFormField from '../../utils/flatFormValidator';
 import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
-import User from '../../models/user';
 
 interface Props {
-	flatId: number | undefined;
+	flatId?: number;
 }
 
 const FlatDetails: React.FC<Props> = props => {
@@ -57,7 +56,7 @@ const FlatDetails: React.FC<Props> = props => {
 	const dispatch = useDispatch();
 
 	const [formState, formDispatch] = useForm(initialStateRef.current);
-	const [members, setMembers] = useState<User[]>([]);
+	const [members, setMembers] = useState<number[]>([]);
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -108,7 +107,12 @@ const FlatDetails: React.FC<Props> = props => {
 		formDispatch(action);
 	};
 
-	const submitHandler: React.FormEventHandler = async (ev) => {
+	const updateMembersHandler = useCallback(
+		(newMembers: number[]) => setMembers(newMembers),
+		[]
+	);
+
+	const submitHandler: React.FormEventHandler = async ev => {
 		setError(null);
 		setLoading(true);
 
@@ -132,9 +136,9 @@ const FlatDetails: React.FC<Props> = props => {
 
 		const newFlat = new Flat({
 			id: flat?.id,
-			members: members.map(x => x.id),
+			members: members,
 			description: formState.values.description,
-			name: formState.values.name,
+			name: formState.values.name
 		});
 
 		try {
@@ -163,7 +167,8 @@ const FlatDetails: React.FC<Props> = props => {
 						{props.flatId ? 'Edit flat' : 'Add Flat'}
 					</Typography>
 				</Box>
-					<Grid container spacing={2} direction="column">
+				<Box className={classes.gridContainer}>
+					<Grid container spacing={2} direction="column" style={{maxWidth: '550px'}}>
 						<Grid item>
 							<Grid
 								item
@@ -297,7 +302,9 @@ const FlatDetails: React.FC<Props> = props => {
 							</Grid>
 						</Grid>
 						<Grid item>
-							<FlatMembersSearch />
+							<FlatMembersSearch
+								updateMembers={updateMembersHandler}
+							/>
 							{formState.errors.name && (
 								<p className={classes.fieldError}>
 									{formState.errors.name}
@@ -325,6 +332,7 @@ const FlatDetails: React.FC<Props> = props => {
 							</Box>
 						</Grid>
 					</Grid>
+				</Box>
 			</Paper>
 		</Container>
 	);
@@ -332,9 +340,7 @@ const FlatDetails: React.FC<Props> = props => {
 
 const useStyles = makeStyles((theme: Theme) => ({
 	container: {
-		display: 'flex',
-		justifyContent: 'stretch',
-		alignItems: 'center'
+		display: 'flex'
 	},
 	title: {
 		margin: theme.spacing(4, 0, 2)
@@ -345,6 +351,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 	header: {
 		paddingBottom: theme.spacing(2)
+	},
+	gridContainer: {
+		width: '100%',
+		display: 'flex',
+		justifyContent: 'center'
 	},
 	avatarBox: {
 		position: 'relative',
