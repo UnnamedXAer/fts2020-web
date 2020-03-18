@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
 	Container,
 	Grid,
@@ -6,31 +6,33 @@ import {
 	ListItem,
 	Typography,
 	ListItemSecondaryAction,
-	IconButton,
 	ListItemAvatar,
 	Avatar,
 	ListItemText,
 	makeStyles,
 	Theme,
-	ButtonBase
 } from '@material-ui/core';
 import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
 import { useSelector } from 'react-redux';
 import FlatModel from '../../models/flat';
 import RootState from '../../store/storeTypes';
+import { Redirect } from 'react-router-dom';
 
 const Flats = () => {
 	const classes = useStyles();
 	const flats = useSelector<RootState, FlatModel[]>(
 		state => state.flats.flats
 	);
+	const [selectedFlat, setSelectedFlat] = useState<number | null>(null);
 
 	const flatClickHandler = (flatId: number) => {
 		console.log(flatId);
+		setSelectedFlat(flatId);
 	};
 
 	return (
 		<Container>
+			{selectedFlat && <Redirect push to={`/flats/${selectedFlat}`} />}
 			<Grid container spacing={2} justify="center">
 				<Grid item xs={12} md={6}>
 					<Typography variant="h6" className={classes.title}>

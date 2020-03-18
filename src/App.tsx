@@ -1,13 +1,15 @@
 import React from 'react';
 import 'typeface-roboto';
-// import SignIn from './containers/Auth/SignIn/SignIn';
-import { ThemeProvider, createMuiTheme, styled } from '@material-ui/core';
+import { ThemeProvider, createMuiTheme } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
-// import Flats from './containers/Flat/Flats';
 import FlatDetails from './containers/Flat/FlatDetails';
+import SignIn from './containers/Auth/SignIn/SignIn';
+import Flats from './containers/Flat/Flats';
+import RootState from './store/storeTypes';
 
 const theme = createMuiTheme({
 	palette: {
@@ -21,19 +23,45 @@ const theme = createMuiTheme({
 
 document.body.style.background = '#F8F8F8';
 
-const StyledApp = styled('div')({
-});
+const StyledApp = () => {
+	const user = useSelector((state: RootState) => state.auth.user);
+
+	let layout = (
+		<AppNavBar title="Flat">
+			<Router>
+				<Switch>
+					<Route path="/sign" component={SignIn} />
+					<Route path="/flats" exact component={Flats} />
+					<Route path="/flats/:flatId" component={FlatDetails} />
+					<Route path="/" component={Flats} />
+				</Switch>
+			</Router>
+		</AppNavBar>
+	);
+
+	if (user === null) {
+		layout = (
+			<Router>
+				<Switch>
+					<Route path="/" exact component={SignIn} />
+					<Redirect to="/" />
+				</Switch>
+			</Router>
+		);
+	}
+
+	return (
+		<div className="App" id="AppRootComponent">
+			{layout}
+		</div>
+	);
+};
 
 function App() {
 	return (
 		<ThemeProvider theme={theme}>
 			<Provider store={store}>
-				<StyledApp className="App" id="AppRootComponent">
-					<AppNavBar title="Flat">
-						{/* <Flats /> */}
-						<FlatDetails flatId={3} />
-					</AppNavBar>
-				</StyledApp>
+				<StyledApp />
 			</Provider>
 		</ThemeProvider>
 	);
