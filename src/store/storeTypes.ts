@@ -9,6 +9,7 @@ export type RootState = {
 
 export type AuthState = {
 	user: User | null;
+	expirationTime: number | null;
 };
 
 export type FlatState = {

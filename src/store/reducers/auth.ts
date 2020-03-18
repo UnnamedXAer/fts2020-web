@@ -1,23 +1,39 @@
 import { AuthState, AppReducer, StoreAction } from '../storeTypes';
-import { AUTHORIZE } from '../actions/actionTypes';
+import { AUTHORIZE, LOGOUT } from '../actions/actionTypes';
 import User from '../../models/user';
 
 const initialState: AuthState = {
-	user: null
+	user: null,
+	expirationTime: null
 };
 
-type Reducer = (state: AuthState, action: StoreAction<User>) => AuthState;
+type AuthActionPayload = { user: User; expirationTime: number };
 
-const logIn: Reducer = (state, action) => {
+type Reducer<T = AuthActionPayload> = (
+	state: AuthState,
+	action: StoreAction<T>
+) => AuthState;
+
+const logIn: Reducer = (_, action) => {
 	return {
-		user: action.payload
+		user: action.payload.user,
+		expirationTime: action.payload.expirationTime
 	};
-}
+};
+
+const logOut: Reducer<void> = () => {
+	return {
+		...initialState
+	};
+};
 
 const reducer: AppReducer<AuthState> = (state = initialState, action) => {
 	switch (action.type) {
-		case AUTHORIZE: return logIn(state, action);
-	
+		case AUTHORIZE:
+			return logIn(state, action);
+		case LOGOUT:
+			return logOut(state, action);
+
 		default:
 			break;
 	}

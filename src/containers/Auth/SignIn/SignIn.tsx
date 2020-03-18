@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
 	Typography,
 	TextField,
@@ -23,7 +23,7 @@ import useForm, {
 	ActionType
 } from '../../../hooks/useForm';
 import validateAuthFormField from '../../../utils/authFormValidator';
-import { authorize } from '../../../store/actions/auth';
+import { authorize, tryAuthorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
 
@@ -59,8 +59,9 @@ const SignIn = () => {
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
 
-	const refCnt = useRef(0);
-	console.log('rendered', ++refCnt.current);
+	useEffect(() => {
+		dispatch(tryAuthorize());
+	}, [dispatch]);
 
 	const resizeHandler = useCallback(() => {
 		if (!isSignIn) {
@@ -74,13 +75,13 @@ const SignIn = () => {
 		}
 	}, [isSignIn]);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		window.addEventListener('resize', resizeHandler);
 
 		return () => {
 			window.removeEventListener('resize', resizeHandler);
 		};
-	});
+	}, [resizeHandler]);
 
 	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = ev => {
 		const { name, value } = ev.target;

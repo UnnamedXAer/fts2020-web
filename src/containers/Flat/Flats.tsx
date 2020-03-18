@@ -5,12 +5,12 @@ import {
 	List,
 	ListItem,
 	Typography,
-	ListItemSecondaryAction,
 	ListItemAvatar,
 	Avatar,
 	ListItemText,
 	makeStyles,
 	Theme,
+	Paper
 } from '@material-ui/core';
 import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
 import { useSelector } from 'react-redux';
@@ -33,30 +33,38 @@ const Flats = () => {
 	return (
 		<Container>
 			{selectedFlat && <Redirect push to={`/flats/${selectedFlat}`} />}
-			<Grid container spacing={2} justify="center">
-				<Grid item xs={12} md={6}>
-					<Typography variant="h6" className={classes.title}>
-						Your Flats
-					</Typography>
-					<div className={classes.listContainer}>
-						<List dense={false}>
-							{flats.map(flat => (
-								<ListItem key={flat.id} button onClick={() => flatClickHandler(flat.id!)}>
-									<ListItemAvatar>
-										<Avatar>
-											<HomeIcon color="primary" />
-										</Avatar>
-									</ListItemAvatar>
-									<ListItemText
-										primary={flat.name}
-										secondary={flat.description}
-									/>
-								</ListItem>
-							))}
-						</List>
-					</div>
+			<Paper elevation={5}>
+				<Grid container spacing={2} justify="center">
+					<Grid item xs={12} md={6}>
+						<Typography variant="h6" className={classes.title}>
+							Your Flats
+						</Typography>
+						<div className={classes.listContainer}>
+								<List dense={false}>
+									{flats.map(flat => (
+										<ListItem
+											key={flat.id}
+											button
+											onClick={() =>
+												flatClickHandler(flat.id!)
+											}
+										>
+											<ListItemAvatar>
+												<Avatar>
+													<HomeIcon color="primary" />
+												</Avatar>
+											</ListItemAvatar>
+											<ListItemText
+												primary={flat.name}
+												secondary={flat.description}
+											/>
+										</ListItem>
+									))}
+								</List>
+						</div>
+					</Grid>
 				</Grid>
-			</Grid>
+			</Paper>
 		</Container>
 	);
 };
@@ -71,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 	title: {
 		margin: theme.spacing(4, 0, 2)
-	},
+	}
 }));
 
 export default Flats;
