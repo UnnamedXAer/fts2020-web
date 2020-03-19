@@ -56,7 +56,7 @@ export default class HttpErrorParser {
 			msg = err.message || 'Opss, something went wrong.';
 		}
 
-		return new HttpError(msg, errorsArray);
+		return new HttpError(msg, errorsArray, err.code  ? +err.code : undefined);
 	}
 
 	private checkError() {
