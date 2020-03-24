@@ -33,7 +33,7 @@ interface Props {
 	flatId?: number;
 }
 
-const FlatDetails: React.FC<Props> = props => {
+const NewFlat: React.FC<Props> = props => {
 	const { flatId } = props;
 	const classes = useStyles();
 
@@ -389,4 +389,4 @@ const useStyles = makeStyles((theme: Theme) => ({
 	}
 }));
 
-export default FlatDetails;
+export default NewFlat;

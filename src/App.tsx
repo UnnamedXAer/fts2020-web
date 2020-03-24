@@ -6,7 +6,7 @@ import { Provider, useSelector } from 'react-redux';
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
-import FlatDetails from './containers/Flat/FlatDetails';
+import NewFlat from './containers/Flat/NewFlat';
 import SignIn from './containers/Auth/SignIn/SignIn';
 import Flats from './containers/Flat/Flats';
 import RootState from './store/storeTypes';
@@ -31,8 +31,9 @@ const StyledApp = () => {
 			<Router>
 				<Switch>
 					<Route path="/sign" component={SignIn} />
-					<Route path="/flats" exact component={Flats} />
-					<Route path="/flats/:flatId" component={FlatDetails} />
+					<Route path="/flats/add" exact component={NewFlat} />
+					{/* <Route path="/flats/:flatId" component={FlatDetails} /> */}
+					<Route path="/flats" component={Flats} />
 					<Route path="/" component={Flats} />
 				</Switch>
 			</Router>
