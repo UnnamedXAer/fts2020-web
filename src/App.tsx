@@ -21,6 +21,7 @@ import NewFlat from './containers/Flat/NewFlat';
 import SignIn from './containers/Auth/SignIn/SignIn';
 import Flats from './containers/Flat/Flats';
 import RootState from './store/storeTypes';
+import FlatDetails from './containers/Flat/FlatDetails';
 
 const theme = createMuiTheme({
 	palette: {
@@ -41,7 +42,7 @@ const StyledApp = () => {
 			<Container maxWidth="md" className={classes.container}>
 				<Switch>
 					<Route path="/flats/add" exact component={NewFlat} />
-					<Route path="/flats/:flatId" component={NewFlat} />
+					<Route path="/flats/:id" component={FlatDetails} />
 					<Route path="/flats" component={Flats} />
 					<Redirect from="/" to="/flats" />
 				</Switch>
@@ -98,8 +99,6 @@ const useStyles = makeStyles({
 	},
 	container: {
 		backgroundColor: 'white',
-		// marginBottom: 50,
-		// marginTop: 20,
 		padding: 10
 	}
 });

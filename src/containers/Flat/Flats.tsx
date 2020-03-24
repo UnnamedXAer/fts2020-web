@@ -25,7 +25,6 @@ import { Redirect, RouteComponentProps } from 'react-router-dom';
 interface Props extends RouteComponentProps {}
 
 const Flats: React.FC<Props> = props => {
-	console.log(props);
 	const classes = useStyles();
 	const flats = useSelector<RootState, FlatModel[]>(
 		state => state.flats.flats
