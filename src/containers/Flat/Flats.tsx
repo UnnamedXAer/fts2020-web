@@ -22,11 +22,9 @@ import FlatModel from '../../models/flat';
 import RootState from '../../store/storeTypes';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
 
-interface Props extends RouteComponentProps {
+interface Props extends RouteComponentProps {}
 
-}
-
-const Flats: React.FC<Props> = (props) => {
+const Flats: React.FC<Props> = props => {
 	console.log(props);
 	const classes = useStyles();
 	const flats = useSelector<RootState, FlatModel[]>(
@@ -40,58 +38,48 @@ const Flats: React.FC<Props> = (props) => {
 	};
 
 	return (
-		<Container className={classes.container}>
+		<Grid container spacing={2} justify="center">
 			{selectedFlat && <Redirect push to={`/flats/${selectedFlat}`} />}
-			<Paper elevation={5}>
-				<Grid container spacing={2} justify="center">
-					<Grid item xs={12} md={6}>
-						<Typography variant="h6" className={classes.title}>
-							Your Flats
-						</Typography>
-						<div className={classes.listContainer}>
-							<List dense={false}>
-								{flats.map(flat => (
-									<ListItem
-										key={flat.id}
-										button
-										onClick={() =>
-											flatClickHandler(flat.id!)
-										}
-									>
-										<ListItemAvatar>
-											<Avatar>
-												<HomeIcon color="primary" />
-											</Avatar>
-										</ListItemAvatar>
-										<ListItemText
-											primary={flat.name}
-											secondary={flat.description}
-										/>
-									</ListItem>
-								))}
-							</List>
-						</div>
-					</Grid>
-				</Grid>
-				<Fab
-				onClick={() => props.history.push('/')}
-					size="medium"
-					color="secondary"
-					aria-label="add"
-					className={[classes.margin, classes.fab].join(' ')}
-				>
-					<AddIcon />
-				</Fab>
-			</Paper>
-		</Container>
+			<Grid item xs={12} md={6}>
+				<Typography variant="h6" className={classes.title}>
+					Your Flats
+				</Typography>
+				<div className={classes.listContainer}>
+					<List dense={false}>
+						{flats.map(flat => (
+							<ListItem
+								key={flat.id}
+								button
+								onClick={() => flatClickHandler(flat.id!)}
+							>
+								<ListItemAvatar>
+									<Avatar>
+										<HomeIcon color="primary" />
+									</Avatar>
+								</ListItemAvatar>
+								<ListItemText
+									primary={flat.name}
+									secondary={flat.description}
+								/>
+							</ListItem>
+						))}
+					</List>
+				</div>
+			</Grid>
+			<Fab
+				onClick={() => props.history.push('/flats/add')}
+				size="medium"
+				color="secondary"
+				aria-label="add"
+				className={[classes.margin, classes.fab].join(' ')}
+			>
+				<AddIcon />
+			</Fab>
+		</Grid>
 	);
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
-	container: {
-		marginBottom: 50,
-		marginTop: 20
-	},
 	listContainer: {
 		backgroundColor: theme.palette.background.paper
 	},

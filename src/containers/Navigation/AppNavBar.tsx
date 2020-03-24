@@ -10,7 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 
 interface Props {
-	children: React.ReactNode;
+	children?: React.ReactNode;
 	title: string;
 }
 
@@ -28,59 +28,50 @@ const AppNavBar: React.FC<Props> = props => {
 	};
 
 	return (
-		<>
-			<div className={classes.root}>
-				<AppBar position="static">
-					<Toolbar>
-						<IconButton
-							edge="start"
-							className={classes.menuButton}
-							color="inherit"
-							aria-label="menu"
-						>
-							<MenuIcon />
-						</IconButton>
-						<Typography variant="h6" className={classes.title}>
-							{props.title}
-						</Typography>
-						<div>
-							<IconButton
-								aria-label="account of current user"
-								aria-controls="menu-appbar"
-								aria-haspopup="true"
-								onClick={handleMenu}
-								color="inherit"
-							>
-								<AccountCircle />
-							</IconButton>
-							<Menu
-								id="menu-appbar"
-								anchorEl={anchorEl}
-								anchorOrigin={{
-									vertical: 'top',
-									horizontal: 'right'
-								}}
-								keepMounted
-								transformOrigin={{
-									vertical: 'top',
-									horizontal: 'right'
-								}}
-								open={open}
-								onClose={handleClose}
-							>
-								<MenuItem onClick={handleClose}>
-									Profile
-								</MenuItem>
-								<MenuItem onClick={handleClose}>
-									Logout
-								</MenuItem>
-							</Menu>
-						</div>
-					</Toolbar>
-				</AppBar>
-			</div>
-			{props.children}
-		</>
+		<AppBar position="static">
+			<Toolbar>
+				<IconButton
+					edge="start"
+					className={classes.menuButton}
+					color="inherit"
+					aria-label="menu"
+				>
+					<MenuIcon />
+				</IconButton>
+				<Typography variant="h6" className={classes.title}>
+					{props.title}
+				</Typography>
+				<div>
+					<IconButton
+						aria-label="account of current user"
+						aria-controls="menu-appbar"
+						aria-haspopup="true"
+						onClick={handleMenu}
+						color="inherit"
+					>
+						<AccountCircle />
+					</IconButton>
+					<Menu
+						id="menu-appbar"
+						anchorEl={anchorEl}
+						anchorOrigin={{
+							vertical: 'top',
+							horizontal: 'right'
+						}}
+						keepMounted
+						transformOrigin={{
+							vertical: 'top',
+							horizontal: 'right'
+						}}
+						open={open}
+						onClose={handleClose}
+					>
+						<MenuItem onClick={handleClose}>Profile</MenuItem>
+						<MenuItem onClick={handleClose}>Logout</MenuItem>
+					</Menu>
+				</div>
+			</Toolbar>
+		</AppBar>
 	);
 };
 

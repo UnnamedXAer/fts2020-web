@@ -160,194 +160,181 @@ const NewFlat: React.FC<Props> = props => {
 	};
 
 	return (
-		<Container maxWidth="md" className={classes.container}>
-			<Paper className={classes.paper} elevation={5}>
-				<Box className={classes.header}>
-					<Typography variant="h3" align="center" color="primary">
-						{props.flatId ? 'Edit flat' : 'Add Flat'}
-					</Typography>
-				</Box>
-				<Box className={classes.gridContainer}>
-					<Grid container spacing={2} direction="column" style={{maxWidth: '550px'}}>
-						<Grid item>
-							<Grid
-								item
-								container
-								spacing={2}
-								direction={matchesSMSize ? 'row' : 'column'}
-								justify="space-between"
-								alignItems="stretch"
-							>
-								<Grid item style={{ flex: 1 }}>
-									<Grid
-										item
-										container
-										spacing={2}
-										direction="column"
-									>
-										<Grid item>
-											<TextField
-												size={textFieldSize}
-												name="name"
-												placeholder="eg. flat, avenue 12a"
-												fullWidth
-												variant="outlined"
-												label="Name"
-												type="text"
-												required
-												value={formState.values.name}
-												error={!!formState.errors.name}
-												onChange={fieldChangeHandler}
-												onBlur={fieldBlurHandler}
-											/>
-											{formState.errors.name && (
+		<Paper className={classes.paper} elevation={5}>
+			<Box className={classes.header}>
+				<Typography variant="h3" align="center" color="primary">
+					{props.flatId ? 'Edit flat' : 'Add Flat'}
+				</Typography>
+			</Box>
+			<Box className={classes.gridContainer}>
+				<Grid
+					container
+					spacing={2}
+					direction="column"
+					style={{ maxWidth: '550px' }}
+				>
+					<Grid item>
+						<Grid
+							item
+							container
+							spacing={2}
+							direction={matchesSMSize ? 'row' : 'column'}
+							justify="space-between"
+							alignItems="stretch"
+						>
+							<Grid item style={{ flex: 1 }}>
+								<Grid
+									item
+									container
+									spacing={2}
+									direction="column"
+								>
+									<Grid item>
+										<TextField
+											size={textFieldSize}
+											name="name"
+											placeholder="eg. flat, avenue 12a"
+											fullWidth
+											variant="outlined"
+											label="Name"
+											type="text"
+											required
+											value={formState.values.name}
+											error={!!formState.errors.name}
+											onChange={fieldChangeHandler}
+											onBlur={fieldBlurHandler}
+										/>
+										{formState.errors.name && (
+											<p className={classes.fieldError}>
+												{formState.errors.name}
+											</p>
+										)}
+									</Grid>
+
+									<Grid item>
+										<TextField
+											size={textFieldSize}
+											name="description"
+											placeholder={`eg. lodgings ${new Date().getFullYear()}/10 - ${new Date().getFullYear() +
+												1}-07`}
+											fullWidth
+											variant="outlined"
+											label="Description"
+											type="text"
+											multiline
+											rows={2}
+											rowsMax={4}
+											value={formState.values.description}
+											error={
+												!!formState.errors.description
+											}
+											onChange={fieldChangeHandler}
+											onBlur={fieldBlurHandler}
+										/>
+										{formState.errors.description && (
+											<p className={classes.fieldError}>
+												{formState.errors.description}
+											</p>
+										)}
+									</Grid>
+
+									<Grid item>
+										{error && (
+											<Box
+												display="flex"
+												flexDirection="row"
+												alignItems="center"
+											>
+												<ErrorOutline
+													style={{
+														marginInlineEnd: 20
+													}}
+													color="error"
+												/>
 												<p
 													className={
-														classes.fieldError
+														classes.formErrorText
 													}
 												>
-													{formState.errors.name}
+													{error}
 												</p>
-											)}
-										</Grid>
-
-										<Grid item>
-											<TextField
-												size={textFieldSize}
-												name="description"
-												placeholder={`eg. lodgings ${new Date().getFullYear()}/10 - ${new Date().getFullYear() +
-													1}-07`}
-												fullWidth
-												variant="outlined"
-												label="Description"
-												type="text"
-												multiline
-												rows={2}
-												rowsMax={4}
-												value={
-													formState.values.description
-												}
-												error={
-													!!formState.errors
-														.description
-												}
-												onChange={fieldChangeHandler}
-												onBlur={fieldBlurHandler}
-											/>
-											{formState.errors.description && (
-												<p
-													className={
-														classes.fieldError
-													}
-												>
-													{
-														formState.errors
-															.description
-													}
-												</p>
-											)}
-										</Grid>
-
-										<Grid item>
-											{error && (
-												<Box
-													display="flex"
-													flexDirection="row"
-													alignItems="center"
-												>
-													<ErrorOutline
-														style={{
-															marginInlineEnd: 20
-														}}
-														color="error"
-													/>
-													<p
-														className={
-															classes.formErrorText
-														}
-													>
-														{error}
-													</p>
-												</Box>
-											)}
-										</Grid>
+											</Box>
+										)}
 									</Grid>
 								</Grid>
+							</Grid>
 
-								<Grid item md={3} style={{ display: 'none' }}>
-									<Box justifyContent="center" display="flex">
-										<Box
-											className={classes.avatarBox}
-											display="flex"
-											alignItems="center"
-											justifyContent="center"
+							<Grid item md={3} style={{ display: 'none' }}>
+								<Box justifyContent="center" display="flex">
+									<Box
+										className={classes.avatarBox}
+										display="flex"
+										alignItems="center"
+										justifyContent="center"
+									>
+										<Avatar
+											alt="flat avatar"
+											src={formState.values.avatarUrl}
+											className={classes.avatar}
+										/>
+										<IconButton
+											className={classes.avatarCamera}
+											color="primary"
+											aria-label="upload picture"
+											component="span"
+											title="Add flat avatar"
 										>
-											<Avatar
-												alt="flat avatar"
-												src={formState.values.avatarUrl}
-												className={classes.avatar}
-											/>
-											<IconButton
-												className={classes.avatarCamera}
-												color="primary"
-												aria-label="upload picture"
-												component="span"
-												title="Add flat avatar"
-											>
-												<PhotoCamera />
-											</IconButton>
-										</Box>
+											<PhotoCamera />
+										</IconButton>
 									</Box>
-								</Grid>
+								</Box>
 							</Grid>
 						</Grid>
-						<Grid item>
-							<FlatMembersSearch
-								updateMembers={updateMembersHandler}
-							/>
-							{formState.errors.name && (
-								<p className={classes.fieldError}>
-									{formState.errors.name}
-								</p>
-							)}
-						</Grid>
-						<Grid item>
-							<Box className={classes.submitWrapper}>
-								{loading ? (
-									<CircularProgress size={36} />
-								) : (
-									<Button
-										style={{
-											paddingLeft: 40,
-											paddingRight: 40
-										}}
-										onClick={submitHandler}
-										variant="contained"
-										color="primary"
-										type="submit"
-									>
-										{props.flatId ? 'Update' : 'Create'}
-									</Button>
-								)}
-							</Box>
-						</Grid>
 					</Grid>
-				</Box>
-			</Paper>
-		</Container>
+					<Grid item>
+						<FlatMembersSearch
+							updateMembers={updateMembersHandler}
+						/>
+						{formState.errors.name && (
+							<p className={classes.fieldError}>
+								{formState.errors.name}
+							</p>
+						)}
+					</Grid>
+					<Grid item>
+						<Box className={classes.submitWrapper}>
+							{loading ? (
+								<CircularProgress size={36} />
+							) : (
+								<Button
+									style={{
+										paddingLeft: 40,
+										paddingRight: 40
+									}}
+									onClick={submitHandler}
+									variant="contained"
+									color="primary"
+									type="submit"
+								>
+									{props.flatId ? 'Update' : 'Create'}
+								</Button>
+							)}
+						</Box>
+					</Grid>
+				</Grid>
+			</Box>
+		</Paper>
 	);
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
-	container: {
-		display: 'flex'
-	},
 	title: {
 		margin: theme.spacing(4, 0, 2)
 	},
 	paper: {
-		width: '100%',
-		padding: 30
+		// width: '100%',
+		padding: 30,
+		margin: 20
 	},
 	header: {
 		paddingBottom: theme.spacing(2)
