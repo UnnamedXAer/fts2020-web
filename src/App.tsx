@@ -32,8 +32,6 @@ const theme = createMuiTheme({
 	}
 });
 
-// document.body.style.background = '#F8F8F8';
-
 const StyledApp = () => {
 	const classes = useStyles();
 	const user = useSelector((state: RootState) => state.auth.user);

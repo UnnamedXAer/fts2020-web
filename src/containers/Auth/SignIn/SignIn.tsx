@@ -45,43 +45,37 @@ const initialState: FormState = {
 	}
 };
 
+type TextFieldSize = 'small' | 'medium';
+
+const getFieldSize = (isLogIn: boolean): TextFieldSize =>
+	!isLogIn && window.innerHeight < 700 ? 'small' : 'medium';
+
 const SignIn = () => {
 	const classes = useStyle();
-
 	const dispatch = useDispatch();
-
 	const [formState, formDispatch] = useForm(initialState);
-
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [isSignIn, setIsSignIn] = useState(false);
-	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
-		window.innerHeight > 700 ? 'medium' : 'small'
-	);
+	const [isSignIn, setIsSignIn] = useState(true);
+	const [textFieldSize, setTextFieldSize] = useState<TextFieldSize>(getFieldSize(isSignIn));
 
 	useEffect(() => {
 		dispatch(tryAuthorize());
 	}, [dispatch]);
 
-	const resizeHandler = useCallback(() => {
-		if (!isSignIn) {
-			let updatedSize: 'small' | 'medium' = 'small';
-			if (window.innerHeight > 700) {
-				updatedSize = 'medium';
-			}
-			setTextFieldSize(updatedSize);
-		} else {
-			setTextFieldSize('medium');
-		}
+	const updateTextFieldSize = useCallback(() => {
+		setTextFieldSize(getFieldSize(isSignIn));
 	}, [isSignIn]);
 
-	useEffect(() => {
-		window.addEventListener('resize', resizeHandler);
+	useEffect(updateTextFieldSize, [updateTextFieldSize]);
 
+	useEffect(() => {
+		const resizeHandler = updateTextFieldSize;
+		window.addEventListener('resize', resizeHandler);
 		return () => {
 			window.removeEventListener('resize', resizeHandler);
 		};
-	}, [resizeHandler]);
+	}, [updateTextFieldSize]);
 
 	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = ev => {
 		const { name, value } = ev.target;
@@ -311,7 +305,6 @@ const SignIn = () => {
 								onClick={() => {
 									setError(null);
 									setIsSignIn(prevState => !prevState);
-									resizeHandler();
 								}}
 								variant="body2"
 								style={{ cursor: 'pointer' }}
@@ -353,7 +346,7 @@ const SignIn = () => {
 										color="primary"
 										type="submit"
 									>
-										Sign Up
+										{SignIn ? 'Sign In' : 'Sign Up'}
 									</Button>
 								)}
 							</Box>

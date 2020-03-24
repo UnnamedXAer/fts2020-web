@@ -8,6 +8,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
+import { useDispatch } from 'react-redux';
+import { logOut } from '../../store/actions/auth';
 
 interface Props {
 	children?: React.ReactNode;
@@ -16,6 +18,7 @@ interface Props {
 
 const AppNavBar: React.FC<Props> = props => {
 	const classes = useStyles();
+	const dispatch = useDispatch();
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
@@ -23,9 +26,17 @@ const AppNavBar: React.FC<Props> = props => {
 		setAnchorEl(event.currentTarget);
 	};
 
-	const handleClose = () => {
+	const menuCloseHandler = () => {
 		setAnchorEl(null);
 	};
+
+	const logoutHandler = async () => {
+		await dispatch(logOut());
+	}
+
+	const openProfileHandler = () => {
+		console.log('opening profile');
+	}
 
 	return (
 		<AppBar position="static">
@@ -64,10 +75,10 @@ const AppNavBar: React.FC<Props> = props => {
 							horizontal: 'right'
 						}}
 						open={open}
-						onClose={handleClose}
+						onClose={menuCloseHandler}
 					>
-						<MenuItem onClick={handleClose}>Profile</MenuItem>
-						<MenuItem onClick={handleClose}>Logout</MenuItem>
+						<MenuItem onClick={openProfileHandler}>Profile</MenuItem>
+						<MenuItem onClick={logoutHandler}>Logout</MenuItem>
 					</Menu>
 				</div>
 			</Toolbar>

@@ -44,7 +44,7 @@ export const authorize = (
 			}, data.expiresIn);
 
 			localStorage.setItem('loggedUser', JSON.stringify(user));
-			localStorage.setItem('expirationTime', ''+expirationTime);
+			localStorage.setItem('expirationTime', '' + expirationTime);
 		} catch (err) {
 			console.log(err);
 			throw err;
@@ -58,10 +58,9 @@ export const tryAuthorize = (): ThunkAction<
 	any,
 	AuthorizeAction
 > => {
-	return dispatch => {
+	return (dispatch, getState) => {
 		const savedUser = localStorage.getItem('loggedUser');
 		const expirationTime = localStorage.getItem('expirationTime');
-
 		if (
 			savedUser &&
 			expirationTime &&
@@ -79,17 +78,31 @@ export const tryAuthorize = (): ThunkAction<
 };
 
 export const logOut = (): ThunkAction<
-	void,
+	Promise<void>,
 	RootState,
 	any,
 	AuthorizeAction
 > => {
-	return dispatch => {
+	return async dispatch => {
+		try {
+			await axios.post('/auth/logout');
+			setTimeout(() => {
+				dispatch({
+					type: LOGOUT
+				});
+			}, 0);
+		} catch (err) {
+			if (localStorage.getItem('loggedUser')) {
+				setTimeout(() => {
+					dispatch(logOut());
+				}, 500);
+			} else {
+				dispatch({
+					type: LOGOUT
+				});
+			}
+		}
 		localStorage.removeItem('loggedUser');
 		localStorage.removeItem('expirationTime');
-
-		dispatch({
-			type: LOGOUT
-		});
 	};
 };
