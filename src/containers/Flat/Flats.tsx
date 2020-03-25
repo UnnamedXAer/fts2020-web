@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-	Container,
 	Grid,
 	List,
 	ListItem,
@@ -10,7 +9,6 @@ import {
 	ListItemText,
 	makeStyles,
 	Theme,
-	Paper,
 	Fab
 } from '@material-ui/core';
 import {

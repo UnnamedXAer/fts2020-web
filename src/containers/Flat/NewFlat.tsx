@@ -28,6 +28,7 @@ import { setFlat } from '../../store/actions/flat';
 import Flat from '../../models/flat';
 import validateFlatFormField from '../../utils/flatFormValidator';
 import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
+import User from '../../models/user';
 
 interface Props {
 	flatId?: number;
@@ -56,7 +57,7 @@ const NewFlat: React.FC<Props> = props => {
 	const dispatch = useDispatch();
 
 	const [formState, formDispatch] = useForm(initialStateRef.current);
-	const [members, setMembers] = useState<number[]>([]);
+	const [members, setMembers] = useState<User[]>([]);
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -108,7 +109,7 @@ const NewFlat: React.FC<Props> = props => {
 	};
 
 	const updateMembersHandler = useCallback(
-		(newMembers: number[]) => setMembers(newMembers),
+		(newMembers: User[]) => setMembers(newMembers),
 		[]
 	);
 

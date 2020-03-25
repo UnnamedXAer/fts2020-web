@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'typeface-roboto';
 import {
 	ThemeProvider,
@@ -8,12 +8,13 @@ import {
 	Box
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import {
 	BrowserRouter as Router,
 	Switch,
 	Route,
-	Redirect
+	Redirect,
+	useHistory
 } from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
@@ -22,6 +23,7 @@ import SignIn from './containers/Auth/SignIn/SignIn';
 import Flats from './containers/Flat/Flats';
 import RootState from './store/storeTypes';
 import FlatDetails from './containers/Flat/FlatDetails';
+import { tryAuthorize } from './store/actions/auth';
 
 const theme = createMuiTheme({
 	palette: {
@@ -38,30 +40,33 @@ const StyledApp = () => {
 	const user = useSelector((state: RootState) => state.auth.user);
 
 	let layout = (
-		<Box className={classes.appBody}>
-			<Container maxWidth="md" className={classes.container}>
-				<Switch>
-					<Route path="/flats/add" exact component={NewFlat} />
-					<Route path="/flats/:id" component={FlatDetails} />
-					<Route path="/flats" component={Flats} />
-					<Redirect from="/" to="/flats" />
-				</Switch>
-			</Container>
-		</Box>
+		<>
+			<AppNavBar title="Flats" />
+			<Box className={classes.appBody}>
+				<Container maxWidth="md" className={classes.container}>
+					<Switch>
+						<Route path="/flats/add" exact component={NewFlat} />
+						<Route path="/flats/:id" component={FlatDetails} />
+						<Route path="/flats" component={Flats} />
+						<Route path="/" component={Flats} />
+						{/* <Redirect from="/" to="/flats" /> */}
+					</Switch>
+				</Container>
+			</Box>
+		</>
 	);
 
-	if (user === null) {
-		layout = (
-			<Switch>
-				<Route path="/" exact component={SignIn} />
-				<Redirect to="/" />
-			</Switch>
-		);
-	}
+	// if (user === null) {
+	// 	layout = (
+	// 		<Switch>
+	// 			<Route path="/" exact component={SignIn} />
+	// 			<Redirect to="/" />
+	// 		</Switch>
+	// 	);
+	// }
 
 	return (
 		<div className={classes.app} id="AppRootComponent">
-			{user && <AppNavBar title="Flat" />}
 			{layout}
 		</div>
 	);
@@ -90,7 +95,8 @@ const useStyles = makeStyles({
 		margin: 0,
 		padding: 0,
 		overflow: 'hidden',
-		background: '#F8F8F8'
+		// background: '#F8F8F8'
+		background: '#fafafa'
 	},
 	appBody: {
 		flex: 1,
@@ -99,7 +105,11 @@ const useStyles = makeStyles({
 	},
 	container: {
 		backgroundColor: 'white',
-		padding: 10
+		border: '1px solid #dee2e6',
+		borderRadius: 5,
+		marginTop: 20,
+		padding: 24,
+		flexGrow: 1
 	}
 });
 

@@ -1,8 +1,10 @@
+import User from './user';
+
 export default class Flat {
 	id?: number;
 	name: string;
 	description: string;
-	members: number[];
+	members: User[];
 	createBy?: number;
 	createAt?: Date;
 

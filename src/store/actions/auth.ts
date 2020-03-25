@@ -73,6 +73,8 @@ export const tryAuthorize = (): ThunkAction<
 					expirationTime: +expirationTime
 				}
 			});
+		} else {
+			throw new Error('Auto-authorization was not possible.');
 		}
 	};
 };

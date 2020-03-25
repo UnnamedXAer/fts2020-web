@@ -1,7 +1,8 @@
 import { AppReducer, FlatState, SimpleReducer } from '../storeTypes';
 import { FlatActionTypes } from '../actions/actionTypes';
 import Flat from '../../models/flat';
-
+import User from '../../models/user';
+let i = 0;
 const initialState: FlatState = {
 	flats: [
 		new Flat({
@@ -10,7 +11,7 @@ const initialState: FlatState = {
 			createAt: new Date(2020, 1, 5, 15, 35),
 			createBy: 1,
 			name: 'apartment1 ',
-			members: [1, 2, 3]
+			members: [new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true)]
 		}),
 		new Flat({
 			id: 2,
@@ -18,7 +19,7 @@ const initialState: FlatState = {
 			createAt: new Date(2020, 1, 5, 15, 35),
 			createBy: 1,
 			name: 'apartment 2',
-			members: [1, 2, 3]
+			members: [new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true)]
 		}),
 		new Flat({
 			id: 3,
@@ -26,15 +27,15 @@ const initialState: FlatState = {
 			createAt: new Date(2020, 1, 5, 15, 35),
 			createBy: 1,
 			name: 'apartment 3',
-			members: [1, 2, 3]
+			members: [new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true)]
 		}),
 		new Flat({
 			id: 4,
-			description: 'South street 4',
+			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.',
 			createAt: new Date(2020, 1, 5, 15, 35),
 			createBy: 1,
 			name: 'apartment 4',
-			members: [1, 2, 3]
+			members: [new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true)]
 		}),
 		new Flat({
 			id: 5,
@@ -42,7 +43,7 @@ const initialState: FlatState = {
 			createAt: new Date(2020, 1, 5, 15, 35),
 			createBy: 1,
 			name: 'apartment 5',
-			members: [1, 2, 3]
+			members: [new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true)]
 		}),
 		new Flat({
 			id: 6,
@@ -50,7 +51,7 @@ const initialState: FlatState = {
 			createAt: new Date(2020, 1, 5, 15, 35),
 			createBy: 1,
 			name: 'apartment 6',
-			members: [1, 2, 3]
+			members: [new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true)]
 		}),
 		new Flat({
 			id: 7,
@@ -58,7 +59,7 @@ const initialState: FlatState = {
 			createAt: new Date(2020, 1, 5, 15, 35),
 			createBy: 1,
 			name: 'apartment 2020-01 -> 2020-06',
-			members: [1, 2, 3]
+			members: [new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true),new User(++i, 'test'+i+'@meila.com', 'Unnamed User '+i, 'local', new Date(1993, i, i, i, i,i,i ), '', true)]
 		})
 	]
 };

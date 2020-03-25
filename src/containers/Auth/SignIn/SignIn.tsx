@@ -26,6 +26,7 @@ import validateAuthFormField from '../../../utils/authFormValidator';
 import { authorize, tryAuthorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
+import { useHistory } from 'react-router-dom';
 
 const initialState: FormState = {
 	formValidity: false,
@@ -57,10 +58,14 @@ const SignIn = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isSignIn, setIsSignIn] = useState(true);
-	const [textFieldSize, setTextFieldSize] = useState<TextFieldSize>(getFieldSize(isSignIn));
+	const [textFieldSize, setTextFieldSize] = useState<TextFieldSize>(
+		getFieldSize(isSignIn)
+	);
 
 	useEffect(() => {
-		dispatch(tryAuthorize());
+		try {
+			dispatch(tryAuthorize());
+		} catch (err) {}
 	}, [dispatch]);
 
 	const updateTextFieldSize = useCallback(() => {

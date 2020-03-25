@@ -35,7 +35,7 @@ enum MembersState {
 }
 
 interface Props {
-	updateMembers: (newMembers: number[]) => void;
+	updateMembers: (newMembers: User[]) => void;
 }
 
 const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
@@ -51,7 +51,7 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 	const inputRef = useRef<HTMLInputElement>();
 
 	useEffect(() => {
-		updateMembers(members.map(x => x.id));
+		updateMembers(members);
 		console.log('pushing members');
 	}, [members, updateMembers]);
 
