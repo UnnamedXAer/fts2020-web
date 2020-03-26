@@ -1,61 +1,47 @@
-import React, { FC, useState } from 'react';
+import React from 'react';
 import {
+	List,
 	ListItem,
 	ListItemAvatar,
-	List,
 	Avatar,
 	ListItemText,
 	ListItemSecondaryAction,
-	IconButton,
-	Paper,
-	MenuList,
-	MenuItem,
-	makeStyles,
-	createStyles,
-	Theme,
-	Popper,
-	Grow,
-	ClickAwayListener
+	IconButton
 } from '@material-ui/core';
-import {
-	SupervisedUserCircle as UserCircleIcon,
-	MoreVert as MoreVertIcon
-} from '@material-ui/icons';
 import User from '../../models/user';
 import { useDispatch } from 'react-redux';
+import {
+	SupervisedUserCircle as UserCircleIcon,
+	EmailRounded as MoreVertIcon,
+	DeleteRounded as DeleteIcon
+} from '@material-ui/icons';
 
 interface Props {
 	members: User[];
 }
 
-const FlatMembers: FC<Props> = ({ members }) => {
-	const classes = useStyle();
+const FlatMembers: React.FC<Props> = ({ members }) => {
 	const dispatch = useDispatch();
-	const [menuItemId, setMenuItemId] = useState<number | null>(null);
 
-	const itemMenuClickHandler = (id: number) => {
-		setMenuItemId(id);
-	};
+	const sendEmailHandler = (emailAddress: string) => {};
 
-	const menuCloseHandler = () => {
-		setMenuItemId(null);
-	};
-
-	const menuItemRemoveHandler = () => {
+	const deleteHandler = (id: number) => {
 		const response = window.confirm(
 			`Do you really want to remove user: ${
-				members.find(x => x.id === menuItemId)?.emailAddress
+				members.find(x => x.id === id)?.emailAddress
 			}`
 		);
 		if (response) {
-			dispatch({type: ''});
+			dispatch({
+				type: ''
+			});
 		}
 	};
 
 	return (
 		<List>
 			{members.map(member => (
-				<ListItem key={member.id} button>
+				<ListItem button key={member.id}>
 					<ListItemAvatar>
 						<Avatar src={member.avatarUrl}>
 							<UserCircleIcon />
@@ -67,64 +53,20 @@ const FlatMembers: FC<Props> = ({ members }) => {
 					/>
 					<ListItemSecondaryAction>
 						<IconButton
-							onClick={() => itemMenuClickHandler(member.id)}
+							onClick={() =>
+								sendEmailHandler(member.emailAddress)
+							}
 						>
 							<MoreVertIcon />
 						</IconButton>
-						<Popper
-							open={member.id === menuItemId}
-							// anchorEl={anchorRef.current}
-							role={undefined}
-							transition
-							disablePortal
-						>
-							{({ TransitionProps, placement }) => (
-								<Grow
-									{...TransitionProps}
-									style={{
-										transformOrigin:
-											placement === 'bottom'
-												? 'center top'
-												: 'center bottom'
-									}}
-								>
-									<Paper>
-										<ClickAwayListener
-											onClickAway={menuCloseHandler}
-										>
-											<MenuList
-												autoFocusItem={
-													menuItemId == member.id
-												}
-												id="menu-list-grow"
-												// onKeyDown={handleListKeyDown}
-											>
-												<MenuItem
-													onClick={
-														menuItemRemoveHandler
-													}
-												>
-													Remove
-												</MenuItem>
-											</MenuList>
-										</ClickAwayListener>
-									</Paper>
-								</Grow>
-							)}
-						</Popper>
+						<IconButton onClick={() => deleteHandler(member.id)}>
+							<DeleteIcon />
+						</IconButton>
 					</ListItemSecondaryAction>
 				</ListItem>
 			))}
 		</List>
 	);
 };
-
-const useStyle = makeStyles((theme: Theme) =>
-	createStyles({
-		paper: {
-			marginRight: theme.spacing(2)
-		}
-	})
-);
 
 export default FlatMembers;

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import 'typeface-roboto';
 import {
 	ThemeProvider,
@@ -8,7 +8,7 @@ import {
 	Box
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
-import { Provider, useSelector, useDispatch } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import {
 	BrowserRouter as Router,
 	Switch,
@@ -23,7 +23,6 @@ import SignIn from './containers/Auth/SignIn/SignIn';
 import Flats from './containers/Flat/Flats';
 import RootState from './store/storeTypes';
 import FlatDetails from './containers/Flat/FlatDetails';
-import { tryAuthorize } from './store/actions/auth';
 
 const theme = createMuiTheme({
 	palette: {
@@ -95,7 +94,6 @@ const useStyles = makeStyles({
 		margin: 0,
 		padding: 0,
 		overflow: 'hidden',
-		// background: '#F8F8F8'
 		background: '#fafafa'
 	},
 	appBody: {
