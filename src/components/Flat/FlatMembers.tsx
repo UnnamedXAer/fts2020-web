@@ -6,7 +6,9 @@ import {
 	Avatar,
 	ListItemText,
 	ListItemSecondaryAction,
-	IconButton
+	IconButton,
+	CircularProgress,
+	Typography
 } from '@material-ui/core';
 import User from '../../models/user';
 import { useDispatch } from 'react-redux';
@@ -17,10 +19,11 @@ import {
 } from '@material-ui/icons';
 
 interface Props {
-	members: User[];
+	members: User[] | undefined;
+	loading: boolean;
 }
 
-const FlatMembers: React.FC<Props> = ({ members }) => {
+const FlatMembers: React.FC<Props> = ({ members, loading }) => {
 	const dispatch = useDispatch();
 
 	const sendEmailHandler = (emailAddress: string) => {};
@@ -28,7 +31,7 @@ const FlatMembers: React.FC<Props> = ({ members }) => {
 	const deleteHandler = (id: number) => {
 		const response = window.confirm(
 			`Do you really want to remove user: ${
-				members.find(x => x.id === id)?.emailAddress
+				members!.find(x => x.id === id)?.emailAddress
 			}`
 		);
 		if (response) {
@@ -38,9 +41,13 @@ const FlatMembers: React.FC<Props> = ({ members }) => {
 		}
 	};
 
+	if (loading) {
+		return <CircularProgress color="primary" />;
+	}
+
 	return (
 		<List>
-			{members.map(member => (
+			{members?.map(member => (
 				<ListItem button key={member.id}>
 					<ListItemAvatar>
 						<Avatar src={member.avatarUrl}>

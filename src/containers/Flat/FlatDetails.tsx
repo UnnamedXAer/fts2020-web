@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import RootState from '../../store/storeTypes';
 import { RouteComponentProps } from 'react-router-dom';
 import {
 	Grid,
@@ -12,7 +11,10 @@ import {
 	TextField
 } from '@material-ui/core';
 import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
+import moment from 'moment';
 import FlatMembers from '../../components/Flat/FlatMembers';
+import RootState from '../../store/storeTypes';
+import FlatTasks from './FlatTasks';
 
 interface Props extends RouteComponentProps {}
 
@@ -59,6 +61,12 @@ const FlatDetails: React.FC<Props> = props => {
 						>
 							{flat.name}
 						</Typography>
+						<Typography variant="subtitle1" color="textSecondary">
+							Created By {flat.owner!.emailAddress}
+						</Typography>
+						<Typography variant="subtitle1" color="textSecondary">
+							{moment(flat.createAt).format('llll')}
+						</Typography>
 					</Grid>
 				</Grid>
 				<Grid item>
@@ -79,7 +87,13 @@ const FlatDetails: React.FC<Props> = props => {
 					<Typography variant="h5" component="h3">
 						Members
 					</Typography>
-					<FlatMembers members={flat.members} />
+					<FlatMembers loading={false} members={flat.members} />
+				</Grid>
+				<Grid item>
+					<Typography variant="h5" component="h3">
+						Tasks
+					</Typography>
+					<FlatTasks flatId={flat.id as number} />
 				</Grid>
 			</Grid>
 		</Grid>

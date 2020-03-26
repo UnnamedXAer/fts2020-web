@@ -2,7 +2,6 @@ import React, { useCallback, useState, useRef } from 'react';
 import {
 	makeStyles,
 	Theme,
-	Container,
 	Grid,
 	Typography,
 	TextField,
@@ -24,11 +23,11 @@ import useForm, {
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
 import { PhotoCamera, ErrorOutline } from '@material-ui/icons';
-import { setFlat } from '../../store/actions/flat';
 import Flat from '../../models/flat';
 import validateFlatFormField from '../../utils/flatFormValidator';
 import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
 import User from '../../models/user';
+import { createFlat } from '../../store/actions/flats';
 
 interface Props {
 	flatId?: number;
@@ -38,6 +37,7 @@ const NewFlat: React.FC<Props> = props => {
 	const { flatId } = props;
 	const classes = useStyles();
 
+	const loggedUser = useSelector((state: RootState) => state.auth.user);
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find(x => x.id === flatId)
 	);
@@ -139,11 +139,12 @@ const NewFlat: React.FC<Props> = props => {
 			id: flat?.id,
 			members: members,
 			description: formState.values.description,
-			name: formState.values.name
+			name: formState.values.name,
+			owner: loggedUser!
 		});
 
 		try {
-			await dispatch(setFlat(newFlat));
+			await dispatch(createFlat(newFlat));
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();

@@ -106,6 +106,7 @@ const useStyles = makeStyles({
 		border: '1px solid #dee2e6',
 		borderRadius: 5,
 		marginTop: 20,
+		marginBottom: 20,
 		padding: 24,
 		flexGrow: 1
 	}
