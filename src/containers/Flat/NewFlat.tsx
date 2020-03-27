@@ -22,12 +22,13 @@ import useForm, {
 	FormState
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
-import { PhotoCamera, ErrorOutline } from '@material-ui/icons';
+import { PhotoCamera } from '@material-ui/icons';
 import Flat from '../../models/flat';
 import validateFlatFormField from '../../utils/flatFormValidator';
 import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
 import User from '../../models/user';
 import { createFlat } from '../../store/actions/flats';
+import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 
 interface Props {
 	flatId?: number;
@@ -37,15 +38,16 @@ const NewFlat: React.FC<Props> = props => {
 	const { flatId } = props;
 	const classes = useStyles();
 
-	const loggedUser = useSelector((state: RootState) => state.auth.user);
+	const loggedUser = useSelector<RootState, User>(state => state.auth.user!);
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find(x => x.id === flatId)
 	);
-	const initialStateRef = useRef<FormState>({
+	const initialFormStateRef = useRef<FormState>({
 		formValidity: !!flatId,
 		values: {
 			name: flat ? flat.name : '',
-			description: flat ? flat.description : ''
+			description: flat ? flat.description : '',
+			avatarUrl: ''
 		},
 		errors: {
 			name: null,
@@ -56,7 +58,7 @@ const NewFlat: React.FC<Props> = props => {
 
 	const dispatch = useDispatch();
 
-	const [formState, formDispatch] = useForm(initialStateRef.current);
+	const [formState, formDispatch] = useForm(initialFormStateRef.current);
 	const [members, setMembers] = useState<User[]>([]);
 
 	const [loading, setLoading] = useState(false);
@@ -108,10 +110,9 @@ const NewFlat: React.FC<Props> = props => {
 		formDispatch(action);
 	};
 
-	const updateMembersHandler = useCallback(
-		(newMembers: User[]) => setMembers(newMembers),
-		[]
-	);
+	const updateMembersHandler = useCallback((newMembers: User[]) => {
+		setMembers(newMembers);
+	}, []);
 
 	const submitHandler: React.FormEventHandler = async ev => {
 		setError(null);
@@ -145,6 +146,7 @@ const NewFlat: React.FC<Props> = props => {
 
 		try {
 			await dispatch(createFlat(newFlat));
+			setLoading(false);
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
@@ -162,7 +164,7 @@ const NewFlat: React.FC<Props> = props => {
 	};
 
 	return (
-		<Paper className={classes.paper} elevation={5}>
+		<>
 			<Box className={classes.header}>
 				<Typography variant="h3" align="center" color="primary">
 					{props.flatId ? 'Edit flat' : 'Add Flat'}
@@ -200,6 +202,7 @@ const NewFlat: React.FC<Props> = props => {
 											variant="outlined"
 											label="Name"
 											type="text"
+											disabled={loading}
 											required
 											value={formState.values.name}
 											error={!!formState.errors.name}
@@ -223,6 +226,7 @@ const NewFlat: React.FC<Props> = props => {
 											variant="outlined"
 											label="Description"
 											type="text"
+											disabled={loading}
 											multiline
 											rows={2}
 											rowsMax={4}
@@ -237,30 +241,6 @@ const NewFlat: React.FC<Props> = props => {
 											<p className={classes.fieldError}>
 												{formState.errors.description}
 											</p>
-										)}
-									</Grid>
-
-									<Grid item>
-										{error && (
-											<Box
-												display="flex"
-												flexDirection="row"
-												alignItems="center"
-											>
-												<ErrorOutline
-													style={{
-														marginInlineEnd: 20
-													}}
-													color="error"
-												/>
-												<p
-													className={
-														classes.formErrorText
-													}
-												>
-													{error}
-												</p>
-											</Box>
 										)}
 									</Grid>
 								</Grid>
@@ -295,14 +275,23 @@ const NewFlat: React.FC<Props> = props => {
 					</Grid>
 					<Grid item>
 						<FlatMembersSearch
+							formLoading={loading}
+							loggedUser={loggedUser}
 							updateMembers={updateMembersHandler}
 						/>
-						{formState.errors.name && (
-							<p className={classes.fieldError}>
-								{formState.errors.name}
-							</p>
+					</Grid>
+
+					<Grid item>
+						{error && (
+							<CustomMuiAlert
+								severity="error"
+								onClick={() => setError(null)}
+							>
+								{error}
+							</CustomMuiAlert>
 						)}
 					</Grid>
+
 					<Grid item>
 						<Box className={classes.submitWrapper}>
 							{loading ? (
@@ -325,7 +314,7 @@ const NewFlat: React.FC<Props> = props => {
 					</Grid>
 				</Grid>
 			</Box>
-		</Paper>
+		</>
 	);
 };
 

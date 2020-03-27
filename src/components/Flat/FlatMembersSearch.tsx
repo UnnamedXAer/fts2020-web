@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
 	CircularProgress,
 	TextField,
@@ -36,16 +36,28 @@ enum MembersState {
 
 interface Props {
 	updateMembers: (newMembers: User[]) => void;
+	loggedUser: User;
+	formLoading: boolean;
 }
 
-const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
+const FlatMembersSearch: React.FC<Props> = ({
+	updateMembers,
+	loggedUser,
+	formLoading
+}) => {
 	const classes = useStyles();
 
 	const [inputValue, setInputValue] = useState('');
-	const [membersEmails, setMembersEmails] = React.useState<string[]>([]);
-	const [members, setMembers] = React.useState<User[]>([]);
+	const [membersEmails, setMembersEmails] = React.useState<string[]>([
+		loggedUser.emailAddress
+	]);
+	const [members, setMembers] = React.useState<User[]>([loggedUser]);
 	const [membersState, setMembersState] = useState<{
 		[key: string]: MembersState;
+	}>({ [loggedUser.emailAddress]: MembersState.ok });
+
+	const [membersErrors, setMembersErrors] = useState<{
+		[key: string]: string;
 	}>({});
 
 	const inputRef = useRef<HTMLInputElement>();
@@ -57,7 +69,10 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 
 	const submitMemberHandler = () => {
 		const value = inputValue.trim().toLowerCase();
-		if (value !== '' && !membersEmails.includes(value)) {
+		if (
+			value !== '' &&
+			(!membersEmails.includes(value) || membersErrors[value])
+		) {
 			submitMember(value);
 		}
 		setInputValue('');
@@ -65,7 +80,9 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 	};
 
 	const submitMember = (value: string) => {
-		setMembersEmails(prevSate => prevSate.concat(value));
+		if (!membersErrors[value]) {
+			setMembersEmails(prevSate => prevSate.concat(value));
+		}
 		setMembersState(prevState => ({
 			...prevState,
 			[value]: MembersState.loading
@@ -74,7 +91,7 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 		setTimeout(() => fetchUserByEmail(value), 1000);
 	};
 
-	const fetchUserByEmail = async (value: string) => {
+	const fetchUserByEmail = useCallback(async (value: string) => {
 		const url = `/users/emailAddress`;
 		try {
 			const response = await axios.post(url, {
@@ -99,14 +116,23 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 				}, 1200);
 				setMembers(prevSate => prevSate.concat(response.data));
 			}
+			setMembersErrors(prevState => {
+				const updatedState = { ...prevState };
+				delete updatedState[value];
+				return updatedState;
+			});
 		} catch (err) {
 			setMembersState(prevState => ({
 				...prevState,
 				[value]: MembersState.error
 			}));
+			setMembersErrors(prevState => ({
+				...prevState,
+				[value]: 'Error: ' + err.message
+			}));
 			console.log('fetch user,err: ', err);
 		}
-	};
+	}, []);
 
 	const removeMemberHandler = (email: string) => {
 		setMembers(prevMembers => {
@@ -127,12 +153,21 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 
 	return (
 		<div className={classes.container}>
+			<Box width="100%">
+				<Typography variant="h6">Members invitations</Typography>
+			</Box>
+			<Typography variant="body2">
+				Add users by entering their email address. These users will
+				receive an email asking them to accept the invitation. This list
+				can be updated later.
+			</Typography>
 			<Box
 				display="flex"
 				flexDirection="row"
 				alignItems="flex-start"
 				justifyContent="space-around"
 				width="100%"
+				paddingTop="10px"
 			>
 				<TextField
 					inputRef={inputRef}
@@ -144,6 +179,7 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 							submitMemberHandler();
 						}
 					}}
+					disabled={formLoading}
 					value={inputValue}
 					fullWidth
 					name="addMember"
@@ -154,6 +190,7 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 				<IconButton
 					type="submit"
 					aria-label="search"
+					disabled={formLoading}
 					onClick={submitMemberHandler}
 				>
 					<AddRounded />
@@ -167,6 +204,8 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 							x.emailAddress.toLowerCase() === email.toLowerCase()
 						);
 					});
+
+					const isLoggedUser = loggedUser.id === member?.id;
 
 					let secondaryTextColor:
 						| 'initial'
@@ -223,7 +262,9 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 									/>
 								</ListItemAvatar>
 							);
-							secondaryText = 'Email address not found.';
+							secondaryText =
+								membersErrors[email] ||
+								'Email address not found.';
 							break;
 					}
 
@@ -232,7 +273,15 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 							<ListItem alignItems="flex-start">
 								{sateIndicator}
 								<ListItemText
-									primary={email}
+									primary={
+										isLoggedUser ? (
+											<Typography color="textSecondary">
+												[You] {email}
+											</Typography>
+										) : (
+											email
+										)
+									}
 									secondary={
 										<React.Fragment>
 											<Typography
@@ -250,15 +299,18 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 									}
 								/>
 								<ListItemSecondaryAction>
-									<IconButton
-										edge="end"
-										aria-label="delete"
-										onClick={() =>
-											removeMemberHandler(email)
-										}
-									>
-										<ClearRounded />
-									</IconButton>
+									{!isLoggedUser && (
+										<IconButton
+											edge="end"
+											aria-label="delete"
+											disabled={formLoading}
+											onClick={() =>
+												removeMemberHandler(email)
+											}
+										>
+											<ClearRounded />
+										</IconButton>
+									)}
 								</ListItemSecondaryAction>
 							</ListItem>
 							<Divider variant="inset" component="li" />
@@ -269,12 +321,11 @@ const FlatMembersSearch: React.FC<Props> = ({ updateMembers }) => {
 			<p className={classes.summary}>
 				{members.length === 0
 					? 'No members added'
-					: `${members.length} ${
-							members.length === 1
-								? 'user will be added as member'
-								: 'users will be added as members'
-					  }`}
-				.
+					: members.length === 1
+					? 'Only You will be the member.'
+					: `${members.length - 1} user${
+							members.length === 1 ? '' : 's'
+					  } will be invited.`}
 			</p>
 		</div>
 	);
