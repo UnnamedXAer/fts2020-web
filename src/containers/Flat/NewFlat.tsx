@@ -62,12 +62,14 @@ const NewFlat: React.FC<Props> = ({
 
 	const [formState, formDispatch] = useForm(initialFormStateRef.current);
 	const [members, setMembers] = useState<User[]>([]);
-
+	const [membersLoading, setMembersLoading] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
+
+
 	const theme = useTheme();
 	const matchesSMSize = useMediaQuery(theme.breakpoints.up('sm'));
 
@@ -115,6 +117,10 @@ const NewFlat: React.FC<Props> = ({
 	const updateMembersHandler = useCallback((newMembers: User[]) => {
 		setMembers(newMembers);
 	}, []);
+
+	const updateMembersLoadingHandler = (isLoading: boolean) => {
+		setMembersLoading(isLoading);
+	};
 
 	const submitHandler: React.FormEventHandler = async ev => {
 		setError(null);
@@ -280,6 +286,7 @@ const NewFlat: React.FC<Props> = ({
 							formLoading={loading}
 							loggedUser={loggedUser}
 							updateMembers={updateMembersHandler}
+							updateMembersLoading={updateMembersLoadingHandler}
 						/>
 					</Grid>
 
@@ -304,6 +311,7 @@ const NewFlat: React.FC<Props> = ({
 										paddingLeft: 40,
 										paddingRight: 40
 									}}
+									disabled={membersLoading || !formState.formValidity}
 									onClick={submitHandler}
 									variant="contained"
 									color="primary"

@@ -38,12 +38,14 @@ interface Props {
 	updateMembers: (newMembers: User[]) => void;
 	loggedUser: User;
 	formLoading: boolean;
+	updateMembersLoading: (isLoading: boolean) => void;
 }
 
 const FlatMembersSearch: React.FC<Props> = ({
 	updateMembers,
 	loggedUser,
-	formLoading
+	formLoading,
+	updateMembersLoading
 }) => {
 	const classes = useStyles();
 
@@ -66,6 +68,14 @@ const FlatMembersSearch: React.FC<Props> = ({
 		updateMembers(members);
 		console.log('pushing members');
 	}, [members, updateMembers]);
+
+	useEffect(() => {
+		const membersLoading = Object.values(membersState).some(
+			x => x === MembersState.loading
+		);
+
+		updateMembersLoading(membersLoading);
+	}, [membersState]);
 
 	const submitMemberHandler = () => {
 		const value = inputValue.trim().toLowerCase();
