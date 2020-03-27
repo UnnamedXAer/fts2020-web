@@ -10,7 +10,6 @@ import {
 	IconButton,
 	CircularProgress,
 	Button,
-	Paper,
 	useMediaQuery,
 	useTheme
 } from '@material-ui/core';
@@ -29,13 +28,16 @@ import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
 import User from '../../models/user';
 import { createFlat } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
+import { RouteComponentProps } from 'react-router-dom';
 
-interface Props {
+interface Props extends RouteComponentProps {
 	flatId?: number;
 }
 
-const NewFlat: React.FC<Props> = props => {
-	const { flatId } = props;
+const NewFlat: React.FC<Props> = ({
+	flatId,
+	history,
+}) => {
 	const classes = useStyles();
 
 	const loggedUser = useSelector<RootState, User>(state => state.auth.user!);
@@ -146,7 +148,7 @@ const NewFlat: React.FC<Props> = props => {
 
 		try {
 			await dispatch(createFlat(newFlat));
-			setLoading(false);
+			history.replace('/flats');
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
@@ -167,7 +169,7 @@ const NewFlat: React.FC<Props> = props => {
 		<>
 			<Box className={classes.header}>
 				<Typography variant="h3" align="center" color="primary">
-					{props.flatId ? 'Edit flat' : 'Add Flat'}
+					{flatId ? 'Edit flat' : 'Add Flat'}
 				</Typography>
 			</Box>
 			<Box className={classes.gridContainer}>
@@ -307,7 +309,7 @@ const NewFlat: React.FC<Props> = props => {
 									color="primary"
 									type="submit"
 								>
-									{props.flatId ? 'Update' : 'Create'}
+									{flatId ? 'Update' : 'Create'}
 								</Button>
 							)}
 						</Box>
@@ -323,7 +325,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 		margin: theme.spacing(4, 0, 2)
 	},
 	paper: {
-		// width: '100%',
 		padding: 30,
 		margin: 20
 	},
