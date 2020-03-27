@@ -14,7 +14,6 @@ import {
 	Switch,
 	Route,
 	Redirect,
-	useHistory
 } from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
@@ -55,14 +54,14 @@ const StyledApp = () => {
 		</>
 	);
 
-	// if (user === null) {
-	// 	layout = (
-	// 		<Switch>
-	// 			<Route path="/" exact component={SignIn} />
-	// 			<Redirect to="/" />
-	// 		</Switch>
-	// 	);
-	// }
+	if (user === null) {
+		layout = (
+			<Switch>
+				<Route path="/" exact component={SignIn} />
+				<Redirect to="/" />
+			</Switch>
+		);
+	}
 
 	return (
 		<div className={classes.app} id="AppRootComponent">
