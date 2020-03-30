@@ -26,7 +26,6 @@ import validateAuthFormField from '../../../utils/authFormValidator';
 import { authorize, tryAuthorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
-import { useHistory } from 'react-router-dom';
 
 const initialState: FormState = {
 	formValidity: false,

@@ -8,7 +8,6 @@ import {
 	ListItemSecondaryAction,
 	IconButton,
 	CircularProgress,
-	Typography
 } from '@material-ui/core';
 import User from '../../models/user';
 import { useDispatch } from 'react-redux';

@@ -75,7 +75,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 		);
 
 		updateMembersLoading(membersLoading);
-	}, [membersState]);
+	}, [membersState, updateMembersLoading]);
 
 	const submitMemberHandler = () => {
 		const value = inputValue.trim().toLowerCase();
