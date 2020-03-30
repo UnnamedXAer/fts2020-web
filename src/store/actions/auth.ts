@@ -2,11 +2,17 @@ import { ThunkAction } from 'redux-thunk';
 import { Credentials } from '../../models/auth';
 import axios from '../../axios/axios';
 import { AUTHORIZE, LOGOUT } from './actionTypes';
-import RootState from '../storeTypes';
+import RootState, { StoreAction } from '../storeTypes';
 import User from '../../models/user';
+
+type AuthorizeActionPayload = {
+	user: User;
+	expirationTime: number;
+};
 
 type AuthorizeAction = {
 	type: string;
+	payload?: AuthorizeActionPayload;
 };
 
 export const authorize = (
@@ -52,31 +58,24 @@ export const authorize = (
 	};
 };
 
-export const tryAuthorize = (): ThunkAction<
-	void,
-	RootState,
-	any,
-	AuthorizeAction
-> => {
-	return (dispatch, getState) => {
-		const savedUser = localStorage.getItem('loggedUser');
-		const expirationTime = localStorage.getItem('expirationTime');
-		if (
-			savedUser &&
-			expirationTime &&
-			new Date(+expirationTime).getTime() > Date.now()
-		) {
-			dispatch({
-				type: AUTHORIZE,
-				payload: {
-					user: JSON.parse(savedUser),
-					expirationTime: +expirationTime
-				}
-			});
-		} else {
-			throw new Error('Auto-authorization was not possible.');
-		}
-	};
+export const tryAuthorize = (): StoreAction<AuthorizeActionPayload> => {
+	const savedUser = localStorage.getItem('loggedUser');
+	const expirationTime = localStorage.getItem('expirationTime');
+	if (
+		savedUser &&
+		expirationTime &&
+		new Date(+expirationTime).getTime() > Date.now()
+	) {
+		return {
+			type: AUTHORIZE,
+			payload: {
+				user: JSON.parse(savedUser),
+				expirationTime: +expirationTime
+			}
+		};
+	} else {
+		throw new Error('Auto-authorization was not possible.');
+	}
 };
 
 export const logOut = (): ThunkAction<

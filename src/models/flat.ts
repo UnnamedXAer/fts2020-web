@@ -5,17 +5,27 @@ export default class Flat {
 	name: string;
 	description: string;
 	members?: User[];
-	owner: User;
+	ownerId: number;
+	owner?: User;
 	createAt?: Date;
 
 	constructor(prams: Flat = {} as Flat) {
-		const { id, name, description, members, owner, createAt } = prams;
+		const {
+			id,
+			name,
+			description,
+			members,
+			owner,
+			ownerId,
+			createAt
+		} = prams;
 
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.members = members;
 		this.owner = owner;
+		this.ownerId = ownerId;
 		this.createAt = createAt;
 	}
 }

@@ -3,7 +3,8 @@ export const LOGOUT = 'LOGOUT';
 
 export enum FlatsActionTypes {
 	Set,
-	Add
+	Add,
+	SetOwner
 };
 
 export enum TasksActionTypes {

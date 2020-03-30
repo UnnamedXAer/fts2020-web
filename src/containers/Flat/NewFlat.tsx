@@ -34,10 +34,10 @@ interface Props extends RouteComponentProps {
 	flatId?: number;
 }
 
-const NewFlat: React.FC<Props> = ({
-	flatId,
-	history,
-}) => {
+const descriptionPlaceholder = `eg. lodgings ${new Date().getFullYear()}/10 - ${new Date().getFullYear() +
+	1}-07`;
+
+const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 	const classes = useStyles();
 
 	const loggedUser = useSelector<RootState, User>(state => state.auth.user!);
@@ -68,7 +68,6 @@ const NewFlat: React.FC<Props> = ({
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
-
 
 	const theme = useTheme();
 	const matchesSMSize = useMediaQuery(theme.breakpoints.up('sm'));
@@ -149,7 +148,7 @@ const NewFlat: React.FC<Props> = ({
 			members: members,
 			description: formState.values.description,
 			name: formState.values.name,
-			owner: loggedUser!
+			ownerId: loggedUser.id
 		});
 
 		try {
@@ -228,8 +227,7 @@ const NewFlat: React.FC<Props> = ({
 										<TextField
 											size={textFieldSize}
 											name="description"
-											placeholder={`eg. lodgings ${new Date().getFullYear()}/10 - ${new Date().getFullYear() +
-												1}-07`}
+											placeholder={descriptionPlaceholder}
 											fullWidth
 											variant="outlined"
 											label="Description"
@@ -311,7 +309,10 @@ const NewFlat: React.FC<Props> = ({
 										paddingLeft: 40,
 										paddingRight: 40
 									}}
-									disabled={membersLoading || !formState.formValidity}
+									disabled={
+										membersLoading ||
+										!formState.formValidity
+									}
 									onClick={submitHandler}
 									variant="contained"
 									color="primary"

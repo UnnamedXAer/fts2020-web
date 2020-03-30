@@ -3,6 +3,7 @@ import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
 import { FlatsActionTypes } from './actionTypes';
 import axios from '../../axios/axios';
+import User from '../../models/user';
 
 type APIFlat = {
 	id: number;
@@ -35,7 +36,7 @@ export const createFlat = (
 				name: data.name,
 				description: data.description,
 				createAt: data.createAt,
-				owner: flat.owner
+				ownerId: data.createBy
 			});
 			dispatch({
 				type: FlatsActionTypes.Add,
@@ -59,13 +60,16 @@ export const fetchFlats = (): ThunkAction<
 		const url = `/flats?userId=${loggedUser!.id}`;
 		try {
 			const { data } = await axios.get<APIFlat[]>(url);
-			const flats = data.map(x => new Flat({ 
-				id: x.id,
-				name: x.name,
-				description: x.description,
-				owner: loggedUser!, // TODO -> fetch real owner
-				createAt: x.createAt
-			}));
+			const flats = data.map(
+				x =>
+					new Flat({
+						id: x.id,
+						name: x.name,
+						description: x.description,
+						ownerId: x.createBy,
+						createAt: x.createAt
+					})
+			);
 			dispatch({
 				type: FlatsActionTypes.Set,
 				payload: flats
@@ -74,5 +78,16 @@ export const fetchFlats = (): ThunkAction<
 			console.log(err);
 			throw err;
 		}
+	};
+};
+
+export const fetchFlatOwner = (): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<User, FlatsActionTypes.SetOwner>
+> => {
+	return async dispatch => {
+		throw new Error('Not implemented function.');
 	};
 };

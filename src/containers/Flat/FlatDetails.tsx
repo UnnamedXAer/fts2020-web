@@ -1,5 +1,5 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import {
 	Grid,
@@ -11,10 +11,12 @@ import {
 	TextField
 } from '@material-ui/core';
 import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
 import FlatMembers from '../../components/Flat/FlatMembers';
 import RootState from '../../store/storeTypes';
 import FlatTasks from './FlatTasks';
+import { fetchFlatOwner } from '../../store/actions/flats';
 
 interface Props extends RouteComponentProps {}
 
@@ -24,10 +26,17 @@ type RouterParams = {
 
 const FlatDetails: React.FC<Props> = props => {
 	const classes = useStyles();
+	const dispatch = useDispatch();
 	const id = +(props.match.params as RouterParams).id;
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find(x => x.id === id)
 	)!;
+
+	useEffect(() => {
+		if (flat.owner) {
+			dispatch(fetchFlatOwner());
+		}
+	}, [flat, dispatch]);
 
 	return (
 		<Grid container spacing={2} direction="column">
@@ -61,9 +70,16 @@ const FlatDetails: React.FC<Props> = props => {
 						>
 							{flat.name}
 						</Typography>
-						<Typography variant="subtitle1" color="textSecondary">
-							Created By {flat.owner!.emailAddress}
-						</Typography>
+						{flat.owner ? (
+							<Typography
+								variant="subtitle1"
+								color="textSecondary"
+							>
+								Created By {flat.owner!.emailAddress}
+							</Typography>
+						) : (
+							<Skeleton animation="wave" />
+						)}
 						<Typography variant="subtitle1" color="textSecondary">
 							{moment(flat.createAt).format('llll')}
 						</Typography>
