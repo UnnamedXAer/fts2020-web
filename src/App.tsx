@@ -1,4 +1,6 @@
-import React from 'react';
+import React
+// , { useRef } 
+from 'react';
 import 'typeface-roboto';
 import {
 	ThemeProvider,
@@ -14,6 +16,7 @@ import {
 	Switch,
 	Route,
 	Redirect,
+	// useHistory,
 } from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
@@ -22,6 +25,7 @@ import SignIn from './containers/Auth/SignIn/SignIn';
 import Flats from './containers/Flat/Flats';
 import RootState from './store/storeTypes';
 import FlatDetails from './containers/Flat/FlatDetails';
+import NewTask from './containers/Task/NewTask';
 
 const theme = createMuiTheme({
 	palette: {
@@ -37,6 +41,9 @@ const StyledApp = () => {
 	const classes = useStyles();
 	const user = useSelector((state: RootState) => state.auth.user);
 
+	// const history = useHistory();
+	// const initialRoute = useRef(history.location);
+	// console.log(initialRoute.current);
 	let layout = (
 		<>
 			<AppNavBar title="Flats" />
@@ -44,6 +51,7 @@ const StyledApp = () => {
 				<Container maxWidth="md" className={classes.container}>
 					<Switch>
 						<Route path="/flats/add" exact component={NewFlat} />
+						<Route path="/flats/:flatId/tasks/add" exact component={NewTask} />
 						<Route path="/flats/:id" component={FlatDetails} />
 						<Route path="/flats" component={Flats} />
 						<Route path="/" component={Flats} />
