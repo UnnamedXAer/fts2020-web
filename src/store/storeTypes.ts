@@ -26,7 +26,7 @@ export type AppReducer<TState, AType = string, APayload = any> = (
 	action: StoreAction<APayload, AType>
 ) => TState;
 
-export type SimpleReducer<S, P, A> = (state: S, action: StoreAction<P, A>) => S;
+export type SimpleReducer<S, P> = (state: S, action: StoreAction<P>) => S;
 
 type StoreActionPayload<T> = {
 	payload: T;

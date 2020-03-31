@@ -8,8 +8,7 @@ const initialState: TasksState = {
 
 const setFlats: SimpleReducer<
 	TasksState,
-	{ flatId: number; tasks: Task[] },
-	TasksActionTypes.Set
+	{ flatId: number; tasks: Task[] }
 > = (state, action) => {
 	const updatedFlatsTasks = {
 		...state.flatsTasks,

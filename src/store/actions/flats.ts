@@ -20,7 +20,7 @@ export const createFlat = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<Flat, FlatsActionTypes.Add>
+	StoreAction<Flat, string>
 > => {
 	return async dispatch => {
 		const url = '/flats';
@@ -53,7 +53,7 @@ export const fetchFlats = (): ThunkAction<
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<Flat[], FlatsActionTypes.Set>
+	StoreAction<Flat[], string>
 > => {
 	return async (dispatch, getState) => {
 		const loggedUser = getState().auth.user;

@@ -6,7 +6,7 @@ const initialState: FlatsState = {
 	flats: []
 };
 
-const setFlats: SimpleReducer<FlatsState, Flat[], FlatsActionTypes.Set> = (
+const setFlats: SimpleReducer<FlatsState, Flat[]> = (
 	state,
 	action
 ) => {
@@ -16,7 +16,7 @@ const setFlats: SimpleReducer<FlatsState, Flat[], FlatsActionTypes.Set> = (
 	};
 };
 
-const addFlat: SimpleReducer<FlatsState, Flat, FlatsActionTypes.Add> = (
+const addFlat: SimpleReducer<FlatsState, Flat> = (
 	state,
 	action
 ) => {
@@ -25,8 +25,9 @@ const addFlat: SimpleReducer<FlatsState, Flat, FlatsActionTypes.Add> = (
 		flats: state.flats.concat(action.payload)
 	};
 };
+console.log(Object.values(FlatsActionTypes));
 
-const reducer: AppReducer<FlatsState, number> = (
+const reducer: AppReducer<FlatsState, FlatsActionTypes> = (
 	state = initialState,
 	action
 ) => {
