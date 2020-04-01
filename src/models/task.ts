@@ -9,7 +9,7 @@ export enum TaskPeriodUnit {
 export default class Task {
 	id?: number;
 	flatId?: number;
-	title?: string;
+	name?: string;
 	description?: string;
 	startDate?: Date;
 	endDate?: Date;
@@ -23,7 +23,7 @@ export default class Task {
 		const {
 			id,
 			flatId,
-			title,
+			name,
 			description,
 			startDate,
 			endDate,
@@ -36,7 +36,7 @@ export default class Task {
 
 		this.id = id;
 		this.flatId = flatId;
-		this.title = title;
+		this.name = name;
 		this.description = description;
 		this.startDate = startDate;
 		this.endDate = endDate;

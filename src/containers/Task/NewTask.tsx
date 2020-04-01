@@ -5,64 +5,71 @@ import {
 	Grid,
 	Typography,
 	TextField,
-	Avatar,
 	Box,
-	IconButton,
 	CircularProgress,
 	Button,
 	useMediaQuery,
 	useTheme
 } from '@material-ui/core';
+import { KeyboardDatePicker } from '@material-ui/pickers';
 import { useSelector, useDispatch } from 'react-redux';
 import RootState from '../../store/storeTypes';
+import moment from 'moment';
 import useForm, {
 	ActionType,
 	FormAction,
 	FormState
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
-import { PhotoCamera } from '@material-ui/icons';
 import Flat from '../../models/flat';
-import validateFlatFormField from '../../utils/flatFormValidator';
-import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
+import validateTaskFormField, {
+	validateTaskDate
+} from '../../utils/taskFormValidator';
 import User from '../../models/user';
 import { createFlat } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { RouteComponentProps } from 'react-router-dom';
+import TransferList from '../../components/UI/TransferList';
+import Task, { TaskPeriodUnit } from '../../models/task';
+import { TaskFormValues } from '../../utils/taskFormValidator';
 
-interface Props extends RouteComponentProps {
-	flatId?: number;
-}
+interface Props extends RouteComponentProps {}
+type RouterParams = {
+	flatId: string;
+};
 
-const descriptionPlaceholder = `eg. lodgings ${new Date().getFullYear()}/10 - ${new Date().getFullYear() +
-	1}-07`;
-
-const NewTask: React.FC<Props> = ({ flatId, history, location }) => {
+const NewTask: React.FC<Props> = ({ history, match }) => {
 	const classes = useStyles();
-
 	const loggedUser = useSelector<RootState, User>(state => state.auth.user!);
 	const flat = useSelector((state: RootState) =>
-		state.flats.flats.find(x => x.id === flatId)
+		state.flats.flats.find(
+			x => x.id === +(match.params as RouterParams).flatId
+		)
 	);
-	const initialFormStateRef = useRef<FormState>({
-		formValidity: !!flatId,
+	const initialFormStateRef = useRef<FormState<TaskFormValues>>({
+		formValidity: false,
 		values: {
-			name: flat ? flat.name : '',
-			description: flat ? flat.description : '',
-			avatarUrl: ''
+			name: '',
+			description: '',
+			timePeriodUnit: TaskPeriodUnit.WEEK,
+			timePeriodValue: 1,
+			startDate: new Date(),
+			endDate: moment()
+				.add(6, 'months')
+				.toDate()
 		},
 		errors: {
 			name: null,
 			description: null,
-			avatarUrl: null
+			startDate: null,
+			endDate: null
 		}
 	});
 
 	const dispatch = useDispatch();
 
 	const [formState, formDispatch] = useForm(initialFormStateRef.current);
-	const [members, setMembers] = useState<User[]>([]);
-	const [membersLoading, setMembersLoading] = useState(false);
+	const [members, setMembers] = useState<User[]>(flat!.members!);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
@@ -100,81 +107,96 @@ const NewTask: React.FC<Props> = ({ flatId, history, location }) => {
 		formDispatch(action);
 	};
 
-	// const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = ev => {
-	// 	const { name } = ev.target;
-	// 	let error = validateFlatFormField(name, formState.values);
+	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = ev => {
+		const { name } = ev.target;
+		let error = validateTaskFormField(name, formState.values);
 
-	// 	const action: FormAction = {
-	// 		type: ActionType.SetError,
-	// 		fieldId: name,
-	// 		error: error
-	// 	};
+		const action: FormAction = {
+			type: ActionType.SetError,
+			fieldId: name,
+			error: error
+		};
 
-	// 	formDispatch(action);
-	// };
+		formDispatch(action);
+	};
 
-	// const updateMembersHandler = useCallback((newMembers: User[]) => {
-	// 	setMembers(newMembers);
-	// }, []);
+	const dateChangeHandler = (
+		fieldName: 'startDate' | 'endDate',
+		date: Date
+	) => {
+		const error = validateTaskDate(fieldName, formState.values, date);
+		const action: FormAction = {
+			type: ActionType.SetError,
+			fieldId: fieldName,
+			error: error
+		};
+		formDispatch(action);
+	};
 
-	// const updateMembersLoadingHandler = (isLoading: boolean) => {
-	// 	setMembersLoading(isLoading);
-	// };
+	const membersChangeHandler = useCallback(
+		(newMembers: number[]) => {
+			const selectedMembers = flat?.members?.filter(x =>
+				newMembers.includes(x.id)
+			)!;
+			setMembers(selectedMembers);
+		},
+		[flat]
+	);
 
-	// const submitHandler: React.FormEventHandler = async ev => {
-	// 	setError(null);
-	// 	setLoading(true);
+	const submitHandler: React.FormEventHandler = async ev => {
+		setError(null);
+		setLoading(true);
 
-	// 	for (const name in formState.values) {
-	// 		let error = validateFlatFormField(name, formState.values);
+		for (const name in formState.values) {
+			let error = validateTaskFormField(name, formState.values);
 
-	// 		const action: FormAction = {
-	// 			type: ActionType.SetError,
-	// 			fieldId: name,
-	// 			error: error
-	// 		};
+			const action: FormAction = {
+				type: ActionType.SetError,
+				fieldId: name,
+				error: error
+			};
 
-	// 		formDispatch(action);
-	// 	}
+			formDispatch(action);
+		}
 
-	// 	if (!formState.formValidity) {
-	// 		setError('Please correct marked fields.');
-	// 		setLoading(false);
-	// 		return;
-	// 	}
+		if (!formState.formValidity) {
+			setError('Please correct marked fields.');
+			setLoading(false);
+			return;
+		}
 
-	// 	const newFlat = new Flat({
-	// 		id: flat?.id,
-	// 		members: members,
-	// 		description: formState.values.description,
-	// 		name: formState.values.name,
-	// 		ownerId: loggedUser.id
-	// 	});
+		const newFlat = new Flat({
+			id: flat?.id,
+			members: members,
+			description: formState.values.description,
+			name: formState.values.name,
+			ownerId: loggedUser.id
+		});
 
-	// 	try {
-	// 		await dispatch(createFlat(newFlat));
-	// 		history.replace('/flats');
-	// 	} catch (err) {
-	// 		const errorData = new HttpErrorParser(err);
-	// 		const fieldsErrors = errorData.getFieldsErrors();
-	// 		fieldsErrors.forEach(x =>
-	// 			formDispatch({
-	// 				type: ActionType.SetError,
-	// 				fieldId: x.param,
-	// 				error: x.msg
-	// 			})
-	// 		);
+		try {
+			await dispatch(createFlat(newFlat));
+			history.replace('/flats');
+		} catch (err) {
+			const errorData = new HttpErrorParser(err);
+			const fieldsErrors = errorData.getFieldsErrors();
+			fieldsErrors.forEach(x =>
+				formDispatch({
+					type: ActionType.SetError,
+					fieldId: x.param,
+					error: x.msg
+				})
+			);
 
-	// 		setError(errorData.getMessage());
-	// 		setLoading(false);
-	// 	}
-	// };
+			setError(errorData.getMessage());
+			setLoading(false);
+		}
+	};
 
 	return (
 		<>
-			{/* <Box className={classes.header}>
+			<Box className={classes.header}>
 				<Typography variant="h3" align="center" color="primary">
-					{flatId ? 'Edit Task' : 'Add Task'}
+					Add Task
 				</Typography>
 			</Box>
 			<Box className={classes.gridContainer}>
@@ -227,7 +249,6 @@ const NewTask: React.FC<Props> = ({ flatId, history, location }) => {
 										<TextField
 											size={textFieldSize}
 											name="description"
-											placeholder={descriptionPlaceholder}
 											fullWidth
 											variant="outlined"
 											label="Description"
@@ -251,36 +272,39 @@ const NewTask: React.FC<Props> = ({ flatId, history, location }) => {
 									</Grid>
 								</Grid>
 							</Grid>
-
-							<Grid item md={3} style={{ display: 'none' }}>
-								<Box justifyContent="center" display="flex">
-									<Box
-										className={classes.avatarBox}
-										display="flex"
-										alignItems="center"
-										justifyContent="center"
-									>
-										<Avatar
-											alt="flat avatar"
-											src={formState.values.avatarUrl}
-											className={classes.avatar}
-										/>
-										<IconButton
-											className={classes.avatarCamera}
-											color="primary"
-											aria-label="upload picture"
-											component="span"
-											title="Add flat avatar"
-										>
-											<PhotoCamera />
-										</IconButton>
-									</Box>
-								</Box>
-							</Grid>
 						</Grid>
 					</Grid>
 					<Grid item>
-						<
+						<KeyboardDatePicker
+							value={formState.values.startDate}
+							onChange={date =>
+								dateChangeHandler('startDate', date)
+							}
+							minDate={new Date()}
+							format="MM/dd/yyyy"
+						/>
+						<KeyboardDatePicker
+							clearable
+							value={formState.values.endDate}
+							onChange={date =>
+								dateChangeHandler('endDate', date)
+							}
+							minDate={new Date()}
+							format="MM/dd/yyyy"
+						/>
+					</Grid>
+					<Grid item>
+						<TransferList
+							data={flat?.members!.map(user => {
+								return {
+									id: user.id,
+									labelPrimary: user.emailAddress,
+									labelSecondary: user.userName,
+									initialChecked: true
+								};
+							})}
+							onChanged={membersChangeHandler}
+						/>
 					</Grid>
 
 					<Grid item>
@@ -304,22 +328,19 @@ const NewTask: React.FC<Props> = ({ flatId, history, location }) => {
 										paddingLeft: 40,
 										paddingRight: 40
 									}}
-									disabled={
-										membersLoading ||
-										!formState.formValidity
-									}
+									disabled={!formState.formValidity}
 									onClick={submitHandler}
 									variant="contained"
 									color="primary"
 									type="submit"
 								>
-									{flatId ? 'Update' : 'Create'}
+									Create
 								</Button>
 							)}
 						</Box>
 					</Grid>
 				</Grid>
-			</Box> */}
+			</Box>
 		</>
 	);
 };

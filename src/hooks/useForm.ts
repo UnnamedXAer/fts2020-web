@@ -1,8 +1,8 @@
-import { useReducer, Dispatch } from 'react';
+import { useReducer, Dispatch, Reducer } from 'react';
 
 export enum ActionType {
-	UpdateValue,
-	SetError
+	UpdateValue = 'UPDATE',
+	SetError = 'SET_ERROR'
 }
 
 export type FormAction = SetValueAction | SetErrorAction;
@@ -19,17 +19,22 @@ interface SetErrorAction {
 	error: string | null;
 }
 
-export interface FormState {
+interface DefaultFormStateValues {
+	[formId: string]: string;
+}
+
+export interface FormState<T = DefaultFormStateValues> {
 	formValidity: boolean;
-	values: {
-		[formId: string]: string;
-	};
+	values: T;
 	errors: {
 		[formId: string]: string | null;
 	};
 }
 
-const formReducer = (state: FormState, action: FormAction): FormState => {
+const formReducer = <T = DefaultFormStateValues>(
+	state: FormState<T>,
+	action: FormAction
+): FormState<T> => {
 	switch (action.type) {
 		case ActionType.UpdateValue:
 			const updatedValues = {
@@ -62,10 +67,13 @@ const formReducer = (state: FormState, action: FormAction): FormState => {
 	}
 };
 
-const useForm = (
-	initialState: FormState
-): [FormState, Dispatch<FormAction>] => {
-	const [state, dispatch] = useReducer(formReducer, initialState);
+const useForm = <T = DefaultFormStateValues>(
+	initialState: FormState<T>
+): [FormState<T>, Dispatch<FormAction>] => {
+	const [state, dispatch] = useReducer<Reducer<FormState<T>, FormAction>>(
+		formReducer,
+		initialState
+	);
 
 	return [state, dispatch];
 };

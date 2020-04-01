@@ -1,15 +1,13 @@
 import { AppReducer, FlatsState, SimpleReducer } from '../storeTypes';
 import { FlatsActionTypes } from '../actions/actionTypes';
 import Flat from '../../models/flat';
+import User from '../../models/user';
 
 const initialState: FlatsState = {
 	flats: []
 };
 
-const setFlats: SimpleReducer<FlatsState, Flat[]> = (
-	state,
-	action
-) => {
+const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
 	return {
 		...state,
 		flats: action.payload
@@ -36,6 +34,10 @@ const reducer: AppReducer<FlatsState, FlatsActionTypes> = (
 			return setFlats(state, action);
 		case FlatsActionTypes.Add:
 			return addFlat(state, action);
+		case FlatsActionTypes.SetOwner:
+			return setOwner(state, action);
+		case FlatsActionTypes.SetMembers:
+			return setMembers(state, action);
 		default:
 			return state;
 	}

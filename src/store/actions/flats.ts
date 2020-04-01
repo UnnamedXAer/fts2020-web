@@ -16,12 +16,7 @@ type APIFlat = {
 
 export const createFlat = (
 	flat: Flat
-): ThunkAction<
-	Promise<void>,
-	RootState,
-	any,
-	StoreAction<Flat, string>
-> => {
+): ThunkAction<Promise<void>, RootState, any, StoreAction<Flat, string>> => {
 	return async dispatch => {
 		const url = '/flats';
 		try {

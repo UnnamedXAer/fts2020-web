@@ -31,7 +31,7 @@ export const authorize = (
 				data.user.userName,
 				data.user.provider,
 				new Date(data.user.joinDate),
-				data.user.avatarUtl,
+				data.user.avatarUrl,
 				data.user.active
 			);
 

@@ -18,7 +18,12 @@ function intersection(a: number[], b: number[]) {
 }
 
 interface Props {
-	data: { id: number; label: string; initialChecked: boolean }[];
+	data: {
+		id: number;
+		labelPrimary: string;
+		labelSecondary?: string;
+		initialChecked?: boolean;
+	}[];
 	onChanged: (rightData: number[]) => void;
 }
 
@@ -79,7 +84,7 @@ const TransferList: React.FC<Props> = ({ data, onChanged }) => {
 			<List dense component="div" role="list">
 				{items.map((itemId: number) => {
 					const labelId = `transfer-list-item-${itemId}-label`;
-
+					const item = data.find(x => x.id === itemId)!; 
 					return (
 						<ListItem
 							key={itemId}
@@ -97,7 +102,8 @@ const TransferList: React.FC<Props> = ({ data, onChanged }) => {
 							</ListItemIcon>
 							<ListItemText
 								id={labelId}
-								primary={data.find(x => x.id === itemId)!.label}
+								primary={item.labelPrimary}
+								secondary={item.labelSecondary}
 							/>
 						</ListItem>
 					);
