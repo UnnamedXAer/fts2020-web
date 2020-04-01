@@ -14,16 +14,52 @@ const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
 	};
 };
 
-const addFlat: SimpleReducer<FlatsState, Flat> = (
-	state,
-	action
-) => {
+const addFlat: SimpleReducer<FlatsState, Flat> = (state, action) => {
 	return {
 		...state,
 		flats: state.flats.concat(action.payload)
 	};
 };
-console.log(Object.values(FlatsActionTypes));
+
+const setOwner: SimpleReducer<FlatsState, { user: User; flatId: number }> = (
+	state,
+	action
+) => {
+	const updatedFlats = [...state.flats];
+	const flatIndex = updatedFlats.findIndex(
+		x => x.id === action.payload.flatId
+	);
+	const updatedFlat = {
+		...updatedFlats[flatIndex],
+		owner: action.payload.user
+	};
+	updatedFlats[flatIndex] = updatedFlat;
+
+	return {
+		...state,
+		flats: updatedFlats
+	};
+};
+
+const setMembers: SimpleReducer<
+	FlatsState,
+	{ flatId: number; members: User[] }
+> = (state, action) => {
+	const updatedFlats = [...state.flats];
+	const flatIndex = updatedFlats.findIndex(
+		x => x.id === action.payload.flatId
+	);
+	const updatedFlat = {
+		...updatedFlats[flatIndex],
+		members: action.payload.members
+	};
+	updatedFlats[flatIndex] = updatedFlat;
+
+	return {
+		...state,
+		flats: updatedFlats
+	};
+};
 
 const reducer: AppReducer<FlatsState, FlatsActionTypes> = (
 	state = initialState,

@@ -76,13 +76,77 @@ export const fetchFlats = (): ThunkAction<
 	};
 };
 
-export const fetchFlatOwner = (): ThunkAction<
+export const fetchFlatOwner = (
+	userId: number,
+	flatId: number
+): ThunkAction<
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<User, FlatsActionTypes.SetOwner>
+	StoreAction<{ user: User; flatId: number }, FlatsActionTypes.SetOwner>
 > => {
 	return async dispatch => {
-		throw new Error('Not implemented function.');
+		const url = `/users/${userId}`;
+		try {
+			const { data } = await axios.get(url);
+
+			const user = new User(
+				data.id,
+				data.emailAddress,
+				data.userName,
+				data.provider,
+				new Date(data.joinDate),
+				data.avatarUrl,
+				data.active
+			);
+
+			dispatch({
+				type: FlatsActionTypes.SetOwner,
+				payload: {
+					user,
+					flatId
+				}
+			});
+		} catch (err) {
+			console.log(err);
+			throw err;
+		}
+	};
+};
+
+export const fetchFlatMembers = (
+	flatId: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<User[], FlatsActionTypes.SetMembers>
+> => {
+	return async dispatch => {
+		const url = `/flats/${flatId}/members`;
+		try {
+			const { data } = await axios.get(url);
+
+			const members = data.map(
+				(user: any) =>
+					new User(
+						user.id,
+						user.emailAddress,
+						user.userName,
+						user.provider,
+						new Date(user.joinDate),
+						user.avatarUrl,
+						user.active
+					)
+			);
+			console.log(members);
+			dispatch({
+				type: FlatsActionTypes.SetMembers,
+				payload: members
+			});
+		} catch (err) {
+			console.log(err);
+			throw err;
+		}
 	};
 };

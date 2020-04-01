@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import {
@@ -20,7 +20,8 @@ import moment from 'moment';
 import FlatMembers from '../../components/Flat/FlatMembers';
 import RootState from '../../store/storeTypes';
 import FlatTasks from './FlatTasks';
-import { fetchFlatOwner } from '../../store/actions/flats';
+import { fetchFlatOwner, fetchFlatMembers } from '../../store/actions/flats';
+import { StateError } from '../../ReactTypes/cutsomReactTypes';
 
 interface Props extends RouteComponentProps {}
 
@@ -31,16 +32,61 @@ type RouterParams = {
 const FlatDetails: React.FC<Props> = props => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
+
 	const id = +(props.match.params as RouterParams).id;
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find(x => x.id === id)
 	)!;
 
+	const [loadingElements, setLoadingElements] = useState({
+		owner: !!flat.owner,
+		members: !!flat.members
+	});
+
+	const [elementsErrors, setElementsErrors] = useState<{
+		owner: StateError;
+		members: StateError;
+	}>({
+		owner: null,
+		members: null
+	});
+
 	useEffect(() => {
-		if (flat.owner) {
-			dispatch(fetchFlatOwner());
+		throw new Error('Method not implemented.');
+		const loadOwner = async () => {
+			setLoadingElements(prevState => ({ ...prevState, owner: true }));
+			try {
+				await dispatch(fetchFlatOwner(flat.ownerId, flat.id!));
+			} catch (err) {
+				setElementsErrors(prevState => ({
+					...prevState,
+					owner: err.message
+				}));
+			}
+			setLoadingElements(prevState => ({ ...prevState, owner: false }));
+		};
+
+		if (!flat.owner && !loadingElements.owner && ! elementsErrors.owner) {
+			loadOwner();
 		}
-	}, [flat, dispatch]);
+
+		const loadMembers = async () => {
+			setLoadingElements(prevState => ({ ...prevState, members: true }));
+			try {
+				await dispatch(fetchFlatMembers(flat.id!));
+			} catch (err) {
+				setElementsErrors(prevState => ({
+					...prevState,
+					members: err.message
+				}));
+			}
+			setLoadingElements(prevState => ({ ...prevState, members: false }));
+		};
+
+		if (!flat.members && !loadingElements.members && !elementsErrors.members) {
+			loadMembers();
+		}
+	}, [flat, dispatch, loadingElements, elementsErrors]);
 
 	return (
 		<>
@@ -111,7 +157,10 @@ const FlatDetails: React.FC<Props> = props => {
 						<Typography variant="h5" component="h3">
 							Members
 						</Typography>
-						<FlatMembers loading={false} members={flat.members} />
+						<FlatMembers
+							loading={!flat.members}
+							members={flat.members}
+						/>
 					</Grid>
 					<Grid item>
 						<Typography variant="h5" component="h3">
@@ -121,15 +170,19 @@ const FlatDetails: React.FC<Props> = props => {
 					</Grid>
 				</Grid>
 			</Grid>
-			<Fab
-				onClick={() => props.history.push(`/flats/${flat.id}/tasks/add`)}
-				size="medium"
-				color="secondary"
-				aria-label="add"
-				className={[classes.margin, classes.fab].join(' ')}
-			>
-				<AddIcon style={{color: 'white'}} />
-			</Fab>
+			{flat.members && (
+				<Fab
+					onClick={() =>
+						props.history.push(`/flats/${flat.id}/tasks/add`)
+					}
+					size="medium"
+					color="secondary"
+					aria-label="add"
+					className={[classes.margin, classes.fab].join(' ')}
+				>
+					<AddIcon style={{ color: 'white' }} />
+				</Fab>
+			)}
 		</>
 	);
 };
