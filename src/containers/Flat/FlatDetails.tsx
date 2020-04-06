@@ -52,7 +52,6 @@ const FlatDetails: React.FC<Props> = props => {
 	});
 
 	useEffect(() => {
-		throw new Error('Method not implemented.');
 		const loadOwner = async () => {
 			setLoadingElements(prevState => ({ ...prevState, owner: true }));
 			try {

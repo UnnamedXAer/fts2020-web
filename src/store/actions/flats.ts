@@ -120,7 +120,7 @@ export const fetchFlatMembers = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<User[], FlatsActionTypes.SetMembers>
+	StoreAction<{flatId: number, members: User[]}, FlatsActionTypes.SetMembers>
 > => {
 	return async dispatch => {
 		const url = `/flats/${flatId}/members`;
@@ -142,7 +142,10 @@ export const fetchFlatMembers = (
 			console.log(members);
 			dispatch({
 				type: FlatsActionTypes.SetMembers,
-				payload: members
+				payload: {
+					members,
+					flatId 
+				}	
 			});
 		} catch (err) {
 			console.log(err);
