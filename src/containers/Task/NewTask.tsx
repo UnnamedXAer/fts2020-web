@@ -9,21 +9,29 @@ import {
 	CircularProgress,
 	Button,
 	useMediaQuery,
-	useTheme
+	useTheme,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
 } from '@material-ui/core';
-import { KeyboardDatePicker } from '@material-ui/pickers';
+import {
+	KeyboardDatePicker,
+	MuiPickersUtilsProvider,
+} from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
 import { useSelector, useDispatch } from 'react-redux';
 import RootState from '../../store/storeTypes';
 import moment from 'moment';
 import useForm, {
 	ActionType,
 	FormAction,
-	FormState
+	FormState,
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
 import Flat from '../../models/flat';
 import validateTaskFormField, {
-	validateTaskDate
+	validateTaskDate,
 } from '../../utils/taskFormValidator';
 import User from '../../models/user';
 import { createFlat } from '../../store/actions/flats';
@@ -32,6 +40,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import TransferList from '../../components/UI/TransferList';
 import Task, { TaskPeriodUnit } from '../../models/task';
 import { TaskFormValues } from '../../utils/taskFormValidator';
+import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 
 interface Props extends RouteComponentProps {}
 type RouterParams = {
@@ -40,10 +49,12 @@ type RouterParams = {
 
 const NewTask: React.FC<Props> = ({ history, match }) => {
 	const classes = useStyles();
-	const loggedUser = useSelector<RootState, User>(state => state.auth.user!);
+	const loggedUser = useSelector<RootState, User>(
+		(state) => state.auth.user!
+	);
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find(
-			x => x.id === +(match.params as RouterParams).flatId
+			(x) => x.id === +(match.params as RouterParams).flatId
 		)
 	);
 	const initialFormStateRef = useRef<FormState<TaskFormValues>>({
@@ -53,22 +64,22 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 			description: '',
 			timePeriodUnit: TaskPeriodUnit.WEEK,
 			timePeriodValue: 1,
-			startDate: new Date(),
-			endDate: moment()
-				.add(6, 'months')
-				.toDate()
+			startDate: moment(),
+			endDate: moment().add(6, 'months'),
 		},
 		errors: {
 			name: null,
 			description: null,
-			startDate: null,
-			endDate: null
-		}
+			dates: null,
+			timePeriodValue: null,
+		},
 	});
 
 	const dispatch = useDispatch();
 
-	const [formState, formDispatch] = useForm(initialFormStateRef.current);
+	const [formState, formDispatch] = useForm<TaskFormValues>(
+		initialFormStateRef.current
+	);
 	const [members, setMembers] = useState<User[]>(flat!.members!);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -95,26 +106,30 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 		};
 	});
 
-	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = ev => {
+	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
+		ev
+	) => {
 		const { name, value } = ev.target;
 
 		const action: FormAction = {
 			type: ActionType.UpdateValue,
 			fieldId: name,
-			value: value
+			value: value,
 		};
 
 		formDispatch(action);
 	};
 
-	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = ev => {
+	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = (
+		ev
+	) => {
 		const { name } = ev.target;
 		let error = validateTaskFormField(name, formState.values);
 
 		const action: FormAction = {
 			type: ActionType.SetError,
 			fieldId: name,
-			error: error
+			error: error,
 		};
 
 		formDispatch(action);
@@ -122,20 +137,27 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 
 	const dateChangeHandler = (
 		fieldName: 'startDate' | 'endDate',
-		date: Date
+		date: MaterialUiPickersDate
 	) => {
 		const error = validateTaskDate(fieldName, formState.values, date);
-		const action: FormAction = {
+		const errorAction: FormAction = {
 			type: ActionType.SetError,
-			fieldId: fieldName,
-			error: error
+			fieldId: 'dates',
+			error: error,
 		};
-		formDispatch(action);
+		formDispatch(errorAction);
+
+		const valueAction: FormAction<MaterialUiPickersDate> = {
+			type: ActionType.UpdateValue,
+			fieldId: fieldName,
+			value: date,
+		};
+		formDispatch(valueAction);
 	};
 
 	const membersChangeHandler = useCallback(
 		(newMembers: number[]) => {
-			const selectedMembers = flat?.members?.filter(x =>
+			const selectedMembers = flat?.members?.filter((x) =>
 				newMembers.includes(x.id)
 			)!;
 			setMembers(selectedMembers);
@@ -143,7 +165,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 		[flat]
 	);
 
-	const submitHandler: React.FormEventHandler = async ev => {
+	const submitHandler: React.FormEventHandler = async (ev) => {
 		setError(null);
 		setLoading(true);
 
@@ -152,8 +174,9 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 
 			const action: FormAction = {
 				type: ActionType.SetError,
-				fieldId: name,
-				error: error
+				fieldId:
+					name === 'startDate' || name === 'endDate' ? 'dates' : name,
+				error: error,
 			};
 
 			formDispatch(action);
@@ -170,7 +193,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 			members: members,
 			description: formState.values.description,
 			name: formState.values.name,
-			ownerId: loggedUser.id
+			ownerId: loggedUser.id,
 		});
 
 		try {
@@ -179,11 +202,11 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach(x =>
+			fieldsErrors.forEach((x) =>
 				formDispatch({
 					type: ActionType.SetError,
 					fieldId: x.param,
-					error: x.msg
+					error: x.msg,
 				})
 			);
 
@@ -193,7 +216,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 	};
 
 	return (
-		<>
+		<MuiPickersUtilsProvider utils={MomentUtils}>
 			<Box className={classes.header}>
 				<Typography variant="h3" align="center" color="primary">
 					Add Task
@@ -274,33 +297,90 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 							</Grid>
 						</Grid>
 					</Grid>
+					<Grid
+						item
+						container
+						direction="row"
+						justify="space-around"
+						alignItems="center"
+					>
+						<Grid item>
+							<TextField
+								size={textFieldSize}
+								name="timePeriodValue"
+								fullWidth
+								variant="outlined"
+								label="Period duration values"
+								type="number"
+								disabled={loading}
+								rows={1}
+								value={formState.values.timePeriodValue}
+								error={!!formState.errors.timePeriodValue}
+								onChange={fieldChangeHandler}
+								onBlur={fieldBlurHandler}
+							/>
+						</Grid>
+						<Grid item>
+							<FormControl variant="outlined" size={textFieldSize}>
+								<InputLabel id="timePeriodUnit-label-id">
+									Age
+								</InputLabel>
+								<Select
+									labelId="timePeriodUnit-label-id"
+									id="timePeriodUnit-id"
+									name="timePeriodUnit"
+									value={formState.values.timePeriodUnit}
+									onChange={(ev, el) => {
+										fieldChangeHandler(
+											ev as React.ChangeEvent<
+												HTMLInputElement
+											>
+										);
+									}}
+									label="Period duration Unit"
+								>
+									{Object.keys(TaskPeriodUnit).map((key) => {
+										return (
+											<MenuItem key={key} value={key}>
+												{key}
+											</MenuItem>
+										);
+									})}
+								</Select>
+							</FormControl>
+						</Grid>
+					</Grid>
 					<Grid item>
 						<KeyboardDatePicker
 							value={formState.values.startDate}
-							onChange={date =>
+							onChange={(date) =>
 								dateChangeHandler('startDate', date)
 							}
 							minDate={new Date()}
-							format="MM/dd/yyyy"
+							// format="MM/dd/yyyy"
 						/>
 						<KeyboardDatePicker
-							clearable
 							value={formState.values.endDate}
-							onChange={date =>
+							onChange={(date) =>
 								dateChangeHandler('endDate', date)
 							}
 							minDate={new Date()}
-							format="MM/dd/yyyy"
+							// format="MM/dd/yyyy"
 						/>
+						{formState.errors.dates && (
+							<p className={classes.fieldError}>
+								{formState.errors.dates}
+							</p>
+						)}
 					</Grid>
 					<Grid item>
 						<TransferList
-							data={flat?.members!.map(user => {
+							data={flat?.members!.map((user) => {
 								return {
 									id: user.id,
 									labelPrimary: user.emailAddress,
 									labelSecondary: user.userName,
-									initialChecked: true
+									initialChecked: true,
 								};
 							})}
 							onChanged={membersChangeHandler}
@@ -326,7 +406,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 								<Button
 									style={{
 										paddingLeft: 40,
-										paddingRight: 40
+										paddingRight: 40,
 									}}
 									disabled={!formState.formValidity}
 									onClick={submitHandler}
@@ -341,56 +421,56 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 					</Grid>
 				</Grid>
 			</Box>
-		</>
+		</MuiPickersUtilsProvider>
 	);
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
-		margin: theme.spacing(4, 0, 2)
+		margin: theme.spacing(4, 0, 2),
 	},
 	paper: {
 		padding: 30,
-		margin: 20
+		margin: 20,
 	},
 	header: {
-		paddingBottom: theme.spacing(2)
+		paddingBottom: theme.spacing(2),
 	},
 	gridContainer: {
 		width: '100%',
 		display: 'flex',
-		justifyContent: 'center'
+		justifyContent: 'center',
 	},
 	avatarBox: {
 		position: 'relative',
 		width: theme.spacing(12),
-		height: theme.spacing(12)
+		height: theme.spacing(12),
 	},
 	avatar: {
 		width: '100%',
-		height: '100%'
+		height: '100%',
 	},
 	avatarCamera: {
 		position: 'absolute',
 		bottom: -10,
 		right: -10,
-		background: 'white'
+		background: 'white',
 	},
 	fieldError: {
 		color: theme.palette.error.main,
 		fontSize: '0.7em',
 		height: '0.8em',
-		marginBlockStart: '0.2em'
+		marginBlockStart: '0.2em',
 	},
 	submitWrapper: {
 		justifyContent: 'center',
 		alignItems: 'center',
-		display: 'flex'
+		display: 'flex',
 	},
 	formErrorText: {
 		color: theme.palette.error.main,
-		fontWeight: 'bold'
-	}
+		fontWeight: 'bold',
+	},
 }));
 
 export default NewTask;

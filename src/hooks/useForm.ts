@@ -5,35 +5,35 @@ export enum ActionType {
 	SetError = 'SET_ERROR'
 }
 
-export type FormAction = SetValueAction | SetErrorAction;
+export type FormAction<T = any> = SetValueAction<T> | SetErrorAction<T>;
 
-interface SetValueAction {
+interface SetValueAction<T = any> {
 	type: ActionType.UpdateValue;
 	fieldId: string;
-	value: string;
+	value: T;
 }
 
-interface SetErrorAction {
+interface SetErrorAction<T = string | null> {
 	type: ActionType.SetError;
 	fieldId: string;
-	error: string | null;
+	error:T;
 }
 
 interface DefaultFormStateValues {
-	[formId: string]: string;
+	[fieldId: string]: any;
 }
 
 export interface FormState<T = DefaultFormStateValues> {
 	formValidity: boolean;
 	values: T;
 	errors: {
-		[formId: string]: string | null;
+		[fieldId: string]: string | null;
 	};
 }
 
 const formReducer = <T = DefaultFormStateValues>(
 	state: FormState<T>,
-	action: FormAction
+	action: SetValueAction | SetErrorAction
 ): FormState<T> => {
 	switch (action.type) {
 		case ActionType.UpdateValue:
@@ -50,7 +50,7 @@ const formReducer = <T = DefaultFormStateValues>(
 		case ActionType.SetError:
 			const updatedErrors = {
 				...state.errors,
-				[action.fieldId]: action.error
+				[action.fieldId]: action.error,
 			};
 
 			const updatedFormValidity = !Object.values(updatedErrors).some(
@@ -67,9 +67,9 @@ const formReducer = <T = DefaultFormStateValues>(
 	}
 };
 
-const useForm = <T = DefaultFormStateValues>(
+const useForm = <T, U = any>(
 	initialState: FormState<T>
-): [FormState<T>, Dispatch<FormAction>] => {
+): [FormState<T>, Dispatch<FormAction<U>>] => {
 	const [state, dispatch] = useReducer<Reducer<FormState<T>, FormAction>>(
 		formReducer,
 		initialState

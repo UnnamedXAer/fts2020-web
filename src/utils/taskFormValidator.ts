@@ -1,8 +1,11 @@
 import { TaskPeriodUnit } from '../models/task';
+import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
+import moment from 'moment';
 
 export default function validateTaskFormField(
 	fieldId: string,
-	formValues: TaskFormValues
+	formValues: TaskFormValues, 
+	currentValue?: unknown
 ): string | null {
 	let error = null;
 	switch (fieldId) {
@@ -12,7 +15,7 @@ export default function validateTaskFormField(
 				'administrator',
 				'moderator',
 				'null',
-				'undefined'
+				'undefined',
 			];
 			if (formValues[fieldId].length < 2) {
 				error = 'The Name must be minimum 2 characters long.';
@@ -27,6 +30,7 @@ export default function validateTaskFormField(
 			break;
 		case 'startDate':
 		case 'endDate':
+			error = validateTaskDate(fieldId, formValues, (currentValue ? currentValue : formValues[fieldId]) as MaterialUiPickersDate);
 			break;
 		default:
 			break;
@@ -35,20 +39,22 @@ export default function validateTaskFormField(
 	return error;
 }
 
+console.log("moment().startOf('day') ", moment().startOf('day'));
+
 export const validateTaskDate = (
 	fieldName: 'startDate' | 'endDate',
 	formValues: TaskFormValues,
-	date: Date
+	date: MaterialUiPickersDate
 ): string | null => {
 	let error = null;
 	if (date) {
-		if (date > new Date()) {
+		if (date.isAfter(moment().subtract(1, 'day'))) {
 			if (fieldName === 'startDate') {
-				if (formValues.endDate && date >= formValues.endDate) {
+				if (formValues.endDate && date.isBefore(formValues.endDate)) {
 					error = 'Start Date must be lesser than End Date.';
 				}
 			} else {
-				if (formValues.startDate && date <= formValues.startDate) {
+				if (formValues.startDate && date.isBefore(formValues.startDate)) {
 					error = 'End Date must be greater than Start Date.';
 				}
 			}
@@ -64,6 +70,6 @@ export interface TaskFormValues {
 	description: string;
 	timePeriodUnit: TaskPeriodUnit;
 	timePeriodValue: number;
-	startDate: Date;
-	endDate: Date;
+	startDate: moment.Moment;
+	endDate: moment.Moment;
 }
