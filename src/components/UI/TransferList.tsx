@@ -25,16 +25,23 @@ interface Props {
 		initialChecked?: boolean;
 	}[];
 	onChanged: (rightData: number[]) => void;
+	listStyle?: React.CSSProperties;
+	disabled?: boolean
 }
 
-const TransferList: React.FC<Props> = ({ data, onChanged }) => {
+const TransferList: React.FC<Props> = ({
+	data,
+	onChanged,
+	listStyle,
+	disabled,
+}) => {
 	const classes = useStyles();
 	const [checked, setChecked] = React.useState<number[]>([]);
 	const [left, setLeft] = React.useState(
-		data.filter(x => !x.initialChecked).map(x => x.id)
+		data.filter((x) => !x.initialChecked).map((x) => x.id)
 	);
 	const [right, setRight] = React.useState(
-		data.filter(x => x.initialChecked).map(x => x.id)
+		data.filter((x) => x.initialChecked).map((x) => x.id)
 	);
 
 	const leftChecked = intersection(checked, left);
@@ -80,11 +87,11 @@ const TransferList: React.FC<Props> = ({ data, onChanged }) => {
 	};
 
 	const customList = (items: number[]) => (
-		<Paper className={classes.paper}>
+		<Paper className={classes.paper} style={listStyle}>
 			<List dense component="div" role="list">
 				{items.map((itemId: number) => {
 					const labelId = `transfer-list-item-${itemId}-label`;
-					const item = data.find(x => x.id === itemId)!; 
+					const item = data.find((x) => x.id === itemId)!;
 					return (
 						<ListItem
 							key={itemId}
@@ -129,7 +136,7 @@ const TransferList: React.FC<Props> = ({ data, onChanged }) => {
 						size="small"
 						className={classes.button}
 						onClick={handleAllRight}
-						disabled={left.length === 0}
+						disabled={disabled || left.length === 0}
 						aria-label="move all right"
 					>
 						≫
@@ -139,7 +146,7 @@ const TransferList: React.FC<Props> = ({ data, onChanged }) => {
 						size="small"
 						className={classes.button}
 						onClick={handleCheckedRight}
-						disabled={leftChecked.length === 0}
+						disabled={disabled || leftChecked.length === 0}
 						aria-label="move selected right"
 					>
 						&gt;
@@ -149,7 +156,7 @@ const TransferList: React.FC<Props> = ({ data, onChanged }) => {
 						size="small"
 						className={classes.button}
 						onClick={handleCheckedLeft}
-						disabled={rightChecked.length === 0}
+						disabled={disabled || rightChecked.length === 0}
 						aria-label="move selected left"
 					>
 						&lt;
@@ -159,7 +166,7 @@ const TransferList: React.FC<Props> = ({ data, onChanged }) => {
 						size="small"
 						className={classes.button}
 						onClick={handleAllLeft}
-						disabled={right.length === 0}
+						disabled={disabled || right.length === 0}
 						aria-label="move all left"
 					>
 						≪

@@ -227,7 +227,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 					container
 					spacing={2}
 					direction="column"
-					style={{ maxWidth: '550px' }}
+					style={{ maxWidth: '600px' }}
 				>
 					<Grid item>
 						<Grid
@@ -249,7 +249,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 										<TextField
 											size={textFieldSize}
 											name="name"
-											placeholder="eg. flat, avenue 12a"
+											placeholder="weekly cleaning"
 											fullWidth
 											variant="outlined"
 											label="Name"
@@ -262,9 +262,11 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 											onBlur={fieldBlurHandler}
 										/>
 										{formState.errors.name && (
-											<p className={classes.fieldError}>
+											<Typography
+												className={classes.fieldError}
+											>
 												{formState.errors.name}
-											</p>
+											</Typography>
 										)}
 									</Grid>
 
@@ -288,9 +290,11 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 											onBlur={fieldBlurHandler}
 										/>
 										{formState.errors.description && (
-											<p className={classes.fieldError}>
+											<Typography
+												className={classes.fieldError}
+											>
 												{formState.errors.description}
-											</p>
+											</Typography>
 										)}
 									</Grid>
 								</Grid>
@@ -303,32 +307,26 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 						direction="row"
 						justify="space-around"
 						alignItems="center"
+						spacing={2}
 					>
 						<Grid item>
-							<TextField
-								size={textFieldSize}
-								name="timePeriodValue"
-								fullWidth
+							<FormControl
 								variant="outlined"
-								label="Period duration values"
-								type="number"
-								disabled={loading}
-								rows={1}
-								value={formState.values.timePeriodValue}
-								error={!!formState.errors.timePeriodValue}
-								onChange={fieldChangeHandler}
-								onBlur={fieldBlurHandler}
-							/>
-						</Grid>
-						<Grid item>
-							<FormControl variant="outlined" size={textFieldSize}>
-								<InputLabel id="timePeriodUnit-label-id">
-									Age
+								size={textFieldSize}
+								fullWidth
+							>
+								<InputLabel
+									id="timePeriodUnit-label-id"
+									htmlFor="timePeriodUnit-id"
+								>
+									Period duration Unit
 								</InputLabel>
 								<Select
-									labelId="timePeriodUnit-label-id"
+									style={{ width: '185px' }}
 									id="timePeriodUnit-id"
 									name="timePeriodUnit"
+									labelId="timePeriodUnit-label-id"
+									label="Period duration Unit"
 									value={formState.values.timePeriodUnit}
 									onChange={(ev, el) => {
 										fieldChangeHandler(
@@ -337,44 +335,91 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 											>
 										);
 									}}
-									label="Period duration Unit"
+									disabled={loading}
 								>
-									{Object.keys(TaskPeriodUnit).map((key) => {
-										return (
-											<MenuItem key={key} value={key}>
-												{key}
-											</MenuItem>
-										);
-									})}
+									<MenuItem value={'DAY'}>Day</MenuItem>
+									<MenuItem value={'WEEK'}>Week</MenuItem>
+									<MenuItem value={'MONTH'}>Month</MenuItem>
 								</Select>
 							</FormControl>
 						</Grid>
+						<Grid item>
+							<TextField
+								style={{ width: '185px' }}
+								size={textFieldSize}
+								name="timePeriodValue"
+								variant="outlined"
+								label="Period duration value"
+								type="number"
+								inputMode="numeric"
+								required
+								inputProps={{
+									max: 30,
+									min: 1
+								}}
+								disabled={loading}
+								value={formState.values.timePeriodValue}
+								error={!!formState.errors.timePeriodValue}
+								onChange={fieldChangeHandler}
+								onBlur={fieldBlurHandler}
+							/>
+						</Grid>
 					</Grid>
-					<Grid item>
-						<KeyboardDatePicker
-							value={formState.values.startDate}
-							onChange={(date) =>
-								dateChangeHandler('startDate', date)
-							}
-							minDate={new Date()}
-							// format="MM/dd/yyyy"
-						/>
-						<KeyboardDatePicker
-							value={formState.values.endDate}
-							onChange={(date) =>
-								dateChangeHandler('endDate', date)
-							}
-							minDate={new Date()}
-							// format="MM/dd/yyyy"
-						/>
-						{formState.errors.dates && (
-							<p className={classes.fieldError}>
-								{formState.errors.dates}
-							</p>
-						)}
+					<Grid
+						item
+						container
+						direction="column"
+						justify="center"
+						alignItems="center"
+					>
+						<Grid
+							item
+							container
+							direction="row"
+							justify="space-around"
+							alignItems="center"
+							spacing={2}
+						>
+							<Grid item>
+								<KeyboardDatePicker
+									error={!!formState.errors.dates}
+									label="Start Date"
+									inputVariant="outlined"
+									value={formState.values.startDate}
+									onChange={(date) =>
+										dateChangeHandler('startDate', date)
+									}
+									minDate={new Date()}
+									format="Do MMMM YYYY"
+								/>
+							</Grid>
+							<Grid item>
+								<KeyboardDatePicker
+									error={!!formState.errors.dates}
+									label="End Date"
+									inputVariant="outlined"
+									value={formState.values.endDate}
+									onChange={(date) =>
+										dateChangeHandler('endDate', date)
+									}
+									minDate={new Date()}
+									format="Do MMMM YYYY"
+								/>
+							</Grid>
+						</Grid>
+						<Grid item>
+							{formState.errors.dates && (
+								<Typography className={classes.fieldError}>
+									{formState.errors.dates}
+								</Typography>
+							)}
+						</Grid>
 					</Grid>
 					<Grid item>
 						<TransferList
+						listStyle={{
+							minWidth: '225px'
+						}}
 							data={flat?.members!.map((user) => {
 								return {
 									id: user.id,
@@ -384,6 +429,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 								};
 							})}
 							onChanged={membersChangeHandler}
+							disabled={loading}
 						/>
 					</Grid>
 
