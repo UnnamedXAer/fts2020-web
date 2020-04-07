@@ -6,6 +6,7 @@ import Task from '../models/task';
 export type RootState = {
 	auth: AuthState;
 	flats: FlatsState;
+	tasks: TasksState;
 };
 
 export type AuthState = {

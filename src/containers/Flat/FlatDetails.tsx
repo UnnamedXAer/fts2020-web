@@ -9,11 +9,11 @@ import {
 	Theme,
 	createStyles,
 	TextField,
-	Fab
+	Fab,
 } from '@material-ui/core';
 import {
 	HomeWorkOutlined as HomeIcon,
-	Add as AddIcon
+	Add as AddIcon,
 } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
@@ -29,18 +29,18 @@ type RouterParams = {
 	id: string;
 };
 
-const FlatDetails: React.FC<Props> = props => {
+const FlatDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
 
 	const id = +(props.match.params as RouterParams).id;
 	const flat = useSelector((state: RootState) =>
-		state.flats.flats.find(x => x.id === id)
+		state.flats.flats.find((x) => x.id === id)
 	)!;
 
 	const [loadingElements, setLoadingElements] = useState({
 		owner: !!flat.owner,
-		members: !!flat.members
+		members: !!flat.members,
 	});
 
 	const [elementsErrors, setElementsErrors] = useState<{
@@ -48,41 +48,51 @@ const FlatDetails: React.FC<Props> = props => {
 		members: StateError;
 	}>({
 		owner: null,
-		members: null
+		members: null,
 	});
 
 	useEffect(() => {
 		const loadOwner = async () => {
-			setLoadingElements(prevState => ({ ...prevState, owner: true }));
+			setLoadingElements((prevState) => ({ ...prevState, owner: true }));
 			try {
 				await dispatch(fetchFlatOwner(flat.ownerId, flat.id!));
 			} catch (err) {
-				setElementsErrors(prevState => ({
+				setElementsErrors((prevState) => ({
 					...prevState,
-					owner: err.message
+					owner: err.message,
 				}));
 			}
-			setLoadingElements(prevState => ({ ...prevState, owner: false }));
+			setLoadingElements((prevState) => ({ ...prevState, owner: false }));
 		};
 
-		if (!flat.owner && !loadingElements.owner && ! elementsErrors.owner) {
+		if (!flat.owner && !loadingElements.owner && !elementsErrors.owner) {
 			loadOwner();
 		}
 
 		const loadMembers = async () => {
-			setLoadingElements(prevState => ({ ...prevState, members: true }));
+			setLoadingElements((prevState) => ({
+				...prevState,
+				members: true,
+			}));
 			try {
 				await dispatch(fetchFlatMembers(flat.id!));
 			} catch (err) {
-				setElementsErrors(prevState => ({
+				setElementsErrors((prevState) => ({
 					...prevState,
-					members: err.message
+					members: err.message,
 				}));
 			}
-			setLoadingElements(prevState => ({ ...prevState, members: false }));
+			setLoadingElements((prevState) => ({
+				...prevState,
+				members: false,
+			}));
 		};
 
-		if (!flat.members && !loadingElements.members && !elementsErrors.members) {
+		if (
+			!flat.members &&
+			!loadingElements.members &&
+			!elementsErrors.members
+		) {
 			loadMembers();
 		}
 	}, [flat, dispatch, loadingElements, elementsErrors]);
@@ -194,20 +204,20 @@ const useStyles = makeStyles((theme: Theme) =>
 			paddingBottom: 10,
 			paddingLeft: 16,
 			paddingRight: 16,
-			boxSizing: 'border-box'
+			boxSizing: 'border-box',
 		},
 		avatar: {
 			width: theme.spacing(10),
-			height: theme.spacing(10)
+			height: theme.spacing(10),
 		},
 		margin: {
-			margin: theme.spacing(1)
+			margin: theme.spacing(1),
 		},
 		fab: {
 			position: 'fixed',
 			bottom: 20,
-			right: 20
-		}
+			right: 20,
+		},
 	})
 );
 

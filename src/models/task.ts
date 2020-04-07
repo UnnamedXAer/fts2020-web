@@ -1,3 +1,5 @@
+import User from './user';
+
 export enum TaskPeriodUnit {
 	'HOUR' = 'HOUR',
 	'DAY' = 'DAY',
@@ -15,8 +17,10 @@ export default class Task {
 	endDate?: Date;
 	timePeriodUnit?: TaskPeriodUnit;
 	timePeriodValue?: number;
+	members?: User[];
 	active?: boolean;
-	createBy?: number;
+	createBy?: User;
+	createById?: number;
 	createAt?: Date;
 
 	constructor(params: Task = {} as Task) {
@@ -29,6 +33,7 @@ export default class Task {
 			endDate,
 			timePeriodUnit,
 			timePeriodValue,
+			members,
 			active,
 			createBy,
 			createAt
@@ -42,6 +47,7 @@ export default class Task {
 		this.endDate = endDate;
 		this.timePeriodUnit = timePeriodUnit;
 		this.timePeriodValue = timePeriodValue;
+		this.members = members;
 		this.active = active;
 		this.createBy = createBy;
 		this.createAt = createAt;

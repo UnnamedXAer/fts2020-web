@@ -69,7 +69,7 @@ export interface TaskFormValues {
 	name: string;
 	description: string;
 	timePeriodUnit: TaskPeriodUnit;
-	timePeriodValue: number;
+	timePeriodValue: string;
 	startDate: moment.Moment;
 	endDate: moment.Moment;
 }

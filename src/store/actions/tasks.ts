@@ -1,8 +1,8 @@
 import axios from '../../axios/axios';
 import { TasksActionTypes } from './actionTypes';
-import Task from '../../models/task';
+import Task, { TaskPeriodUnit } from '../../models/task';
 import { ThunkAction } from 'redux-thunk';
-import RootState from '../storeTypes';
+import RootState, { StoreAction } from '../storeTypes';
 
 type FetchTasksAction = {
 	type: TasksActionTypes.Set;
@@ -12,20 +12,88 @@ type FetchTasksAction = {
 	};
 };
 
+type APITask = {
+	id?: number;
+	title: string;
+	description?: string;
+	members?: number[];
+	createBy?: number;
+	createAt?: string;
+	flatId: number;
+	startDate?: string;
+	endDate?: string;
+	timePeriodUnit?: TaskPeriodUnit;
+	timePeriodValue?: number;
+	active?: boolean;
+};
+
+export const createTask = (
+	task: Task
+): ThunkAction<Promise<void>, RootState, any, StoreAction<Task, string>> => {
+	return async (dispatch) => {
+		const url = `/flats/${task.flatId}/tasks`;
+		try {
+			const requestPayload: APITask = {
+				title: task.name!,
+				description: task.description,
+				members: task.members!.map((x) => x.id),
+				flatId: task.flatId!,
+				startDate: task.startDate?.toISOString(),
+				endDate: task.endDate?.toISOString(),
+				timePeriodUnit: task.timePeriodUnit,
+				timePeriodValue: task.timePeriodValue
+			};
+			const { data } = await axios.post<APITask>(url, requestPayload);
+			const createdTask = new Task({
+				id: data.id,
+				name: data.title,
+				description: data.description,
+				createAt: new Date(data.createAt!),
+				flatId: data.flatId,
+				active: data.active,
+				startDate: new Date(data.startDate!),
+				endDate: new Date(data.endDate!),
+				timePeriodUnit: data.timePeriodUnit,
+				timePeriodValue: data.timePeriodValue,
+			});
+			dispatch({
+				type: TasksActionTypes.Add,
+				payload: createdTask,
+			});
+		} catch (err) {
+			console.log(err);
+			throw err;
+		}
+	};
+};
+
 export const fetchFlatTasks = (
 	id: number
 ): ThunkAction<Promise<void>, RootState, any, FetchTasksAction> => {
-	return async dispatch => {
+	return async (dispatch) => {
 		const url = `/flats/${id}/tasks`;
 		try {
-			const { data }: { data: any } = await axios.get(url);
-			const tasks = [data.map((x: any) => new Task())];
+			const { data } = await axios.get<APITask[]>(url);
+			const tasks = data.map((x) => new Task({
+				id: x.id,
+				flatId: x.flatId,
+				name: x.title,
+				description: x.description,
+				startDate: new Date(x.startDate!),
+				endDate: new Date(x.endDate!),
+				timePeriodUnit: x.timePeriodUnit,
+				timePeriodValue: x.timePeriodValue,
+				active: x.active,
+				createAt: new Date(x.createAt!),
+				createById: x.createBy
+			}));
+
 			dispatch({
 				type: TasksActionTypes.Set,
 				payload: {
 					flatId: id,
-					tasks
-				}
+					tasks,
+				},
 			});
 		} catch (err) {
 			console.log(err);

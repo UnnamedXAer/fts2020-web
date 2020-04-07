@@ -34,13 +34,13 @@ import validateTaskFormField, {
 	validateTaskDate,
 } from '../../utils/taskFormValidator';
 import User from '../../models/user';
-import { createFlat } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { RouteComponentProps } from 'react-router-dom';
 import TransferList from '../../components/UI/TransferList';
 import Task, { TaskPeriodUnit } from '../../models/task';
 import { TaskFormValues } from '../../utils/taskFormValidator';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
+import { createTask } from '../../store/actions/tasks';
 
 interface Props extends RouteComponentProps {}
 type RouterParams = {
@@ -49,9 +49,6 @@ type RouterParams = {
 
 const NewTask: React.FC<Props> = ({ history, match }) => {
 	const classes = useStyles();
-	const loggedUser = useSelector<RootState, User>(
-		(state) => state.auth.user!
-	);
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find(
 			(x) => x.id === +(match.params as RouterParams).flatId
@@ -63,7 +60,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 			name: '',
 			description: '',
 			timePeriodUnit: TaskPeriodUnit.WEEK,
-			timePeriodValue: 1,
+			timePeriodValue: '1',
 			startDate: moment(),
 			endDate: moment().add(6, 'months'),
 		},
@@ -188,28 +185,34 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 			return;
 		}
 
-		const newFlat = new Flat({
-			id: flat?.id,
+		const newTask = new Task({
+			flatId: flat?.id!,
+			startDate: formState.values.startDate.toDate(),
+			endDate: formState.values.endDate.toDate(),
+			timePeriodUnit: formState.values.timePeriodUnit,
+			timePeriodValue: +formState.values.timePeriodValue,
 			members: members,
 			description: formState.values.description,
 			name: formState.values.name,
-			ownerId: loggedUser.id,
 		});
 
 		try {
-			await dispatch(createFlat(newFlat));
-			history.replace('/flats');
+			await dispatch(createTask(newTask));
+			history.replace(`/flats/${flat?.id}`);
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach((x) =>
+			fieldsErrors.forEach((x) => {
+				const fieldName =
+					x.param === 'startDate' || x.param === 'endDate'
+						? 'dates'
+						: x.param;
 				formDispatch({
 					type: ActionType.SetError,
-					fieldId: x.param,
+					fieldId: fieldName,
 					error: x.msg,
-				})
-			);
-
+				});
+			});
 			setError(errorData.getMessage());
 			setLoading(false);
 		}
@@ -355,7 +358,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 								required
 								inputProps={{
 									max: 30,
-									min: 1
+									min: 1,
 								}}
 								disabled={loading}
 								value={formState.values.timePeriodValue}
@@ -417,9 +420,9 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 					</Grid>
 					<Grid item>
 						<TransferList
-						listStyle={{
-							minWidth: '225px'
-						}}
+							listStyle={{
+								minWidth: '225px',
+							}}
 							data={flat?.members!.map((user) => {
 								return {
 									id: user.id,

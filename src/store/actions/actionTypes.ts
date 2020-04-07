@@ -9,5 +9,6 @@ export enum FlatsActionTypes {
 }
 
 export enum TasksActionTypes {
-	Set = 'TASK_SET'
+	Set = 'TASK_SET',
+	Add = 'TASK_ADD'
 }

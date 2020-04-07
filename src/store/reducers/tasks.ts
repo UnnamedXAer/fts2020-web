@@ -3,24 +3,37 @@ import { TasksActionTypes } from '../actions/actionTypes';
 import Task from '../../models/task';
 
 const initialState: TasksState = {
-	flatsTasks: {}
+	flatsTasks: {},
 };
 
-const setFlats: SimpleReducer<
-	TasksState,
-	{ flatId: number; tasks: Task[] }
-> = (state, action) => {
+const setTasks: SimpleReducer<TasksState, { flatId: number; tasks: Task[] }> = (
+	state,
+	action
+) => {
 	const updatedFlatsTasks = {
 		...state.flatsTasks,
-		[action.payload.flatId]: action.payload.tasks
+		[action.payload.flatId]: action.payload.tasks,
 	};
 
 	return {
 		...state,
-		flatsTasks: updatedFlatsTasks
+		flatsTasks: updatedFlatsTasks,
 	};
 };
 
+const addTask: SimpleReducer<TasksState, Task> = (state, action) => {
+	const updatedFlatsTasks = {
+		...state.flatsTasks,
+		[action.payload.flatId!]: state.flatsTasks[
+			action.payload.flatId!
+		].concat(action.payload),
+	};
+
+	return {
+		...state,
+		flatsTasks: updatedFlatsTasks,
+	};
+};
 
 const reducer: AppReducer<TasksState, TasksActionTypes> = (
 	state = initialState,
@@ -28,7 +41,9 @@ const reducer: AppReducer<TasksState, TasksActionTypes> = (
 ) => {
 	switch (action.type) {
 		case TasksActionTypes.Set:
-			return setFlats(state, action);
+			return setTasks(state, action);
+		case TasksActionTypes.Add:
+			return addTask(state, action);
 		default:
 			return state;
 	}
