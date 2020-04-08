@@ -21,7 +21,7 @@ import FlatMembers from '../../components/Flat/FlatMembers';
 import RootState from '../../store/storeTypes';
 import FlatTasks from './FlatTasks';
 import { fetchFlatOwner, fetchFlatMembers } from '../../store/actions/flats';
-import { StateError } from '../../ReactTypes/cutsomReactTypes';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props extends RouteComponentProps {}
 
