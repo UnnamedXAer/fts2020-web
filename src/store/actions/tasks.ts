@@ -3,6 +3,7 @@ import { TasksActionTypes } from './actionTypes';
 import Task, { TaskPeriodUnit } from '../../models/task';
 import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
+import User from '../../models/user';
 
 type FetchTasksAction = {
 	type: TasksActionTypes.Set;
@@ -41,7 +42,7 @@ export const createTask = (
 				startDate: task.startDate?.toISOString(),
 				endDate: task.endDate?.toISOString(),
 				timePeriodUnit: task.timePeriodUnit,
-				timePeriodValue: task.timePeriodValue
+				timePeriodValue: task.timePeriodValue,
 			};
 			const { data } = await axios.post<APITask>(url, requestPayload);
 			const createdTask = new Task({
@@ -74,25 +75,73 @@ export const fetchFlatTasks = (
 		const url = `/flats/${id}/tasks`;
 		try {
 			const { data } = await axios.get<APITask[]>(url);
-			const tasks = data.map((x) => new Task({
-				id: x.id,
-				flatId: x.flatId,
-				name: x.title,
-				description: x.description,
-				startDate: new Date(x.startDate!),
-				endDate: new Date(x.endDate!),
-				timePeriodUnit: x.timePeriodUnit,
-				timePeriodValue: x.timePeriodValue,
-				active: x.active,
-				createAt: new Date(x.createAt!),
-				createById: x.createBy
-			}));
+			const tasks = data.map(
+				(x) =>
+					new Task({
+						id: x.id,
+						flatId: x.flatId,
+						name: x.title,
+						description: x.description,
+						startDate: new Date(x.startDate!),
+						endDate: new Date(x.endDate!),
+						timePeriodUnit: x.timePeriodUnit,
+						timePeriodValue: x.timePeriodValue,
+						active: x.active,
+						createAt: new Date(x.createAt!),
+						createById: x.createBy,
+					})
+			);
 
 			dispatch({
 				type: TasksActionTypes.Set,
 				payload: {
 					flatId: id,
 					tasks,
+				},
+			});
+		} catch (err) {
+			console.log(err);
+			throw err;
+		}
+	};
+};
+
+export const fetchTaskMembers = (
+	flatId: number,
+	taskId: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<
+		{ flatId: number; taskId: number; members: User[] },
+		TasksActionTypes.SetMembers
+	>
+> => {
+	return async (dispatch) => {
+		const url = `/flats/${flatId}/tasks/${taskId}/members`;
+		try {
+			const { data } = await axios.get(url);
+			console.log('about to fetch members for task', taskId);
+			const members = data.map(
+				(user: any) =>
+					new User(
+						user.id,
+						user.emailAddress,
+						user.userName,
+						user.provider,
+						new Date(user.joinDate),
+						user.avatarUrl,
+						user.active
+					)
+			);
+			console.log(members);
+			dispatch({
+				type: TasksActionTypes.SetMembers,
+				payload: {
+					members,
+					taskId,
+					flatId,
 				},
 			});
 		} catch (err) {

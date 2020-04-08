@@ -1,6 +1,7 @@
 import { AppReducer, TasksState, SimpleReducer } from '../storeTypes';
 import { TasksActionTypes } from '../actions/actionTypes';
 import Task from '../../models/task';
+import User from '../../models/user';
 
 const initialState: TasksState = {
 	flatsTasks: {},
@@ -35,6 +36,32 @@ const addTask: SimpleReducer<TasksState, Task> = (state, action) => {
 	};
 };
 
+const setMembers: SimpleReducer<
+	TasksState,
+	{ flatId: number; taskId: number; members: User[] }
+> = (state, action) => {
+	const { flatId, taskId, members } = action.payload;
+	const updatedFlatsTasks = {
+		...state.flatsTasks,
+	};
+
+	const updatedFlatTasks = [...updatedFlatsTasks[flatId]];
+	const editedTaskIndex = updatedFlatTasks.findIndex((x) => x.id === taskId);
+
+	const updatedTask = new Task({
+		...updatedFlatTasks[editedTaskIndex],
+		members: members,
+	});
+
+	updatedFlatTasks[editedTaskIndex] = updatedTask;
+	updatedFlatsTasks[flatId] = updatedFlatTasks;
+
+	return {
+		...state,
+		flatsTasks: updatedFlatsTasks,
+	};
+};
+
 const reducer: AppReducer<TasksState, TasksActionTypes> = (
 	state = initialState,
 	action
@@ -44,6 +71,8 @@ const reducer: AppReducer<TasksState, TasksActionTypes> = (
 			return setTasks(state, action);
 		case TasksActionTypes.Add:
 			return addTask(state, action);
+		case TasksActionTypes.SetMembers:
+			return setMembers(state, action);
 		default:
 			return state;
 	}

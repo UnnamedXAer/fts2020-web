@@ -52,47 +52,53 @@ const FlatDetails: React.FC<Props> = (props) => {
 	});
 
 	useEffect(() => {
-		const loadOwner = async () => {
-			setLoadingElements((prevState) => ({ ...prevState, owner: true }));
-			try {
-				await dispatch(fetchFlatOwner(flat.ownerId, flat.id!));
-			} catch (err) {
-				setElementsErrors((prevState) => ({
-					...prevState,
-					owner: err.message,
-				}));
-			}
-			setLoadingElements((prevState) => ({ ...prevState, owner: false }));
-		};
-
 		if (!flat.owner && !loadingElements.owner && !elementsErrors.owner) {
+			const loadOwner = async () => {
+				setLoadingElements((prevState) => ({
+					...prevState,
+					owner: true,
+				}));
+				try {
+					await dispatch(fetchFlatOwner(flat.ownerId, flat.id!));
+				} catch (err) {
+					setElementsErrors((prevState) => ({
+						...prevState,
+						owner: err.message,
+					}));
+				}
+				setLoadingElements((prevState) => ({
+					...prevState,
+					owner: false,
+				}));
+			};
+
 			loadOwner();
 		}
-
-		const loadMembers = async () => {
-			setLoadingElements((prevState) => ({
-				...prevState,
-				members: true,
-			}));
-			try {
-				await dispatch(fetchFlatMembers(flat.id!));
-			} catch (err) {
-				setElementsErrors((prevState) => ({
-					...prevState,
-					members: err.message,
-				}));
-			}
-			setLoadingElements((prevState) => ({
-				...prevState,
-				members: false,
-			}));
-		};
 
 		if (
 			!flat.members &&
 			!loadingElements.members &&
 			!elementsErrors.members
 		) {
+			const loadMembers = async () => {
+				setLoadingElements((prevState) => ({
+					...prevState,
+					members: true,
+				}));
+				try {
+					await dispatch(fetchFlatMembers(flat.id!));
+				} catch (err) {
+					setElementsErrors((prevState) => ({
+						...prevState,
+						members: err.message,
+					}));
+				}
+				setLoadingElements((prevState) => ({
+					...prevState,
+					members: false,
+				}));
+			};
+
 			loadMembers();
 		}
 	}, [flat, dispatch, loadingElements, elementsErrors]);
