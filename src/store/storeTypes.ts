@@ -7,11 +7,16 @@ export type RootState = {
 	auth: AuthState;
 	flats: FlatsState;
 	tasks: TasksState;
+	users: UsersState;
 };
 
 export type AuthState = {
 	user: User | null;
 	expirationTime: number | null;
+};
+
+export type UsersState = {
+	users: { [id: number]: User };
 };
 
 export type FlatsState = {

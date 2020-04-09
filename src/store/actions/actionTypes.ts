@@ -6,7 +6,7 @@ export enum FlatsActionTypes {
 	Add = 'FLAT_ADD',
 	SetOwner = 'FLAT_SET_OWNER',
 	SetMembers = 'FLAT_SET_MEMBERS',
-	ClearState = 'FLAT_CLEAR_STATE'
+	ClearState = 'FLAT_CLEAR_STATE',
 }
 
 export enum TasksActionTypes {
@@ -14,4 +14,8 @@ export enum TasksActionTypes {
 	Add = 'TASK_ADD',
 	SetMembers = 'FLAT_TASK_SET_MEMBERS',
 	ClearState = 'TASK_CLEAR_STATE',
+}
+
+export enum UsersActionTypes {
+	FetchUser = 'USER_FETCH_USER'
 }

@@ -63,7 +63,6 @@ const setMembers: SimpleReducer<
 };
 
 const clearState:SimpleReducer<TasksState, undefined> = (state, action) => {
-	console.log('tasks cleared');
 	return {
 		...initialState,
 	};

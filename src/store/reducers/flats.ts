@@ -64,7 +64,6 @@ const setMembers: SimpleReducer<
 };
 
 const clearState: SimpleReducer<FlatsState, undefined> = (state, action) => {
-	console.log('flats cleared')
 	return {
 		...initialState,
 	};

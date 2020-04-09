@@ -8,17 +8,23 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logOut } from '../../store/actions/auth';
+import RootState from '../../store/storeTypes';
+import { useHistory } from 'react-router-dom';
 
 interface Props {
 	children?: React.ReactNode;
 	title: string;
 }
 
-const AppNavBar: React.FC<Props> = props => {
+const AppNavBar: React.FC<Props> = (props) => {
 	const classes = useStyles();
+	const history = useHistory();
 	const dispatch = useDispatch();
+	const loggedUserId = useSelector<RootState, number | undefined>(
+		(state) => state.auth.user?.id
+	);
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
@@ -32,11 +38,11 @@ const AppNavBar: React.FC<Props> = props => {
 
 	const logoutHandler = async () => {
 		await dispatch(logOut());
-	}
+	};
 
 	const openProfileHandler = () => {
-		console.log('opening profile');
-	}
+		history.push(`/profile/${loggedUserId!}`);
+	};
 
 	return (
 		<AppBar position="static">
@@ -53,31 +59,35 @@ const AppNavBar: React.FC<Props> = props => {
 					{props.title}
 				</Typography>
 				<div>
-					<IconButton
-						aria-label="account of current user"
-						aria-controls="menu-appbar"
-						aria-haspopup="true"
-						onClick={handleMenu}
-						color="inherit"
-					>
-						<AccountCircle />
-					</IconButton>
+					{loggedUserId && (
+						<IconButton
+							aria-label="account of current user"
+							aria-controls="menu-appbar"
+							aria-haspopup="true"
+							onClick={handleMenu}
+							color="inherit"
+						>
+							<AccountCircle />
+						</IconButton>
+					)}
 					<Menu
 						id="menu-appbar"
 						anchorEl={anchorEl}
 						anchorOrigin={{
 							vertical: 'top',
-							horizontal: 'right'
+							horizontal: 'right',
 						}}
 						keepMounted
 						transformOrigin={{
 							vertical: 'top',
-							horizontal: 'right'
+							horizontal: 'right',
 						}}
 						open={open}
 						onClose={menuCloseHandler}
 					>
-						<MenuItem onClick={openProfileHandler}>Profile</MenuItem>
+						<MenuItem onClick={openProfileHandler}>
+							Profile
+						</MenuItem>
 						<MenuItem onClick={logoutHandler}>Logout</MenuItem>
 					</Menu>
 				</div>
@@ -89,14 +99,14 @@ const AppNavBar: React.FC<Props> = props => {
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
 		root: {
-			flexGrow: 1
+			flexGrow: 1,
 		},
 		menuButton: {
-			marginRight: theme.spacing(2)
+			marginRight: theme.spacing(2),
 		},
 		title: {
-			flexGrow: 1
-		}
+			flexGrow: 1,
+		},
 	})
 );
 
