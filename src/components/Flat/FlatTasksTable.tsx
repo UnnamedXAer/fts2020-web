@@ -9,17 +9,24 @@ import {
 	makeStyles,
 	Checkbox,
 	Theme,
+	IconButton,
 } from '@material-ui/core';
 import moment from 'moment';
 import { StyledTableCell, StyledTableRow } from '../UI/Table';
 import Task from '../../models/task';
+import {
+	InfoOutlined as InfoOutlinedIcon,
+} from '@material-ui/icons';
 
 interface Props {
 	tasks: Task[];
-	onTaskSelected: (id: number) => void
+	onTaskSelected: (id: number) => void;
 }
 
-const FlatTasksTable: React.FC<Props> = ({ tasks, onTaskSelected }) => {
+const FlatTasksTable: React.FC<Props> = ({
+	tasks,
+	onTaskSelected,
+}) => {
 	const classes = useStyles();
 
 	return (
@@ -38,16 +45,14 @@ const FlatTasksTable: React.FC<Props> = ({ tasks, onTaskSelected }) => {
 							Task Time Period
 						</StyledTableCell>
 						<StyledTableCell align="right">Active</StyledTableCell>
+						<StyledTableCell align="right">
+							Actions
+						</StyledTableCell>
 					</TableRow>
 				</TableHead>
 				<TableBody>
 					{tasks.map((task) => (
-						<StyledTableRow
-							key={task.id}
-							className={classes.row}
-							hover
-							onClick={() => onTaskSelected(task.id!)}
-						>
+						<StyledTableRow key={task.id} hover>
 							<StyledTableCell component="th" scope="row">
 								{task.name}
 							</StyledTableCell>
@@ -72,6 +77,14 @@ const FlatTasksTable: React.FC<Props> = ({ tasks, onTaskSelected }) => {
 									}}
 								/>
 							</StyledTableCell>
+							<StyledTableCell align="right">
+								<IconButton
+									title="Task quick info"
+									onClick={() => onTaskSelected(task.id!)}
+								>
+									<InfoOutlinedIcon />
+								</IconButton>
+							</StyledTableCell>
 						</StyledTableRow>
 					))}
 				</TableBody>
@@ -83,9 +96,6 @@ const FlatTasksTable: React.FC<Props> = ({ tasks, onTaskSelected }) => {
 const useStyles = makeStyles((theme: Theme) => ({
 	table: {
 		minWidth: 550,
-	},
-	row: {
-		cursor: 'pointer',
 	},
 }));
 
