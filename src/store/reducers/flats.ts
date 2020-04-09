@@ -5,7 +5,7 @@ import User from '../../models/user';
 
 const initialState: FlatsState = {
 	flats: [],
-	flatsLoadTime: 0
+	flatsLoadTime: 0,
 };
 
 const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
@@ -19,7 +19,7 @@ const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
 const addFlat: SimpleReducer<FlatsState, Flat> = (state, action) => {
 	return {
 		...state,
-		flats: state.flats.concat(action.payload)
+		flats: state.flats.concat(action.payload),
 	};
 };
 
@@ -29,17 +29,17 @@ const setOwner: SimpleReducer<FlatsState, { user: User; flatId: number }> = (
 ) => {
 	const updatedFlats = [...state.flats];
 	const flatIndex = updatedFlats.findIndex(
-		x => x.id === action.payload.flatId
+		(x) => x.id === action.payload.flatId
 	);
 	const updatedFlat = {
 		...updatedFlats[flatIndex],
-		owner: action.payload.user
+		owner: action.payload.user,
 	};
 	updatedFlats[flatIndex] = updatedFlat;
 
 	return {
 		...state,
-		flats: updatedFlats
+		flats: updatedFlats,
 	};
 };
 
@@ -49,17 +49,24 @@ const setMembers: SimpleReducer<
 > = (state, action) => {
 	const updatedFlats = [...state.flats];
 	const flatIndex = updatedFlats.findIndex(
-		x => x.id === action.payload.flatId
+		(x) => x.id === action.payload.flatId
 	);
 	const updatedFlat = {
 		...updatedFlats[flatIndex],
-		members: action.payload.members
+		members: action.payload.members,
 	};
 	updatedFlats[flatIndex] = updatedFlat;
 
 	return {
 		...state,
-		flats: updatedFlats
+		flats: updatedFlats,
+	};
+};
+
+const clearState: SimpleReducer<FlatsState, undefined> = (state, action) => {
+	console.log('flats cleared')
+	return {
+		...initialState,
 	};
 };
 
@@ -76,6 +83,8 @@ const reducer: AppReducer<FlatsState, FlatsActionTypes> = (
 			return setOwner(state, action);
 		case FlatsActionTypes.SetMembers:
 			return setMembers(state, action);
+		case FlatsActionTypes.ClearState:
+			return clearState(state, action);
 		default:
 			return state;
 	}

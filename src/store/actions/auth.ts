@@ -1,7 +1,12 @@
 import { ThunkAction } from 'redux-thunk';
 import { Credentials } from '../../models/auth';
 import axios from '../../axios/axios';
-import { AUTHORIZE, LOGOUT } from './actionTypes';
+import {
+	AUTHORIZE,
+	LOGOUT,
+	TasksActionTypes,
+	FlatsActionTypes,
+} from './actionTypes';
 import RootState, { StoreAction } from '../storeTypes';
 import User from '../../models/user';
 
@@ -41,8 +46,8 @@ export const authorize = (
 				type: AUTHORIZE,
 				payload: {
 					user,
-					expirationTime
-				}
+					expirationTime,
+				},
 			});
 
 			setTimeout(() => {
@@ -70,8 +75,8 @@ export const tryAuthorize = (): StoreAction<AuthorizeActionPayload> => {
 			type: AUTHORIZE,
 			payload: {
 				user: JSON.parse(savedUser),
-				expirationTime: +expirationTime
-			}
+				expirationTime: +expirationTime,
+			},
 		};
 	} else {
 		throw new Error('Auto-authorization was not possible.');
@@ -84,13 +89,24 @@ export const logOut = (): ThunkAction<
 	any,
 	AuthorizeAction
 > => {
-	return async dispatch => {
+	return async (dispatch) => {
+
+		const clearState = () => {
+			dispatch({
+				type: LOGOUT,
+			});
+			dispatch({
+				type: TasksActionTypes.ClearState,
+			});
+			dispatch({
+				type: FlatsActionTypes.ClearState,
+			});
+		}
+
 		try {
 			await axios.post('/auth/logout');
 			setTimeout(() => {
-				dispatch({
-					type: LOGOUT
-				});
+				clearState();
 			}, 0);
 		} catch (err) {
 			if (localStorage.getItem('loggedUser')) {
@@ -98,9 +114,7 @@ export const logOut = (): ThunkAction<
 					dispatch(logOut());
 				}, 500);
 			} else {
-				dispatch({
-					type: LOGOUT
-				});
+				clearState();
 			}
 		}
 		localStorage.removeItem('loggedUser');

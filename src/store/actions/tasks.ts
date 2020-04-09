@@ -122,7 +122,6 @@ export const fetchTaskMembers = (
 		const url = `/flats/${flatId}/tasks/${taskId}/members`;
 		try {
 			const { data } = await axios.get(url);
-			console.log('about to fetch members for task', taskId);
 			const members = data.map(
 				(user: any) =>
 					new User(

@@ -62,6 +62,13 @@ const setMembers: SimpleReducer<
 	};
 };
 
+const clearState:SimpleReducer<TasksState, undefined> = (state, action) => {
+	console.log('tasks cleared');
+	return {
+		...initialState,
+	};
+};
+
 const reducer: AppReducer<TasksState, TasksActionTypes> = (
 	state = initialState,
 	action
@@ -73,6 +80,8 @@ const reducer: AppReducer<TasksState, TasksActionTypes> = (
 			return addTask(state, action);
 		case TasksActionTypes.SetMembers:
 			return setMembers(state, action);
+			case TasksActionTypes.ClearState:
+				return clearState(state, action);
 		default:
 			return state;
 	}
