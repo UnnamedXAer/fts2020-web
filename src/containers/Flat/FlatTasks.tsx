@@ -11,7 +11,10 @@ import {
 	createStyles,
 	Theme,
 	Container,
+	IconButton,
+	Box,
 } from '@material-ui/core';
+import { CloseRounded as CloseRoundedIcon } from '@material-ui/icons';
 import ErrorCart from '../../components/UI/ErrorCart';
 import RootState from '../../store/storeTypes';
 import Task from '../../models/task';
@@ -124,22 +127,25 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 				}}
 			>
 				<Fade in={showTaskModal} unmountOnExit mountOnEnter>
-					<Container className={classes.modalContent} maxWidth="sm">
-						<>
-							{selectedTaskId && (
-								<TaskInfoModalContent
-									task={
-										tasks.find(
-											(x) => x.id === selectedTaskId
-										)!
-									}
-									membersError={membersError[selectedTaskId]}
-									membersLoading={
-										membersLoading[selectedTaskId]
-									}
-								/>
-							)}
-						</>
+					<Container className={classes.modalContent} maxWidth="md">
+						<Box className={classes.modalCloseBox}>
+							<IconButton
+								onClick={() => {
+									setShowTaskModal(false);
+								}}
+							>
+								<CloseRoundedIcon />
+							</IconButton>
+						</Box>
+						{selectedTaskId && (
+							<TaskInfoModalContent
+								task={
+									tasks.find((x) => x.id === selectedTaskId)!
+								}
+								membersError={membersError[selectedTaskId]}
+								membersLoading={membersLoading[selectedTaskId]}
+							/>
+						)}
 					</Container>
 				</Fade>
 			</Modal>
@@ -158,7 +164,21 @@ const useStyles = makeStyles((theme: Theme) =>
 			backgroundColor: theme.palette.background.paper,
 			border: '2px solid #000',
 			boxShadow: theme.shadows[5],
-			padding: theme.spacing(2, 4, 3),
+			padding: theme.spacing(0, 4, 3),
+			maxHeight: '90vh',
+			overflowX: 'hidden',
+			overflowY: 'auto',
+			boxSizing: 'border-box'
+		},
+		modalCloseBox: {
+			display: 'flex',
+			justifyContent: 'flex-end',
+			alignItems: 'center',
+			width: '100%',
+			position: 'sticky',
+			top: 0,
+			backgroundColor: theme.palette.background.paper,
+			padding: theme.spacing(1, 0,0,0),
 		},
 	})
 );

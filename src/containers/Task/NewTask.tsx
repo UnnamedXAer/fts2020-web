@@ -29,7 +29,6 @@ import useForm, {
 	FormState,
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
-import Flat from '../../models/flat';
 import validateTaskFormField, {
 	validateTaskDate,
 } from '../../utils/taskFormValidator';
