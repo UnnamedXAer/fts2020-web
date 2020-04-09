@@ -12,12 +12,12 @@ import {
 	Fab,
 	Link,
 	CircularProgress,
-	Box
+	Box,
 } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import {
 	HomeWorkOutlined as HomeIcon,
-	Add as AddIcon
+	Add as AddIcon,
 } from '@material-ui/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import FlatModel from '../../models/flat';
@@ -28,31 +28,35 @@ import { fetchFlats } from '../../store/actions/flats';
 
 interface Props extends RouteComponentProps {}
 
-const Flats: React.FC<Props> = props => {
+const Flats: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const flats = useSelector<RootState, FlatModel[]>(
-		state => state.flats.flats
+		(state) => state.flats.flats
+	);
+	const flatsLoadTime = useSelector<RootState, number>(
+		(state) => state.flats.flatsLoadTime
 	);
 	const [selectedFlat, setSelectedFlat] = useState<number | null>(null);
 
 	useEffect(() => {
-		setLoading(true);
-		const loadFlats = async () => {
-			try {
-				await dispatch(fetchFlats());
-			} catch (err) {
-				setError(err.message);
-			}
-			setLoading(false);
-		};
-		setTimeout(() => {
+		if (flatsLoadTime < Date.now() - 1000 * 60 * 60 * 8) {
+			setLoading(true);
+			setError(null);
+			const loadFlats = async () => {
+				try {
+					await dispatch(fetchFlats());
+				} catch (err) {
+					setError(err.message);
+				}
+				setLoading(false);
+			};
 			loadFlats();
-		}, 1000);
-	}, [dispatch]);
+		}
+	}, [dispatch, flatsLoadTime]);
 
 	const flatClickHandler = (flatId: number) => {
 		console.log(flatId);
@@ -104,7 +108,7 @@ const Flats: React.FC<Props> = props => {
 		} else {
 			content = (
 				<List dense={false}>
-					{flats.map(flat => (
+					{flats.map((flat) => (
 						<ListItem
 							key={flat.id}
 							button
@@ -151,15 +155,15 @@ const Flats: React.FC<Props> = props => {
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
-		margin: theme.spacing(4, 0, 2)
+		margin: theme.spacing(4, 0, 2),
 	},
 	fab: {
 		position: 'fixed',
 		bottom: 20,
-		right: 20
+		right: 20,
 	},
 	margin: {
-		margin: theme.spacing(1)
+		margin: theme.spacing(1),
 	},
 	alertLink: {
 		position: 'relative',
@@ -181,24 +185,24 @@ const useStyles = makeStyles((theme: Theme) => ({
 				height: 3,
 				animation: `$myEffect 1100ms ${theme.transitions.easing.easeInOut}`,
 				animationFillMode: 'forwards',
-				zIndex: -1
-			}
-		}
+				zIndex: -1,
+			},
+		},
 	},
 	'@keyframes myEffect': {
 		'0%': {
 			transform: 'scaleX(0)',
-			height: 3
+			height: 3,
 		},
 		'40%': {
 			transform: 'scaleX(1.2)',
-			height: 3
+			height: 3,
 		},
 		'100%': {
 			height: '1.3em',
-			transform: 'scaleX(1.2)'
-		}
-	}
+			transform: 'scaleX(1.2)',
+		},
+	},
 }));
 
 export default Flats;

@@ -16,6 +16,7 @@ export type AuthState = {
 
 export type FlatsState = {
 	flats: Flat[];
+	flatsLoadTime: number;
 };
 
 export type TasksState = {

@@ -4,13 +4,15 @@ import Flat from '../../models/flat';
 import User from '../../models/user';
 
 const initialState: FlatsState = {
-	flats: []
+	flats: [],
+	flatsLoadTime: 0
 };
 
 const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
 	return {
 		...state,
-		flats: action.payload
+		flats: action.payload,
+		flatsLoadTime: Date.now(),
 	};
 };
 
