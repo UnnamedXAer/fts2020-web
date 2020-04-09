@@ -32,6 +32,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 		(state) => state.tasks.flatsTasks[flatId]
 	);
 	const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+	const [showTaskModal, setShowTaskModal] = useState(false);
 	const [membersLoading, setMembersLoading] = useState<{
 		[taskId: number]: boolean;
 	}>({});
@@ -97,6 +98,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 
 	const taskSelectHandler = (id: number) => {
 		setSelectedTaskId(id);
+		setShowTaskModal(true);
 	};
 
 	if (error) {
@@ -111,25 +113,33 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 				aria-labelledby="modal-task-title-id"
 				aria-describedby="modal-task-description-id"
 				className={classes.modal}
-				open={selectedTaskId !== null}
-				onClose={() => setSelectedTaskId(null)}
+				open={showTaskModal}
+				onClose={() => {
+					setShowTaskModal(false);
+				}}
 				closeAfterTransition
 				BackdropComponent={Backdrop}
 				BackdropProps={{
 					timeout: 500,
 				}}
 			>
-				<Fade in={selectedTaskId !== null} unmountOnExit mountOnEnter>
+				<Fade in={showTaskModal} unmountOnExit mountOnEnter>
 					<Container className={classes.modalContent} maxWidth="sm">
-						{selectedTaskId && (
-							<TaskInfoModalContent
-								task={
-									tasks.find((x) => x.id === selectedTaskId)!
-								}
-								membersError={membersError[selectedTaskId]}
-								membersLoading={membersLoading[selectedTaskId]}
-							/>
-						)}
+						<>
+							{selectedTaskId && (
+								<TaskInfoModalContent
+									task={
+										tasks.find(
+											(x) => x.id === selectedTaskId
+										)!
+									}
+									membersError={membersError[selectedTaskId]}
+									membersLoading={
+										membersLoading[selectedTaskId]
+									}
+								/>
+							)}
+						</>
 					</Container>
 				</Fade>
 			</Modal>
