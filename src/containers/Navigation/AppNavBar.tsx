@@ -38,10 +38,12 @@ const AppNavBar: React.FC<Props> = (props) => {
 
 	const logoutHandler = async () => {
 		await dispatch(logOut());
+		setAnchorEl(null);
 	};
 
 	const openProfileHandler = () => {
 		history.push(`/profile/${loggedUserId!}`);
+		setAnchorEl(null);
 	};
 
 	return (
