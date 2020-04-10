@@ -17,5 +17,6 @@ export enum TasksActionTypes {
 }
 
 export enum UsersActionTypes {
-	FetchUser = 'USER_FETCH_USER'
+	SetUser = 'USER_SET',
+	UpdateUser = 'USER_UPDATE'
 }

@@ -39,8 +39,6 @@ export default function validateTaskFormField(
 	return error;
 }
 
-console.log("moment().startOf('day') ", moment().startOf('day'));
-
 export const validateTaskDate = (
 	fieldName: 'startDate' | 'endDate',
 	formValues: TaskFormValues,

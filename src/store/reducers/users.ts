@@ -6,7 +6,7 @@ const initialState: UsersState = {
 	users: {},
 };
 
-const fetchUser: SimpleReducer<UsersState, User> = (state, action) => {
+const setUser: SimpleReducer<UsersState, User> = (state, action) => {
 	const updatedUsers = {
 		...state.users,
 		[action.payload.id]: action.payload,
@@ -22,8 +22,8 @@ const reducer: AppReducer<UsersState, UsersActionTypes> = (
 	action
 ) => {
 	switch (action.type) {
-		case UsersActionTypes.FetchUser:
-			return fetchUser(state, action);
+		case UsersActionTypes.SetUser:
+			return setUser(state, action);
 		default:
 			return state;
 	}
