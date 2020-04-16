@@ -14,6 +14,7 @@ import {
 	Button,
 	CircularProgress,
 	Link,
+	IconButton,
 } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -33,7 +34,7 @@ type RouterParams = {
 	id: string;
 };
 
-type EditableFields = 'emailAddress' | 'userName';
+type EditableFields = 'emailAddress' | 'userName' | 'avatarUrl';
 
 const Profile: React.FC<Props> = (props) => {
 	const classes = useStyles();
@@ -73,10 +74,9 @@ const Profile: React.FC<Props> = (props) => {
 	}, [dispatch, error, loading, user, userId]);
 
 	const openFieldModificationHandler = (fieldName: EditableFields) => {
-		console.log(fieldName, user![fieldName]);
 		setOpenEditModal(true);
 		setEditedFieldName(fieldName);
-		setEditValue(user![fieldName!]);
+		setEditValue(user![fieldName!]!);
 	};
 
 	const editFieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
@@ -85,10 +85,10 @@ const Profile: React.FC<Props> = (props) => {
 		setEditValue(ev.target.value);
 	};
 
-	const editFieldBlurHandler: React.FocusEventHandler = () => {
+	const editFieldBlurHandler: React.FocusEventHandler = async () => {
 		const value = editValue.trim();
 
-		const error = validateAuthFormField(
+		const error = await validateAuthFormField(
 			editedFieldName!,
 			{ [editedFieldName!]: value },
 			false
@@ -100,8 +100,15 @@ const Profile: React.FC<Props> = (props) => {
 	const submitFieldHandler: React.FormEventHandler = async (ev) => {
 		ev.preventDefault();
 
-		const value = editValue.trim();
-		const error = validateAuthFormField(
+		let value = editValue.trim();
+		if (editedFieldName === 'emailAddress') {
+			value = value.toLocaleLowerCase();
+		}
+		if (user![editedFieldName!] !== undefined && user![editedFieldName!] === value) {
+			return setOpenEditModal(false);
+		}
+
+		const error = await validateAuthFormField(
 			editedFieldName!,
 			{ [editedFieldName!]: value },
 			false
@@ -112,6 +119,7 @@ const Profile: React.FC<Props> = (props) => {
 		}
 
 		setEditLoading(true);
+		setEditError(null);
 		setTimeout(async () => {
 			const user: Partial<User> = {
 				[editedFieldName!]: value,
@@ -135,11 +143,17 @@ const Profile: React.FC<Props> = (props) => {
 					</Typography>
 				</Grid>
 				<Grid item>
-					<Avatar
-						className={classes.avatar}
-						alt="flat avatar"
-						src={user?.avatarUrl}
-					/>
+					<IconButton
+						onClick={() =>
+							openFieldModificationHandler('avatarUrl')
+						}
+					>
+						<Avatar
+							className={classes.avatar}
+							alt="flat avatar"
+							src={user?.avatarUrl}
+						/>
+					</IconButton>
 				</Grid>
 				<Grid item container direction="column">
 					<Grid item>

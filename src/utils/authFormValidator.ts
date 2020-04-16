@@ -1,8 +1,8 @@
-export default function validateAuthFormField(
+export default async function validateAuthFormField(
 	fieldId: string,
 	formValues: { [key: string]: string },
 	isSignIn: boolean
-): string | null {
+): Promise<string | null> {
 	let error = null;
 	switch (fieldId) {
 		case 'name':
@@ -12,7 +12,7 @@ export default function validateAuthFormField(
 				'moderator',
 				'null',
 				'undefined',
-				'mod'
+				'mod',
 			];
 			if (!isSignIn && formValues[fieldId].length < 2) {
 				error = 'The Name must be minimum 2 characters long.';
@@ -55,9 +55,35 @@ export default function validateAuthFormField(
 				error = 'Passwords do not match.';
 			}
 			break;
+		case 'avatarUrl':
+			//   if (
+			// 		!formValues[fieldId] ||
+			// 		formValues[fieldId].length >= 2083 ||
+			// 		/[\s<>]/.test(formValues[fieldId]) ||
+			// 		formValues[fieldId].indexOf('mailto:') === 0
+			// 	) {
+			// 		error = 'Please enter correct avatar url.';
+			// 	}
+
+			try {
+				await testImage(formValues[fieldId]);
+			}
+			catch (err) {
+				error = 'That is not correct image url.'
+			}
+			break;
 		default:
 			break;
 	}
 
 	return error;
+}
+
+function testImage(URL: string) {
+	return new Promise((resolve, reject) => {
+		var tester = new Image();
+		tester.onload = resolve;
+		tester.onerror = reject;
+		tester.src = URL;
+	});
 }

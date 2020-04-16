@@ -56,9 +56,7 @@ export const updateUser = (
 	return async (dispatch) => {
 		const url = `/users/${userId}`;
 		try {
-			const { data } = await axios.patch<Partial<User>, AxiosResponse<APIUser>>(url, {
-				data: user
-			});
+			const { data } = await axios.patch<Partial<User>, AxiosResponse<APIUser>>(url, user);
 
 			const updatedUser = new User(
 				data.id,
