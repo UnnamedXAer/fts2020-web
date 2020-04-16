@@ -6,6 +6,7 @@ import {
 	LOGOUT,
 	TasksActionTypes,
 	FlatsActionTypes,
+	AuthActionTypes,
 } from './actionTypes';
 import RootState, { StoreAction } from '../storeTypes';
 import User from '../../models/user';
@@ -90,7 +91,6 @@ export const logOut = (): ThunkAction<
 	AuthorizeAction
 > => {
 	return async (dispatch) => {
-
 		const clearState = () => {
 			dispatch({
 				type: LOGOUT,
@@ -101,7 +101,7 @@ export const logOut = (): ThunkAction<
 			dispatch({
 				type: FlatsActionTypes.ClearState,
 			});
-		}
+		};
 
 		try {
 			await axios.post('/auth/logout');
@@ -119,5 +119,35 @@ export const logOut = (): ThunkAction<
 		}
 		localStorage.removeItem('loggedUser');
 		localStorage.removeItem('expirationTime');
+	};
+};
+
+export const updatePassword = (
+	oldPassword: string,
+	password: string,
+	confirmPassword: string
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	{ type: AuthActionTypes.UpdatePassword }
+> => {
+	return async (dispatch) => {
+		const url = `/auth/changePassword`;
+		try {
+			await axios.post(url, {
+				password: oldPassword,
+				newPassword: password,
+				confirmPassword: confirmPassword,
+			});
+
+			dispatch({
+				type: AuthActionTypes.UpdatePassword,
+				payload: void 0,
+			});
+		} catch (err) {
+			console.log(err);
+			throw err;
+		}
 	};
 };

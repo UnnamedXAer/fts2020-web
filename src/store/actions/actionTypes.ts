@@ -1,6 +1,10 @@
 export const AUTHORIZE = 'AUTHORIZE';
 export const LOGOUT = 'LOGOUT';
 
+export enum AuthActionTypes {
+	UpdatePassword = 'USER_UPDATE_PASSWORD',
+}
+
 export enum FlatsActionTypes {
 	Set = 'FLAT_SET',
 	Add = 'FLAT_ADD',
@@ -18,5 +22,5 @@ export enum TasksActionTypes {
 
 export enum UsersActionTypes {
 	SetUser = 'USER_SET',
-	UpdateUser = 'USER_UPDATE'
+	UpdateUser = 'USER_UPDATE',
 }

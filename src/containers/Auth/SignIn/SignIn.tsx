@@ -13,14 +13,14 @@ import {
 	Link,
 	IconButton,
 	Slide,
-	CircularProgress
+	CircularProgress,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { ErrorOutline, PhotoCamera } from '@material-ui/icons';
 import useForm, {
 	FormState,
 	FormAction,
-	ActionType
+	ActionType,
 } from '../../../hooks/useForm';
 import validateAuthFormField from '../../../utils/authFormValidator';
 import { authorize, tryAuthorize } from '../../../store/actions/auth';
@@ -34,15 +34,15 @@ const initialState: FormState = {
 		emailAddress: '',
 		password: '',
 		confirmPassword: '',
-		avatarUrl: ''
+		avatarUrl: '',
 	},
 	errors: {
 		name: null,
 		emailAddress: null,
 		password: null,
 		confirmPassword: null,
-		avatarUrl: null
-	}
+		avatarUrl: null,
+	},
 };
 
 type TextFieldSize = 'small' | 'medium';
@@ -81,32 +81,40 @@ const SignIn = () => {
 		};
 	}, [updateTextFieldSize]);
 
-	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = ev => {
+	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
+		ev
+	) => {
 		const { name, value } = ev.target;
 
 		const action: FormAction = {
 			type: ActionType.UpdateValue,
 			fieldId: name,
-			value: value
+			value: value,
 		};
 
 		formDispatch(action);
 	};
 
-	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = ev => {
+	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = async (
+		ev
+	) => {
 		const { name } = ev.target;
-		let error = validateAuthFormField(name, formState.values, isSignIn);
+		let error = await validateAuthFormField(
+			name,
+			formState.values,
+			isSignIn
+		);
 
 		const action: FormAction = {
 			type: ActionType.SetError,
 			fieldId: name,
-			error: error
+			error: error,
 		};
 
 		formDispatch(action);
 
 		if (name === 'password') {
-			let error = validateAuthFormField(
+			let error = await validateAuthFormField(
 				'confirmPassword',
 				formState.values,
 				isSignIn
@@ -114,7 +122,7 @@ const SignIn = () => {
 			const action: FormAction = {
 				type: ActionType.SetError,
 				fieldId: 'confirmPassword',
-				error: error
+				error: error,
 			};
 
 			formDispatch(action);
@@ -126,12 +134,16 @@ const SignIn = () => {
 		setLoading(true);
 
 		for (const name in formState.values) {
-			let error = validateAuthFormField(name, formState.values, isSignIn);
+			let error = await validateAuthFormField(
+				name,
+				formState.values,
+				isSignIn
+			);
 
 			const action: FormAction = {
 				type: ActionType.SetError,
 				fieldId: name,
-				error: error
+				error: error,
 			};
 
 			formDispatch(action);
@@ -147,18 +159,18 @@ const SignIn = () => {
 			userName: formState.values.name,
 			emailAddress: formState.values.emailAddress,
 			password: formState.values.password,
-			confirmPassword: formState.values.confirmPassword
+			confirmPassword: formState.values.confirmPassword,
 		});
 		try {
 			await dispatch(authorize(credentials, isSignIn));
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach(x =>
+			fieldsErrors.forEach((x) =>
 				formDispatch({
 					type: ActionType.SetError,
 					fieldId: x.param,
-					error: x.msg
+					error: x.msg,
 				})
 			);
 
@@ -175,7 +187,7 @@ const SignIn = () => {
 						Sign Up
 					</Typography>
 				</Box>
-				<form noValidate onSubmit={ev => ev.preventDefault()}>
+				<form noValidate onSubmit={(ev) => ev.preventDefault()}>
 					<Grid
 						container
 						direction="column"
@@ -308,7 +320,7 @@ const SignIn = () => {
 							<Link
 								onClick={() => {
 									setError(null);
-									setIsSignIn(prevState => !prevState);
+									setIsSignIn((prevState) => !prevState);
 								}}
 								variant="body2"
 								style={{ cursor: 'pointer' }}
@@ -343,7 +355,7 @@ const SignIn = () => {
 									<Button
 										style={{
 											paddingLeft: 40,
-											paddingRight: 40
+											paddingRight: 40,
 										}}
 										onClick={submitHandler}
 										variant="contained"
@@ -367,45 +379,45 @@ const useStyle = makeStyles((theme: Theme) => ({
 		height: '100vh',
 		display: 'flex',
 		justifyContent: 'stretch',
-		alignItems: 'center'
+		alignItems: 'center',
 	},
 	paper: {
 		width: '100%',
-		padding: 30
+		padding: 30,
 	},
 	header: {
-		paddingBottom: theme.spacing(2)
+		paddingBottom: theme.spacing(2),
 	},
 	avatarBox: {
 		position: 'relative',
 		width: theme.spacing(12),
-		height: theme.spacing(12)
+		height: theme.spacing(12),
 	},
 	avatar: {
 		width: '100%',
-		height: '100%'
+		height: '100%',
 	},
 	avatarCamera: {
 		position: 'absolute',
 		bottom: -10,
 		right: -10,
-		background: 'white'
+		background: 'white',
 	},
 	fieldError: {
 		color: theme.palette.error.main,
 		fontSize: '0.7em',
 		height: '0.8em',
-		marginBlockStart: '0.2em'
+		marginBlockStart: '0.2em',
 	},
 	submitWrapper: {
 		justifyContent: 'center',
 		alignItems: 'center',
-		display: 'flex'
+		display: 'flex',
 	},
 	formErrorText: {
 		color: theme.palette.error.main,
-		fontWeight: 'bold'
-	}
+		fontWeight: 'bold',
+	},
 }));
 
 export default SignIn;

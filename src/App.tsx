@@ -27,6 +27,7 @@ import RootState from './store/storeTypes';
 import FlatDetails from './containers/Flat/FlatDetails';
 import NewTask from './containers/Task/NewTask';
 import Profile from './containers/Auth/Profile';
+import ChangePassword from './containers/Auth/ChangePassword';
 
 const theme = createMuiTheme({
 	palette: {
@@ -56,6 +57,7 @@ const StyledApp = () => {
 						<Route path="/flats/:id" component={FlatDetails} />
 						<Route path="/flats" component={Flats} />
 						<Route path="/profile/:id" component={Profile} />
+						<Route path="/change-password" component={ChangePassword} />
 						<Route path="/" component={Flats} />
 						{/* <Redirect from="/" to="/flats" /> */}
 					</Switch>
