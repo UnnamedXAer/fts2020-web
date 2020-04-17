@@ -124,7 +124,7 @@ export const logOut = (): ThunkAction<
 
 export const updatePassword = (
 	oldPassword: string,
-	password: string,
+	newPassword: string,
 	confirmPassword: string
 ): ThunkAction<
 	Promise<void>,
@@ -136,9 +136,9 @@ export const updatePassword = (
 		const url = `/auth/changePassword`;
 		try {
 			await axios.post(url, {
-				password: oldPassword,
-				newPassword: password,
-				confirmPassword: confirmPassword,
+				oldPassword,
+				newPassword,
+				confirmPassword,
 			});
 
 			dispatch({
