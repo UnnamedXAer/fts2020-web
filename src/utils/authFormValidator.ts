@@ -64,12 +64,13 @@ export default async function validateAuthFormField(
 			// 	) {
 			// 		error = 'Please enter correct avatar url.';
 			// 	}
-
-			try {
-				await testImage(formValues[fieldId]);
-			}
-			catch (err) {
-				error = 'That is not correct image url.'
+			if (!isSignIn && formValues[fieldId] !== '') {
+				try {
+					await testImage(formValues[fieldId]);
+				}
+				catch (err) {
+					error = 'That is not correct image url.'
+				}
 			}
 			break;
 		default:
