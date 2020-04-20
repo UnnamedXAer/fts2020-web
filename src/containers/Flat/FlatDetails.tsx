@@ -103,6 +103,10 @@ const FlatDetails: React.FC<Props> = (props) => {
 		}
 	}, [flat, dispatch, loadingElements, elementsErrors]);
 
+	const memberSelectHandler = (id: number) => {
+		props.history.push(`/profile/${id}`);
+	}
+
 	return (
 		<>
 			<Grid container spacing={2} direction="column">
@@ -173,6 +177,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 							Members
 						</Typography>
 						<FlatMembers
+							onMemberSelect={memberSelectHandler}
 							loading={!flat.members}
 							members={flat.members}
 						/>

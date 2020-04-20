@@ -20,9 +20,10 @@ import {
 interface Props {
 	members: User[] | undefined;
 	loading: boolean;
+	onMemberSelect: (id: number) => void;
 }
 
-const FlatMembers: React.FC<Props> = ({ members, loading }) => {
+const FlatMembers: React.FC<Props> = ({ members, loading, onMemberSelect }) => {
 	const dispatch = useDispatch();
 
 	const sendEmailHandler = (emailAddress: string) => {};
@@ -47,7 +48,7 @@ const FlatMembers: React.FC<Props> = ({ members, loading }) => {
 	return (
 		<List>
 			{members?.map(member => (
-				<ListItem button key={member.id}>
+				<ListItem button key={member.id} onClick={() => onMemberSelect(member.id)}>
 					<ListItemAvatar>
 						<Avatar src={member.avatarUrl}>
 							<UserCircleIcon />

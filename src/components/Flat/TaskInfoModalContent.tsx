@@ -18,12 +18,14 @@ interface Props {
 	task: Task;
 	membersError: string | null;
 	membersLoading: boolean;
+	onMemberSelect: (id: number) => void;
 }
 
 const TaskInfoModalContent: React.FC<Props> = ({
 	task,
 	membersLoading,
 	membersError,
+	onMemberSelect,
 }) => {
 	let membersContent = null;
 	if (!task) {
@@ -48,7 +50,11 @@ const TaskInfoModalContent: React.FC<Props> = ({
 			<List>
 				{task.members.map((member) => {
 					return (
-						<ListItem button key={member.id}>
+						<ListItem
+							button
+							key={member.id}
+							onClick={() => onMemberSelect(member.id)}
+						>
 							<ListItemAvatar>
 								<Avatar src={member.avatarUrl}>
 									<UserCircleIcon />

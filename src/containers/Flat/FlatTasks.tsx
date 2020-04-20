@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFlatTasks, fetchTaskMembers } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
+import { useHistory } from 'react-router-dom';
 import {
 	CircularProgress,
 	Modal,
@@ -23,11 +24,11 @@ import TaskInfoModalContent from '../../components/Flat/TaskInfoModalContent';
 
 interface Props {
 	flatId: number;
-}
+} 
 
 const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	const classes = useStyles();
-
+	const history = useHistory();
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -104,6 +105,10 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 		setShowTaskModal(true);
 	};
 
+	const memberSelectHandler = (id: number) => {
+		history.push(`/profile/${id}`);
+	}
+
 	if (error) {
 		return <ErrorCart message={error} showHeader />;
 	} else if (loading) {
@@ -144,6 +149,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 								}
 								membersError={membersError[selectedTaskId]}
 								membersLoading={membersLoading[selectedTaskId]}
+								onMemberSelect={memberSelectHandler}
 							/>
 						)}
 					</Container>
