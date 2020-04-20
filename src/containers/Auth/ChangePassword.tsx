@@ -9,10 +9,10 @@ import {
 	Button,
 	CircularProgress,
 	Box,
+	Container,
 } from '@material-ui/core';
 import { RouteComponentProps } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { ErrorOutline } from '@material-ui/icons';
 import validateAuthFormField from '../../utils/authFormValidator';
 import useForm, {
 	ActionType,
@@ -21,6 +21,7 @@ import useForm, {
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
 import { updatePassword } from '../../store/actions/auth';
+import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 
 interface Props extends RouteComponentProps {}
 
@@ -48,6 +49,7 @@ const ChangePassword: React.FC<Props> = (props) => {
 	const [formState, formDispatch] = useForm(initialState);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState(false);
 
 	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
 		ev
@@ -96,6 +98,7 @@ const ChangePassword: React.FC<Props> = (props) => {
 	const submitHandler: React.FormEventHandler = async () => {
 		setError(null);
 		setLoading(true);
+		setSuccess(false);
 
 		for (const name in formState.values) {
 			let error = await validateAuthFormField(
@@ -127,6 +130,7 @@ const ChangePassword: React.FC<Props> = (props) => {
 					formState.values.confirmPassword
 				)
 			);
+			setSuccess(true);
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
@@ -139,132 +143,142 @@ const ChangePassword: React.FC<Props> = (props) => {
 			);
 
 			setError(errorData.getMessage());
-			setLoading(false);
+			setSuccess(false);
 		}
+		setLoading(false);
 	};
 
 	return (
-		<Grid container spacing={2} direction="column">
-			<Grid item>
-				<Typography
-					variant="h3"
-					component="h1"
-					align="center"
-					color="primary"
-				>
-					Sign Up
-				</Typography>
-			</Grid>
-			<Grid item>
-				<form noValidate onSubmit={(ev) => ev.preventDefault()}>
-					<Grid
-						container
-						spacing={2}
-						direction="column"
-						alignItems="center"
+		<Container maxWidth="xs">
+			<Grid container spacing={2} direction="column">
+				<Grid item>
+					<Typography
+						variant="h5"
+						component="h1"
+						align="center"
+						color="primary"
 					>
-						<Grid item>
-							<TextField
-								size="medium"
-								name="oldPassword"
-								fullWidth
-								variant="outlined"
-								label="Old Password"
-								required
-								type="password"
-								value={formState.values.oldPassword}
-								error={!!formState.errors.oldPassword}
-								onChange={fieldChangeHandler}
-								onBlur={fieldBlurHandler}
-							/>
-							{formState.errors.password && (
-								<p className={classes.fieldError}>
-									{formState.errors.oldPassword}
-								</p>
-							)}
-						</Grid>
-						<Grid item>
-							<TextField
-								size="medium"
-								name="password"
-								fullWidth
-								variant="outlined"
-								label="New Password"
-								required
-								type="password"
-								value={formState.values.password}
-								error={!!formState.errors.password}
-								onChange={fieldChangeHandler}
-								onBlur={fieldBlurHandler}
-							/>
-							{formState.errors.password && (
-								<p className={classes.fieldError}>
-									{formState.errors.password}
-								</p>
-							)}
-						</Grid>
-						<Grid item>
-							<TextField
-								size="medium"
-								name="confirmPassword"
-								variant="outlined"
-								fullWidth
-								label="Confirm Password"
-								required
-								type="password"
-								value={formState.values.confirmPassword}
-								error={!!formState.errors.confirmPassword}
-								onChange={fieldChangeHandler}
-								onBlur={fieldBlurHandler}
-							/>
-							{formState.errors.confirmPassword && (
-								<p className={classes.fieldError}>
-									{formState.errors.confirmPassword}
-								</p>
-							)}
-						</Grid>
-
-						<Grid item>
-							{error && (
-								<Box
-									display="flex"
-									flexDirection="row"
-									alignItems="center"
-								>
-									<ErrorOutline
-										style={{ marginInlineEnd: 20 }}
-										color="error"
-									/>
-									<p className={classes.formErrorText}>
-										{error}
+						Change password
+					</Typography>
+				</Grid>
+				<Grid item>
+					<form noValidate onSubmit={(ev) => ev.preventDefault()}>
+						<Grid container spacing={2} direction="column">
+							<Grid item>
+								<TextField
+									size="medium"
+									name="oldPassword"
+									variant="outlined"
+									label="Old Password"
+									required
+									type="password"
+									fullWidth
+									value={formState.values.oldPassword}
+									error={!!formState.errors.oldPassword}
+									onChange={fieldChangeHandler}
+									onBlur={fieldBlurHandler}
+								/>
+								{formState.errors.password && (
+									<p className={classes.fieldError}>
+										{formState.errors.oldPassword}
 									</p>
-								</Box>
-							)}
-						</Grid>
-						<Grid item>
-							<Box className={classes.submitWrapper}>
-								{loading ? (
-									<CircularProgress size={36} />
-								) : (
-									<Button
-										style={{
-											paddingLeft: 40,
-											paddingRight: 40,
-										}}
-										onClick={submitHandler}
-										variant="contained"
-										color="primary"
-										type="submit"
-									>
-										Save
-									</Button>
 								)}
-							</Box>
+							</Grid>
+							<Grid item>
+								<TextField
+									size="medium"
+									name="password"
+									variant="outlined"
+									label="New Password"
+									required
+									type="password"
+									fullWidth
+									value={formState.values.password}
+									error={!!formState.errors.password}
+									onChange={fieldChangeHandler}
+									onBlur={fieldBlurHandler}
+								/>
+								{formState.errors.password && (
+									<p className={classes.fieldError}>
+										{formState.errors.password}
+									</p>
+								)}
+							</Grid>
+							<Grid item>
+								<TextField
+									size="medium"
+									name="confirmPassword"
+									variant="outlined"
+									label="Confirm Password"
+									required
+									type="password"
+									fullWidth
+									value={formState.values.confirmPassword}
+									error={!!formState.errors.confirmPassword}
+									onChange={fieldChangeHandler}
+									onBlur={fieldBlurHandler}
+								/>
+								{formState.errors.confirmPassword && (
+									<p className={classes.fieldError}>
+										{formState.errors.confirmPassword}
+									</p>
+								)}
+							</Grid>
+							<Grid item>
+								{success && (
+									<CustomMuiAlert severity="success">
+										Password changed successfully.
+									</CustomMuiAlert>
+								)}
+							</Grid>
+							<Grid item>
+								{error && (
+									<CustomMuiAlert severity="error">
+										{error}
+									</CustomMuiAlert>
+								)}
+							</Grid>
+							<Grid item>
+								<Box className={classes.submitWrapper}>
+									{loading ? (
+										<CircularProgress size={36} />
+									) : (
+										<>
+											<Button
+												style={{
+													paddingLeft: 40,
+													paddingRight: 40,
+												}}
+												onClick={() =>
+													props.history.goBack()
+												}
+												variant="text"
+												color="primary"
+												type="button"
+											>
+												Back
+											</Button>
+											<Button
+												style={{
+													paddingLeft: 40,
+													paddingRight: 40,
+												}}
+												onClick={submitHandler}
+												variant="contained"
+												color="primary"
+												type="submit"
+											>
+												Save
+											</Button>
+										</>
+									)}
+								</Box>
+							</Grid>
 						</Grid>
-					</Grid>
-				</form>
+					</form>
+				</Grid>
 			</Grid>
-		</Grid>
+		</Container>
 	);
 };
 
@@ -286,7 +300,7 @@ const useStyles = makeStyles((theme: Theme) =>
 			marginBlockStart: '0.2em',
 		},
 		submitWrapper: {
-			justifyContent: 'center',
+			justifyContent: 'space-around',
 			alignItems: 'center',
 			display: 'flex',
 		},
