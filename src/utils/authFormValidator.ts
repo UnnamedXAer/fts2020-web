@@ -5,7 +5,7 @@ export default async function validateAuthFormField(
 ): Promise<string | null> {
 	let error = null;
 	switch (fieldId) {
-		case 'name':
+		case 'userName':
 			const notAllowedUserNameValues = [
 				'admin',
 				'administrator',

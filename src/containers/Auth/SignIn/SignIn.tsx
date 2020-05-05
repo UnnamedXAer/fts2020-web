@@ -156,7 +156,7 @@ const SignIn = () => {
 		}
 
 		const credentials = new Credentials({
-			userName: formState.values.name,
+			userName: formState.values.userName,
 			emailAddress: formState.values.emailAddress,
 			password: formState.values.password,
 			confirmPassword: formState.values.confirmPassword,
@@ -232,19 +232,19 @@ const SignIn = () => {
 							<Grid item>
 								<TextField
 									size={textFieldSize}
-									name="name"
+									name="userName"
 									fullWidth
 									variant="outlined"
 									label="Name"
 									required
-									value={formState.values.name}
-									error={!!formState.errors.name}
+									value={formState.values.userName}
+									error={!!formState.errors.userName}
 									onChange={fieldChangeHandler}
 									onBlur={fieldBlurHandler}
 								/>
-								{formState.errors.name && (
+								{formState.errors.userName && (
 									<p className={classes.fieldError}>
-										{formState.errors.name}
+										{formState.errors.userName}
 									</p>
 								)}
 							</Grid>

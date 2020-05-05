@@ -67,7 +67,7 @@ const Profile: React.FC<Props> = (props) => {
 				setLoading(true);
 				setError(null);
 				try {
-					await dispatch(fetchUser(userId));
+					await dispatch(fetchUser(id));
 				} catch (err) {
 					setError(err.message);
 				}
