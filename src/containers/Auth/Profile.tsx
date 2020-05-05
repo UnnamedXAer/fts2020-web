@@ -24,9 +24,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import User from '../../models/user';
 import RootState from '../../store/storeTypes';
 import { fetchUser, updateUser } from '../../store/actions/users';
-import { EditOutlined as EditOutlinedIcon } from '@material-ui/icons';
+import {
+	EditOutlined as EditOutlinedIcon,
+	CloseRounded as CloseRoundedIcon,
+} from '@material-ui/icons';
 import validateAuthFormField from '../../utils/authFormValidator';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props extends RouteComponentProps {}
 
@@ -47,10 +51,10 @@ const Profile: React.FC<Props> = (props) => {
 		(state) => state.users.users[userId]
 	);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<StateError>(null);
 	const [editValue, setEditValue] = useState('');
 	const [editLoading, setEditLoading] = useState(false);
-	const [editError, setEditError] = useState<string | null>(null);
+	const [editError, setEditError] = useState<StateError>(null);
 	const [
 		editedFieldName,
 		setEditedFieldName,
@@ -74,6 +78,7 @@ const Profile: React.FC<Props> = (props) => {
 	}, [dispatch, error, loading, user, userId]);
 
 	const openFieldModificationHandler = (fieldName: EditableFields) => {
+		setEditError(null);
 		setOpenEditModal(true);
 		setEditedFieldName(fieldName);
 		setEditValue(user![fieldName!]!);
@@ -104,7 +109,10 @@ const Profile: React.FC<Props> = (props) => {
 		if (editedFieldName === 'emailAddress') {
 			value = value.toLocaleLowerCase();
 		}
-		if (user![editedFieldName!] !== undefined && user![editedFieldName!] === value) {
+		if (
+			user![editedFieldName!] !== undefined &&
+			user![editedFieldName!] === value
+		) {
 			return setOpenEditModal(false);
 		}
 
@@ -144,6 +152,7 @@ const Profile: React.FC<Props> = (props) => {
 				</Grid>
 				<Grid item>
 					<IconButton
+						disabled={loggedUserId !== user?.id}
 						onClick={() =>
 							openFieldModificationHandler('avatarUrl')
 						}
@@ -260,6 +269,14 @@ const Profile: React.FC<Props> = (props) => {
 			>
 				<Fade in={openEditModal}>
 					<Paper elevation={5} className={classes.paper}>
+						<IconButton
+							aria-label="Close modal"
+							color="primary"
+							className={classes.modalClose}
+							onClick={() => setOpenEditModal(false)}
+						>
+							<CloseRoundedIcon />
+						</IconButton>
 						<form onSubmit={submitFieldHandler}>
 							<Grid container direction="column" spacing={2}>
 								<Grid item>
@@ -361,6 +378,12 @@ const useStyles = makeStyles((theme: Theme) =>
 			padding: theme.spacing(1, 3),
 			minWidth: 250,
 			maxWidth: '90vw',
+			position: 'relative',
+		},
+		modalClose: {
+			position: 'absolute',
+			right: 0,
+			top: 0,
 		},
 	})
 );
