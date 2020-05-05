@@ -1,13 +1,12 @@
-import React
-// , { useRef } 
-from 'react';
+import React from 'react'; // , { useRef }
 import 'typeface-roboto';
 import {
 	ThemeProvider,
 	createMuiTheme,
 	makeStyles,
 	Container,
-	Box
+	Box,
+	CssBaseline,
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
 import { Provider, useSelector } from 'react-redux';
@@ -28,38 +27,47 @@ import FlatDetails from './containers/Flat/FlatDetails';
 import NewTask from './containers/Task/NewTask';
 import Profile from './containers/Auth/Profile';
 import ChangePassword from './containers/Auth/ChangePassword';
+import AppDrawer from './containers/Navigation/AppDrawer';
+
+const drawerWidth = 240;
 
 const theme = createMuiTheme({
 	palette: {
 		primary: colors.teal,
-		secondary: colors.orange
+		secondary: colors.orange,
 	},
 	typography: {
-		fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
-	}
+		fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+	},
 });
 
 const StyledApp = () => {
 	const classes = useStyles();
 	const user = useSelector((state: RootState) => state.auth.user);
 
-	// const history = useHistory();
-	// const initialRoute = useRef(history.location);
-	// console.log(initialRoute.current);
 	let layout = (
 		<>
-			<AppNavBar title="Flats" />
+			<CssBaseline />
+			<AppNavBar drawerWidth={drawerWidth} title="Flats" />
+			<AppDrawer drawerWidth={drawerWidth} />
 			<Box className={classes.appBody}>
+				<div className={classes.toolbar} />
 				<Container maxWidth="md" className={classes.container}>
 					<Switch>
 						<Route path="/flats/add" exact component={NewFlat} />
-						<Route path="/flats/:flatId/tasks/add" exact component={NewTask} />
+						<Route
+							path="/flats/:flatId/tasks/add"
+							exact
+							component={NewTask}
+						/>
 						<Route path="/flats/:id" component={FlatDetails} />
 						<Route path="/flats" component={Flats} />
 						<Route path="/profile/:id" component={Profile} />
-						<Route path="/change-password" component={ChangePassword} />
+						<Route
+							path="/change-password"
+							component={ChangePassword}
+						/>
 						<Route path="/" component={Flats} />
-						{/* <Redirect from="/" to="/flats" /> */}
 					</Switch>
 				</Container>
 			</Box>
@@ -96,31 +104,23 @@ function App() {
 
 const useStyles = makeStyles({
 	app: {
-		width: '100vw',
-		height: '100vh',
 		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'stretch',
-		margin: 0,
-		padding: 0,
-		overflow: 'hidden',
-		background: '#fafafa'
+		background: '#fafafa',
 	},
 	appBody: {
-		flex: 1,
-		width: '100vw',
-		overflow: 'auto'
+		flexGrow: 1,
+		backgroundColor: theme.palette.background.default,
+		padding: theme.spacing(3),
 	},
 	container: {
 		backgroundColor: 'white',
 		border: '1px solid #dee2e6',
 		borderRadius: 5,
-		marginTop: 20,
-		marginBottom: 20,
-		padding: 24,
-		flexGrow: 1
-	}
+		marginBottom: theme.spacing(2),
+		padding: theme.spacing(3),
+		flexGrow: 1,
+	},
+	toolbar: theme.mixins.toolbar,
 });
 
 export default App;

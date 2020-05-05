@@ -4,7 +4,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
@@ -16,10 +15,11 @@ import { useHistory } from 'react-router-dom';
 interface Props {
 	children?: React.ReactNode;
 	title: string;
+	drawerWidth: number;
 }
 
 const AppNavBar: React.FC<Props> = (props) => {
-	const classes = useStyles();
+	const classes = useStyles({ drawerWidth: props.drawerWidth });
 	const history = useHistory();
 	const dispatch = useDispatch();
 	const loggedUserId = useSelector<RootState, number | undefined>(
@@ -47,61 +47,64 @@ const AppNavBar: React.FC<Props> = (props) => {
 	};
 
 	return (
-		<AppBar position="static">
-			<Toolbar>
-				<IconButton
-					edge="start"
-					className={classes.menuButton}
-					color="inherit"
-					aria-label="menu"
-				>
-					<MenuIcon />
-				</IconButton>
-				<Typography variant="h6" className={classes.title}>
-					{props.title}
-				</Typography>
-				<div>
-					{loggedUserId && (
-						<IconButton
-							aria-label="account of current user"
-							aria-controls="menu-appbar"
-							aria-haspopup="true"
-							onClick={handleMenu}
-							color="inherit"
-						>
-							<AccountCircle />
-						</IconButton>
-					)}
-					<Menu
-						id="menu-appbar"
-						anchorEl={anchorEl}
-						anchorOrigin={{
-							vertical: 'top',
-							horizontal: 'right',
-						}}
-						keepMounted
-						transformOrigin={{
-							vertical: 'top',
-							horizontal: 'right',
-						}}
-						open={open}
-						onClose={menuCloseHandler}
+		<>
+			<AppBar position="fixed" className={classes.appBar}>
+				<Toolbar>
+					{/* <IconButton
+						edge="start"
+						className={classes.menuButton}
+						color="inherit"
+						aria-label="menu"
 					>
-						<MenuItem onClick={openProfileHandler}>
-							Profile
-						</MenuItem>
-						<MenuItem onClick={logoutHandler}>Logout</MenuItem>
-					</Menu>
-				</div>
-			</Toolbar>
-		</AppBar>
+						<MenuIcon />
+					</IconButton> */}
+					<Typography variant="h6" className={classes.title}>
+						{props.title}
+					</Typography>
+					<div>
+						{loggedUserId && (
+							<IconButton
+								aria-label="account of current user"
+								aria-controls="menu-appbar"
+								aria-haspopup="true"
+								onClick={handleMenu}
+								color="inherit"
+							>
+								<AccountCircle />
+							</IconButton>
+						)}
+						<Menu
+							id="menu-appbar"
+							anchorEl={anchorEl}
+							anchorOrigin={{
+								vertical: 'top',
+								horizontal: 'right',
+							}}
+							keepMounted
+							transformOrigin={{
+								vertical: 'top',
+								horizontal: 'right',
+							}}
+							open={open}
+							onClose={menuCloseHandler}
+						>
+							<MenuItem onClick={openProfileHandler}>
+								Profile
+							</MenuItem>
+							<MenuItem onClick={logoutHandler}>Logout</MenuItem>
+						</Menu>
+					</div>
+				</Toolbar>
+			</AppBar>
+		</>
 	);
 };
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles<Theme, { drawerWidth: number }>((theme: Theme) =>
 	createStyles({
-		root: {
-			flexGrow: 1,
+		appBar: {
+			width: (props) => `calc(100% - ${props.drawerWidth}px)`,
+			marginLeft: (props) => props.drawerWidth,
 		},
 		menuButton: {
 			marginRight: theme.spacing(2),
