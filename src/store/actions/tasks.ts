@@ -1,16 +1,21 @@
 import axios from '../../axios/axios';
 import { TasksActionTypes } from './actionTypes';
-import Task, { TaskPeriodUnit } from '../../models/task';
+import Task, { TaskPeriodUnit, UserTask } from '../../models/task';
 import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
 import User from '../../models/user';
 
-type FetchTasksAction = {
-	type: TasksActionTypes.Set;
+type FetchFlatTasksAction = {
+	type: TasksActionTypes.SetFlatTasks;
 	payload: {
 		tasks: Task[];
 		flatId: number;
 	};
+};
+
+type FetchUserTasksAction = {
+	type: TasksActionTypes.SetUserTasks;
+	payload: UserTask[];
 };
 
 type APITask = {
@@ -23,6 +28,16 @@ type APITask = {
 	flatId: number;
 	startDate?: string;
 	endDate?: string;
+	timePeriodUnit?: TaskPeriodUnit;
+	timePeriodValue?: number;
+	active?: boolean;
+};
+
+type APIUserTask = {
+	id?: number;
+	title: string;
+	flatName?: string;
+	flatId: number;
 	timePeriodUnit?: TaskPeriodUnit;
 	timePeriodValue?: number;
 	active?: boolean;
@@ -70,7 +85,7 @@ export const createTask = (
 
 export const fetchFlatTasks = (
 	id: number
-): ThunkAction<Promise<void>, RootState, any, FetchTasksAction> => {
+): ThunkAction<Promise<void>, RootState, any, FetchFlatTasksAction> => {
 	return async (dispatch) => {
 		const url = `/flats/${id}/tasks`;
 		try {
@@ -93,7 +108,7 @@ export const fetchFlatTasks = (
 			);
 
 			dispatch({
-				type: TasksActionTypes.Set,
+				type: TasksActionTypes.SetFlatTasks,
 				payload: {
 					flatId: id,
 					tasks,
@@ -106,20 +121,52 @@ export const fetchFlatTasks = (
 	};
 };
 
+export const fetchUserTasks = (): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	FetchUserTasksAction
+> => {
+	return async (dispatch) => {
+		const url = `/tasks`;
+		try {
+			const { data } = await axios.get<APIUserTask[]>(url);
+			const tasks = data.map(
+				(x) =>
+					new UserTask({
+						id: x.id,
+						flatId: x.flatId,
+						name: x.title,
+						flatName: x.flatName,
+						timePeriodUnit: x.timePeriodUnit,
+						timePeriodValue: x.timePeriodValue,
+						active: x.active,
+					})
+			);
+
+			dispatch({
+				type: TasksActionTypes.SetUserTasks,
+				payload: tasks,
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
 export const fetchTaskMembers = (
-	flatId: number,
 	taskId: number
 ): ThunkAction<
 	Promise<void>,
 	RootState,
 	any,
 	StoreAction<
-		{ flatId: number; taskId: number; members: User[] },
+		{ taskId: number; members: User[] },
 		TasksActionTypes.SetMembers
 	>
 > => {
 	return async (dispatch) => {
-		const url = `/flats/${flatId}/tasks/${taskId}/members`;
+		const url = `/tasks/${taskId}/members`;
 		try {
 			const { data } = await axios.get(url);
 			const members = data.map(
@@ -139,8 +186,7 @@ export const fetchTaskMembers = (
 				type: TasksActionTypes.SetMembers,
 				payload: {
 					members,
-					taskId,
-					flatId,
+					taskId
 				},
 			});
 		} catch (err) {

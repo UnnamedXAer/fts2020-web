@@ -14,7 +14,8 @@ export enum FlatsActionTypes {
 }
 
 export enum TasksActionTypes {
-	Set = 'TASK_SET',
+	SetFlatTasks = 'TASK_SET_FLAT_TASKS',
+	SetUserTasks = 'TASK_SET_USER_TASKS',
 	Add = 'TASK_ADD',
 	SetMembers = 'FLAT_TASK_SET_MEMBERS',
 	ClearState = 'TASK_CLEAR_STATE',

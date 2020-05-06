@@ -22,6 +22,8 @@ import AppNavBar from './containers/Navigation/AppNavBar';
 import NewFlat from './containers/Flat/NewFlat';
 import SignIn from './containers/Auth/SignIn/SignIn';
 import Flats from './containers/Flat/Flats';
+import UserTasks from './containers/Task/UserTasks';
+import TaskDetails from './containers/Task/TaskDetails';
 import RootState from './store/storeTypes';
 import FlatDetails from './containers/Flat/FlatDetails';
 import NewTask from './containers/Task/NewTask';
@@ -62,6 +64,8 @@ const StyledApp = () => {
 						/>
 						<Route path="/flats/:id" component={FlatDetails} />
 						<Route path="/flats" component={Flats} />
+						<Route path="/tasks/:id" component={TaskDetails} />
+						<Route path="/my-tasks" component={UserTasks} />
 						<Route path="/profile/:id" component={Profile} />
 						<Route
 							path="/change-password"

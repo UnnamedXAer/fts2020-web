@@ -1,7 +1,7 @@
 import User from '../models/user';
 import { Action } from 'redux';
 import Flat from '../models/flat';
-import Task from '../models/task';
+import Task, { UserTask } from '../models/task';
 
 export type RootState = {
 	auth: AuthState;
@@ -25,7 +25,9 @@ export type FlatsState = {
 };
 
 export type TasksState = {
-	flatsTasks: { [flatId: number]: Task[] };
+	tasks: Task[];
+	userTasks: UserTask[]
+	userTasksLoadTime: number;
 };
 
 export type AppReducer<TState, AType = string, APayload = any> = (

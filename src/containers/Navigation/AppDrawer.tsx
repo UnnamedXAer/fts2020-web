@@ -54,7 +54,7 @@ const AppDrawer: React.FC<Props> = (props) => {
 					</ListItemIcon>
 					<ListItemText primary="Flats" />
 				</ListItem>
-				<ListItem button onClick={() => history.push('/user-tasks')}>
+				<ListItem button onClick={() => history.push('/my-tasks')}>
 					<ListItemIcon>
 						<TasksIcon color="primary" />
 					</ListItemIcon>

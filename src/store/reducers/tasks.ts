@@ -4,65 +4,66 @@ import Task from '../../models/task';
 import User from '../../models/user';
 
 const initialState: TasksState = {
-	flatsTasks: {},
+	tasks: [],
+	userTasks: [],
+	userTasksLoadTime: 0,
 };
 
-const setTasks: SimpleReducer<TasksState, { flatId: number; tasks: Task[] }> = (
-	state,
-	action
-) => {
-	const updatedFlatsTasks = {
-		...state.flatsTasks,
-		[action.payload.flatId]: action.payload.tasks,
+const setUserTasks: SimpleReducer<TasksState, Task[]> = (state, action) => {
+	return {
+		...state,
+		userTasks: action.payload,
+		userTasksLoadTime: Date.now(),
 	};
+};
+
+const setFlatTasks: SimpleReducer<
+	TasksState,
+	{ flatId: number; tasks: Task[] }
+> = (state, action) => {
+	const { flatId, tasks } = action.payload;
+	const updatedTasks = state.tasks.filter((x) => x.flatId !== flatId);
+
+	updatedTasks.concat(tasks);
 
 	return {
 		...state,
-		flatsTasks: updatedFlatsTasks,
+		tasks: updatedTasks,
 	};
 };
 
 const addTask: SimpleReducer<TasksState, Task> = (state, action) => {
-	const updatedFlatsTasks = {
-		...state.flatsTasks,
-		[action.payload.flatId!]: state.flatsTasks[
-			action.payload.flatId!
-		].concat(action.payload),
-	};
+	const updatedTasks = state.tasks.concat(action.payload);
 
 	return {
 		...state,
-		flatsTasks: updatedFlatsTasks,
+		tasks: updatedTasks,
 	};
 };
 
 const setMembers: SimpleReducer<
 	TasksState,
-	{ flatId: number; taskId: number; members: User[] }
+	{ taskId: number; members: User[] }
 > = (state, action) => {
-	const { flatId, taskId, members } = action.payload;
-	const updatedFlatsTasks = {
-		...state.flatsTasks,
-	};
+	const { taskId, members } = action.payload;
+	const updatedTasks = [...state.tasks];
 
-	const updatedFlatTasks = [...updatedFlatsTasks[flatId]];
-	const editedTaskIndex = updatedFlatTasks.findIndex((x) => x.id === taskId);
+	const editedTaskIndex = updatedTasks.findIndex((x) => x.id === taskId);
 
 	const updatedTask = new Task({
-		...updatedFlatTasks[editedTaskIndex],
+		...updatedTasks[editedTaskIndex],
 		members: members,
 	});
 
-	updatedFlatTasks[editedTaskIndex] = updatedTask;
-	updatedFlatsTasks[flatId] = updatedFlatTasks;
+	updatedTasks[editedTaskIndex] = updatedTask;
 
 	return {
 		...state,
-		flatsTasks: updatedFlatsTasks,
+		tasks: updatedTasks,
 	};
 };
 
-const clearState:SimpleReducer<TasksState, undefined> = (state, action) => {
+const clearState: SimpleReducer<TasksState, undefined> = (state, action) => {
 	return {
 		...initialState,
 	};
@@ -73,14 +74,16 @@ const reducer: AppReducer<TasksState, TasksActionTypes> = (
 	action
 ) => {
 	switch (action.type) {
-		case TasksActionTypes.Set:
-			return setTasks(state, action);
+		case TasksActionTypes.SetFlatTasks:
+			return setFlatTasks(state, action);
+		case TasksActionTypes.SetUserTasks:
+			return setUserTasks(state, action);
 		case TasksActionTypes.Add:
 			return addTask(state, action);
 		case TasksActionTypes.SetMembers:
 			return setMembers(state, action);
-			case TasksActionTypes.ClearState:
-				return clearState(state, action);
+		case TasksActionTypes.ClearState:
+			return clearState(state, action);
 		default:
 			return state;
 	}

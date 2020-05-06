@@ -22,6 +22,7 @@ export default class Task {
 	createBy?: User;
 	createById?: number;
 	createAt?: Date;
+	owner?: User
 
 	constructor(params: Task = {} as Task) {
 		const {
@@ -36,7 +37,8 @@ export default class Task {
 			members,
 			active,
 			createBy,
-			createAt
+			createAt,
+			owner
 		} = params;
 
 		this.id = id;
@@ -51,5 +53,35 @@ export default class Task {
 		this.active = active;
 		this.createBy = createBy;
 		this.createAt = createAt;
+		this.owner = owner;
+	}
+}
+export class UserTask {
+	id?: number;
+	flatId?: number;
+	flatName?: string;
+	name?: string;
+	timePeriodUnit?: TaskPeriodUnit;
+	timePeriodValue?: number;
+	active?: boolean;
+
+	constructor(params: UserTask = {} as UserTask) {
+		const {
+			id,
+			flatId,
+			name,
+			flatName,
+			timePeriodUnit,
+			timePeriodValue,
+			active,
+		} = params;
+
+		this.id = id;
+		this.flatId = flatId;
+		this.name = name;
+		this.flatName = flatName;
+		this.timePeriodUnit = timePeriodUnit;
+		this.timePeriodValue = timePeriodValue;
+		this.active = active;
 	}
 }

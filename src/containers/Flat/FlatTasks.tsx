@@ -33,7 +33,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const tasks = useSelector<RootState, Task[]>(
-		(state) => state.tasks.flatsTasks[flatId]
+		(state) => state.tasks.tasks.filter(x => x.flatId === flatId)
 	);
 	const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 	const [showTaskModal, setShowTaskModal] = useState(false);
@@ -82,7 +82,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 						[taskId]: true,
 					}));
 					try {
-						await dispatch(fetchTaskMembers(flatId, taskId));
+						await dispatch(fetchTaskMembers(taskId));
 					} catch (err) {
 						setMembersError((prevState) => ({
 							...prevState,
