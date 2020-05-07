@@ -19,8 +19,7 @@ export default class Task {
 	timePeriodValue?: number;
 	members?: User[];
 	active?: boolean;
-	createBy?: User;
-	createById?: number;
+	createBy?: number;
 	createAt?: Date;
 	owner?: User
 
@@ -36,8 +35,8 @@ export default class Task {
 			timePeriodValue,
 			members,
 			active,
-			createBy,
 			createAt,
+			createBy,
 			owner
 		} = params;
 
@@ -51,8 +50,8 @@ export default class Task {
 		this.timePeriodValue = timePeriodValue;
 		this.members = members;
 		this.active = active;
-		this.createBy = createBy;
 		this.createAt = createAt;
+		this.createBy = createBy;
 		this.owner = owner;
 	}
 }

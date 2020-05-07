@@ -17,6 +17,23 @@ const setUserTasks: SimpleReducer<TasksState, Task[]> = (state, action) => {
 	};
 };
 
+const setTask: SimpleReducer<TasksState, Task> = (state, action) => {
+	const task = action.payload;
+	const updatedTasks = [...state.tasks];
+
+	const taskIdx = updatedTasks.findIndex((x) => x.id === task.id);
+	if (taskIdx === -1) {
+		updatedTasks.push(task);
+	} else {
+		updatedTasks[taskIdx] = task;
+	}
+
+	return {
+		...state,
+		tasks: updatedTasks,
+	};
+};
+
 const setFlatTasks: SimpleReducer<
 	TasksState,
 	{ flatId: number; tasks: Task[] }
@@ -63,6 +80,28 @@ const setMembers: SimpleReducer<
 	};
 };
 
+const setOwner: SimpleReducer<
+	TasksState,
+	{ taskId: number; user: User }
+> = (state, action) => {
+	const { taskId, user } = action.payload;
+	const updatedTasks = [...state.tasks];
+
+	const editedTaskIndex = updatedTasks.findIndex((x) => x.id === taskId);
+
+	const updatedTask = new Task({
+		...updatedTasks[editedTaskIndex],
+		owner: user,
+	});
+
+	updatedTasks[editedTaskIndex] = updatedTask;
+
+	return {
+		...state,
+		tasks: updatedTasks,
+	};
+};
+
 const clearState: SimpleReducer<TasksState, undefined> = (state, action) => {
 	return {
 		...initialState,
@@ -74,6 +113,8 @@ const reducer: AppReducer<TasksState, TasksActionTypes> = (
 	action
 ) => {
 	switch (action.type) {
+		case TasksActionTypes.SetTask:
+			return setTask(state, action);
 		case TasksActionTypes.SetFlatTasks:
 			return setFlatTasks(state, action);
 		case TasksActionTypes.SetUserTasks:
@@ -82,6 +123,8 @@ const reducer: AppReducer<TasksState, TasksActionTypes> = (
 			return addTask(state, action);
 		case TasksActionTypes.SetMembers:
 			return setMembers(state, action);
+		case TasksActionTypes.SetOwner:
+			return setOwner(state, action);
 		case TasksActionTypes.ClearState:
 			return clearState(state, action);
 		default:

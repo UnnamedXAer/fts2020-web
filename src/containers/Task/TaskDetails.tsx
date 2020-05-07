@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps, Link as RouterLink } from 'react-router-dom';
 import {
 	Grid,
 	Typography,
@@ -9,16 +9,21 @@ import {
 	Theme,
 	createStyles,
 	TextField,
+	Link,
 } from '@material-ui/core';
-import {
-	HomeWorkOutlined as HomeIcon,
-} from '@material-ui/icons';
+import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
 import FlatMembers from '../../components/Flat/FlatMembers';
 import RootState from '../../store/storeTypes';
 import { StateError } from '../../ReactTypes/customReactTypes';
-import { fetchTaskMembers } from '../../store/actions/tasks';
+import {
+	fetchTaskMembers,
+	fetchTask,
+	fetchTaskOwner,
+} from '../../store/actions/tasks';
+import HttpErrorParser from '../../utils/parseError';
+import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 
 interface Props extends RouteComponentProps {}
 
@@ -30,13 +35,16 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
 
+	const [error, setError] = useState<StateError>(null);
+
 	const id = +(props.match.params as RouterParams).id;
 	const task = useSelector((state: RootState) =>
 		state.tasks.tasks.find((x) => x.id === id)
-	)!;
+	);
 
 	const [loadingElements, setLoadingElements] = useState({
-		members: !!task.members,
+		members: !(!task || !task.members),
+		owner: !(!task || !task.owner),
 	});
 
 	const [elementsErrors, setElementsErrors] = useState<{
@@ -48,6 +56,52 @@ const TaskDetails: React.FC<Props> = (props) => {
 	});
 
 	useEffect(() => {
+		if (!task) {
+			const loadTask = async (id: number) => {
+				setError(null);
+				try {
+					await dispatch(fetchTask(id));
+				} catch (err) {
+					const error = new HttpErrorParser(err);
+					const msg = error.getMessage();
+					setError(msg);
+				}
+			};
+			loadTask(id);
+		}
+	}, [dispatch, id, task]);
+
+	console.log(task?.members);
+
+	useEffect(() => {
+		if (
+			task &&
+			!task.owner &&
+			!loadingElements.owner &&
+			!elementsErrors.owner
+		) {
+			const loadOwner = async () => {
+				setLoadingElements((prevState) => ({
+					...prevState,
+					owner: true,
+				}));
+				try {
+					await dispatch(fetchTaskOwner(task.createBy!, task.id!));
+				} catch (err) {
+					setElementsErrors((prevState) => ({
+						...prevState,
+						owner: err.message,
+					}));
+				}
+				setLoadingElements((prevState) => ({
+					...prevState,
+					owner: false,
+				}));
+			};
+
+			loadOwner();
+		}
+
 		if (
 			task &&
 			!task.members &&
@@ -79,16 +133,23 @@ const TaskDetails: React.FC<Props> = (props) => {
 
 	const memberSelectHandler = (id: number) => {
 		props.history.push(`/profile/${id}`);
-	}
+	};
 
 	return (
 		<>
 			<Grid container spacing={2} direction="column">
 				<Grid item>
 					<Typography variant="h4" component="h1">
-						View Flat
+						View Task
 					</Typography>
 				</Grid>
+				{error && (
+					<Grid item>
+						<CustomMuiAlert severity="error">
+							{error}
+						</CustomMuiAlert>
+					</Grid>
+				)}
 				<Grid item>
 					<Grid
 						container
@@ -101,50 +162,65 @@ const TaskDetails: React.FC<Props> = (props) => {
 							<Avatar
 								className={classes.avatar}
 								alt="flat avatar"
-								src="https://vscode-icons-team.gallerycdn.vsassets.io/extensions/vscode-icons-team/vscode-icons/10.0.0/1581882255844/Microsoft.VisualStudio.Services.Icons.Default"
+								src=""
 							>
-								<HomeIcon color="primary" />
+								<AllInclusiveRoundedIcon
+									color="primary"
+									aria-label="task icon"
+								/>
 							</Avatar>
 						</Grid>
 						<Grid item>
-							<Typography
-								variant="h5"
-								component="h2"
-								className={classes.title}
-							>
-								{task.name}
-							</Typography>
-							{task.owner ? (
+							{task ? (
+								<Typography
+									variant="h5"
+									component="h2"
+									className={classes.title}
+								>
+									{task.name}
+								</Typography>
+							) : (
+								<Skeleton animation="wave" height={46} />
+							)}
+							{task?.owner ? (
 								<Typography
 									variant="subtitle1"
 									color="textSecondary"
 								>
-									Created By {task.owner!.emailAddress}
+									Created by <Link component={RouterLink} to={`/profile/${task.createBy}`}>{task.owner!.emailAddress}</Link>
 								</Typography>
 							) : (
 								<Skeleton animation="wave" />
 							)}
-							<Typography
-								variant="subtitle1"
-								color="textSecondary"
-							>
-								{moment(task.createAt).format('llll')}
-							</Typography>
+							{task ? (
+								<Typography
+									variant="subtitle1"
+									color="textSecondary"
+								>
+									{moment(task.createAt).format('llll')}
+								</Typography>
+							) : (
+								<Skeleton animation="wave" />
+							)}
 						</Grid>
 					</Grid>
 					<Grid item>
 						<Typography variant="h5" component="h3">
 							Description
 						</Typography>
-						<TextField
-							className={classes.description}
-							value={task.description}
-							multiline
-							rowsMax={4}
-							fullWidth
-							variant="outlined"
-							inputProps={{ readOnly: true }}
-						/>
+						{task ? (
+							<TextField
+								className={classes.description}
+								value={task.description}
+								multiline
+								rowsMax={4}
+								fullWidth
+								variant="outlined"
+								inputProps={{ readOnly: true }}
+							/>
+						) : (
+							<Skeleton animation="wave" />
+						)}
 					</Grid>
 					<Grid item>
 						<Typography variant="h5" component="h3">
@@ -152,8 +228,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 						</Typography>
 						<FlatMembers
 							onMemberSelect={memberSelectHandler}
-							loading={!task.members}
-							members={task.members}
+							loading={loadingElements.members}
+							members={task?.members}
 						/>
 					</Grid>
 				</Grid>
