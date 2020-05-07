@@ -11,10 +11,10 @@ import {
 	Theme,
 	CircularProgress,
 	Box,
+	Link,
 } from '@material-ui/core';
-import {
-	AllInclusiveRounded as AllInclusiveRoundedIcon
-} from '@material-ui/icons';
+import { Link as RouterLink } from 'react-router-dom';
+import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { UserTask } from '../../models/task';
 import RootState from '../../store/storeTypes';
@@ -95,7 +95,34 @@ const UserTasks: React.FC<Props> = (props) => {
 							</ListItemAvatar>
 							<ListItemText
 								primary={task.name}
-								secondary={task.flatName}
+								secondary={
+									<>
+										<Typography component="span">
+											Flat:{' '}
+											<Link
+												component={RouterLink}
+												to={`/flats/${task.flatId}`}
+												color="primary"
+												variant="body1"
+											>
+												{task.flatName}
+											</Link>
+										</Typography>{' '}
+										<br />
+										<Typography component="span">
+											Period:{' '}
+											<Typography
+												component="span"
+												color="textPrimary"
+											>
+												{task.timePeriodValue}{' '}
+												{task.timePeriodUnit?.toLocaleLowerCase()}
+												{task.timePeriodValue! > 1 &&
+													's'}
+											</Typography>
+										</Typography>
+									</>
+								}
 							/>
 						</ListItem>
 					))}
