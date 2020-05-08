@@ -17,7 +17,7 @@ import {
 } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
-import FlatMembers from '../../components/Flat/FlatMembers';
+import MembersList from '../../components/Flat/MembersList';
 import RootState from '../../store/storeTypes';
 import FlatTasks from './FlatTasks';
 import { fetchFlatOwner, fetchFlatMembers } from '../../store/actions/flats';
@@ -176,7 +176,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<Typography variant="h5" component="h3">
 							Members
 						</Typography>
-						<FlatMembers
+						<MembersList
 							onMemberSelect={memberSelectHandler}
 							loading={!flat.members}
 							members={flat.members}

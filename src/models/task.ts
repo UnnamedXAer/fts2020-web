@@ -5,7 +5,7 @@ export enum TaskPeriodUnit {
 	'DAY' = 'DAY',
 	'WEEK' = 'WEEK',
 	'MONTH' = 'MONTH',
-	'YEAR' = 'YEAR'
+	'YEAR' = 'YEAR',
 }
 
 export default class Task {
@@ -21,7 +21,7 @@ export default class Task {
 	active?: boolean;
 	createBy?: number;
 	createAt?: Date;
-	owner?: User
+	owner?: User;
 
 	constructor(params: Task = {} as Task) {
 		const {
@@ -37,7 +37,7 @@ export default class Task {
 			active,
 			createAt,
 			createBy,
-			owner
+			owner,
 		} = params;
 
 		this.id = id;
