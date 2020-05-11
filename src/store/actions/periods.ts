@@ -14,16 +14,18 @@ type APITaskPeriod = {
 	completedAt?: string;
 };
 
+export type SetTaskPeriodsActionPayload = {
+	taskId: number;
+	periods: TaskPeriod[];
+};
+
 export const fetchTaskPeriods = (
 	taskId: number
 ): ThunkAction<
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<
-		{ taskId: number; periods: TaskPeriod[] },
-		TaskPeriodsTypes.SetTaskPeriods
-	>
+	StoreAction<SetTaskPeriodsActionPayload, TaskPeriodsTypes.SetTaskPeriods>
 > => {
 	return async (dispatch) => {
 		const url = `/tasks/${taskId}/periods`;

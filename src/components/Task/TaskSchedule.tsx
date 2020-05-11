@@ -58,7 +58,12 @@ const TaskSchedule: React.FC<Props> = ({
 				</TableHead>
 				{error === null && (
 					<TableBody>
-						{!loading ? (
+						{loading ? (
+							<>
+								<LoadingRow />
+								<LoadingRow />
+							</>
+						) : (
 							data!.map((row, i) => (
 								<TableRow key={i}>
 									<TableCell>Ann</TableCell>
@@ -75,15 +80,13 @@ const TaskSchedule: React.FC<Props> = ({
 									</TableCell>
 								</TableRow>
 							))
-						) : (
-							<>
-								<LoadingRow />
-								<LoadingRow />
-							</>
 						)}
 					</TableBody>
 				)}
 			</Table>
+			{data?.length === 0 && (
+				<CustomMuiAlert severity="info">No records.</CustomMuiAlert>
+			)}
 			{error && <CustomMuiAlert severity="error">{error}</CustomMuiAlert>}
 		</>
 	);

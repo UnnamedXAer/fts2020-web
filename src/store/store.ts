@@ -4,13 +4,15 @@ import ReduxThunk from 'redux-thunk';
 import authReducer from './reducers/auth';
 import flatsReducer from './reducers/flats';
 import tasksReducer from './reducers/tasks';
+import taskPeriodsReducer from './reducers/periods';
 import usersReducer from './reducers/users';
 
 const rootReducer = combineReducers({
 	auth: authReducer,
 	flats: flatsReducer,
 	tasks: tasksReducer,
-	users: usersReducer
+	users: usersReducer,
+	periods: taskPeriodsReducer,
 });
 
 const middleware = [ReduxThunk];

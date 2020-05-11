@@ -26,6 +26,7 @@ import HttpErrorParser from '../../utils/parseError';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TaskInfoTable from '../../components/Task/TaskInfoTable';
 import TaskSchedule from '../../components/Task/TaskSchedule';
+import { fetchTaskPeriods } from '../../store/actions/periods';
 
 interface Props extends RouteComponentProps {}
 
@@ -54,6 +55,10 @@ const TaskDetails: React.FC<Props> = (props) => {
 
 	const task = useSelector((state: RootState) =>
 		state.tasks.tasks.find((x) => x.id === id)
+	);
+
+	const periods = useSelector((state: RootState) =>
+		task ? state.periods.taskPeriods[task.id!] : void 0
 	);
 
 	const [loadingElements, setLoadingElements] = useState({
@@ -87,6 +92,44 @@ const TaskDetails: React.FC<Props> = (props) => {
 			setTimeout(() => loadTask(id), 1000);
 		}
 	}, [dispatch, id, task]);
+
+	useEffect(() => {
+		if (
+			task &&
+			!periods &&
+			!loadingElements.schedule &&
+			!elementsErrors.schedule
+		) {
+			const loadSchedule = async (id: number) => {
+				setLoadingElements((prevState) => ({
+					...prevState,
+					schedule: true,
+				}));
+				try {
+					await dispatch(fetchTaskPeriods(id));
+				} catch (err) {
+					const error = new HttpErrorParser(err);
+					const msg = error.getMessage();
+					setElementsErrors((prevState) => ({
+						...prevState,
+						schedule: msg,
+					}));
+				}
+				console.log('after fetching scheduler')
+				setLoadingElements((prevState) => ({
+					...prevState,
+					schedule: false,
+				}));
+			};
+			loadSchedule(task.id!);
+		}
+	}, [
+		dispatch,
+		elementsErrors.schedule,
+		loadingElements.schedule,
+		periods,
+		task,
+	]);
 
 	useEffect(() => {
 		if (
@@ -144,11 +187,20 @@ const TaskDetails: React.FC<Props> = (props) => {
 
 			loadMembers();
 		}
-	}, [task, dispatch, loadingElements, elementsErrors]);
+	}, [
+		task,
+		dispatch,
+		loadingElements.members,
+		loadingElements.owner,
+		elementsErrors.owner,
+		elementsErrors.members,
+	]);
 
 	const memberSelectHandler = (id: number) => {
 		props.history.push(`/profile/${id}`);
 	};
+
+	console.log(loadingElements.schedule, !periods, !elementsErrors.schedule)
 
 	return (
 		<Grid container spacing={2} direction="column">
@@ -281,8 +333,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 						Schedule
 					</Typography>
 					<TaskSchedule
-						data={void 0}
-						loading={loadingElements.schedule}
+						data={periods}
+						loading={(loadingElements.schedule || !periods) && !elementsErrors.schedule}
 						error={elementsErrors.schedule}
 						timePeriodUnit={task?.timePeriodUnit!}
 						timePeriodValue={task?.timePeriodValue!}
