@@ -10,6 +10,7 @@ import {
 	createStyles,
 	TextField,
 	Link,
+	Snackbar,
 } from '@material-ui/core';
 import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -27,6 +28,7 @@ import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TaskInfoTable from '../../components/Task/TaskInfoTable';
 import TaskSchedule from '../../components/Task/TaskSchedule';
 import { fetchTaskPeriods } from '../../store/actions/periods';
+import Alert from '@material-ui/lab/Alert';
 
 interface Props extends RouteComponentProps {}
 
@@ -37,10 +39,9 @@ type RouterParams = {
 const TaskDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-
 	const [error, setError] = useState<StateError>(null);
-
 	const id = +(props.match.params as RouterParams).id;
+	const loggedUser = useSelector((state: RootState) => state.auth.user);
 	const flatName = useSelector<RootState, string>((state) => {
 		let flatName: string;
 		const flat = state.flats.flats.find((x) => x.id === id);
@@ -52,21 +53,17 @@ const TaskDetails: React.FC<Props> = (props) => {
 		}
 		return flatName;
 	});
-
 	const task = useSelector((state: RootState) =>
 		state.tasks.tasks.find((x) => x.id === id)
 	);
-
 	const periods = useSelector((state: RootState) =>
 		task ? state.periods.taskPeriods[task.id!] : void 0
 	);
-
 	const [loadingElements, setLoadingElements] = useState({
 		members: false,
 		owner: false,
 		schedule: false,
 	});
-
 	const [elementsErrors, setElementsErrors] = useState<{
 		owner: StateError;
 		members: StateError;
@@ -76,6 +73,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 		members: null,
 		schedule: null,
 	});
+	const [snackbarError, setSnackbarError] = useState<StateError>(null);
+	const [snackbarOpened, setSnackbarOpened] = useState(false);
 
 	useEffect(() => {
 		if (!task) {
@@ -89,7 +88,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 					setError(msg);
 				}
 			};
-			setTimeout(() => loadTask(id), 1000);
+			loadTask(id);
 		}
 	}, [dispatch, id, task]);
 
@@ -115,7 +114,6 @@ const TaskDetails: React.FC<Props> = (props) => {
 						schedule: msg,
 					}));
 				}
-				console.log('after fetching scheduler')
 				setLoadingElements((prevState) => ({
 					...prevState,
 					schedule: false,
@@ -200,7 +198,19 @@ const TaskDetails: React.FC<Props> = (props) => {
 		props.history.push(`/profile/${id}`);
 	};
 
-	console.log(loadingElements.schedule, !periods, !elementsErrors.schedule)
+	const completePeriodHandler = async (id: number) => {
+		try {
+			throw new Error('WWWWrrrrr');
+		} catch (err) {
+			const error = new HttpErrorParser(err);
+			setSnackbarError(error.getMessage());
+			setSnackbarOpened(true);
+		}
+	};
+
+	const snackbarCloseHandler = () => {
+		setSnackbarOpened(false);
+	};
 
 	return (
 		<Grid container spacing={2} direction="column">
@@ -334,13 +344,24 @@ const TaskDetails: React.FC<Props> = (props) => {
 					</Typography>
 					<TaskSchedule
 						data={periods}
-						loading={(loadingElements.schedule || !periods) && !elementsErrors.schedule}
+						loading={
+							(loadingElements.schedule || !periods) &&
+							!elementsErrors.schedule
+						}
 						error={elementsErrors.schedule}
-						timePeriodUnit={task?.timePeriodUnit!}
-						timePeriodValue={task?.timePeriodValue!}
+						loggedUserEmailAddress={loggedUser!.emailAddress}
+						onCompletePeriod={completePeriodHandler}
 					/>
 				</Grid>
 			</Grid>
+			<Snackbar
+				open={snackbarOpened}
+				autoHideDuration={6000}
+			>
+				<Alert onClose={snackbarCloseHandler} severity="error">
+					{snackbarError}
+				</Alert>
+			</Snackbar>
 		</Grid>
 	);
 };

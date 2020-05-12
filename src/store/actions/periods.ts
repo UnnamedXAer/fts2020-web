@@ -2,21 +2,21 @@ import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
 import { TaskPeriodsTypes } from './actionTypes';
 import axios from '../../axios/axios';
-import { TaskPeriod } from '../../models/taskPeriod';
-import User from '../../models/user';
+import { Period, PeriodUser } from '../../models/period';
 
 type APITaskPeriod = {
 	id: number;
+	taskId: number;
 	startDate: string;
 	endDate: string;
-	assignedTo: User;
-	completedBy?: User;
-	completedAt?: string;
+	assignedTo: PeriodUser;
+	completedBy: PeriodUser | null;
+	completedAt: string | null;
 };
 
 export type SetTaskPeriodsActionPayload = {
 	taskId: number;
-	periods: TaskPeriod[];
+	periods: Period[];
 };
 
 export const fetchTaskPeriods = (
@@ -33,14 +33,14 @@ export const fetchTaskPeriods = (
 			const { data } = await axios.get<APITaskPeriod[]>(url);
 			const periods = data.map(
 				(period) =>
-					new TaskPeriod({
+					new Period({
 						id: period.id,
 						startDate: new Date(period.startDate),
 						endDate: new Date(period.endDate),
 						assignedTo: period.assignedTo,
 						completedAt: period.completedAt
 							? new Date(period.completedAt)
-							: void 0,
+							: null,
 						completedBy: period.completedBy,
 					})
 			);

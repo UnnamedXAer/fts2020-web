@@ -5,13 +5,21 @@ import {
 	TableRow,
 	TableCell,
 	TableBody,
+	Typography,
+	makeStyles,
+	Theme,
+	createStyles,
+	withTheme,
 } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
-import { TaskPeriodUnit } from '../../models/task';
-import { CheckBox } from '@material-ui/icons';
 import { StateError } from '../../ReactTypes/customReactTypes';
 import CustomMuiAlert from '../UI/CustomMuiAlert';
+import { Period } from '../../models/period';
+import {
+	DoneAllRounded as DoneAllRoundedIcon,
+	DoneRounded as DoneRoundedIcon,
+} from '@material-ui/icons';
 
 const LoadingRow = () => (
 	<TableRow>
@@ -31,29 +39,36 @@ const LoadingRow = () => (
 );
 
 interface Props {
-	data: {}[] | undefined;
-	timePeriodValue: number;
-	timePeriodUnit: TaskPeriodUnit;
+	data: Period[] | undefined;
 	error: StateError;
 	loading: boolean;
+	loggedUserEmailAddress: string;
+	onCompletePeriod: (id: number) => void;
+	theme: Theme;
 }
+
+const date = new Date();
 
 const TaskSchedule: React.FC<Props> = ({
 	data,
-	timePeriodUnit,
-	timePeriodValue,
 	error,
 	loading,
+	loggedUserEmailAddress,
+	theme,
+	onCompletePeriod,
 }) => {
+	const classes = useStyle();
 	return (
 		<>
 			<Table style={{ marginBottom: '8px' }} size="small">
 				<TableHead>
 					<TableRow>
-						<TableCell>Person</TableCell>
-						<TableCell>Start date</TableCell>
-						<TableCell>End date</TableCell>
-						<TableCell>Done</TableCell>
+						<TableCell>Assigned To</TableCell>
+						<TableCell>Start Date</TableCell>
+						<TableCell>End Date</TableCell>
+						<TableCell>Completed By</TableCell>
+						<TableCell>Completed At</TableCell>
+						<TableCell>Complete</TableCell>
 					</TableRow>
 				</TableHead>
 				{error === null && (
@@ -65,18 +80,64 @@ const TaskSchedule: React.FC<Props> = ({
 							</>
 						) : (
 							data!.map((row, i) => (
-								<TableRow key={i}>
-									<TableCell>Ann</TableCell>
+								<TableRow key={i} className={classes.row}>
 									<TableCell>
-										{moment()
-											.subtract(1, 'week')
-											.format('llll')}
+										<Typography
+											style={{
+												color:
+													loggedUserEmailAddress ===
+													row.assignedTo.emailAddress
+														? theme.palette
+																.secondary.main
+														: theme.palette.text
+																.primary,
+											}}
+										>
+											{row.assignedTo.emailAddress}
+										</Typography>
+										<Typography color="textSecondary">
+											{row.assignedTo.userName}
+										</Typography>
 									</TableCell>
 									<TableCell>
-										{moment().format('llll')}
+										{moment(row.startDate).format('llll')}
 									</TableCell>
 									<TableCell>
-										<CheckBox color="primary" />
+										{moment(row.endDate).format('llll')}
+									</TableCell>
+									<TableCell>
+										<Typography>
+											{row.completedBy?.emailAddress}
+										</Typography>
+										<Typography color="textSecondary">
+											{row.completedBy?.userName}
+										</Typography>
+									</TableCell>
+									<TableCell>
+										{row.completedAt &&
+											moment(row.completedAt).format(
+												'llll'
+											)}
+									</TableCell>
+									<TableCell>
+										{row.startDate <= date ? (
+											<DoneRoundedIcon
+												style={{
+													color:
+														date <= row.endDate
+															? theme.palette.text
+																	.secondary
+															: theme.palette
+																	.error.main,
+												}}
+											/>
+										) : (
+											<DoneAllRoundedIcon
+												onClick={() =>
+													onCompletePeriod(row.id)
+												}
+											/>
+										)}
 									</TableCell>
 								</TableRow>
 							))
@@ -84,12 +145,23 @@ const TaskSchedule: React.FC<Props> = ({
 					</TableBody>
 				)}
 			</Table>
-			{data?.length === 0 && (
-				<CustomMuiAlert severity="info">No records.</CustomMuiAlert>
+			{error ? (
+				<CustomMuiAlert severity="error">{error}</CustomMuiAlert>
+			) : (
+				data?.length === 0 && (
+					<CustomMuiAlert severity="info">No records.</CustomMuiAlert>
+				)
 			)}
-			{error && <CustomMuiAlert severity="error">{error}</CustomMuiAlert>}
 		</>
 	);
 };
 
-export default TaskSchedule;
+const useStyle = makeStyles((theme: Theme) =>
+	createStyles({
+		row: {
+			'&:nth-child(odd)': { background: '#eee' },
+		},
+	})
+);
+
+export default withTheme(TaskSchedule);

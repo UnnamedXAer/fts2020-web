@@ -2,7 +2,7 @@ import User from '../models/user';
 import { Action } from 'redux';
 import Flat from '../models/flat';
 import Task, { UserTask } from '../models/task';
-import { TaskPeriod } from '../models/taskPeriod';
+import { Period } from '../models/period';
 
 export type RootState = {
 	auth: AuthState;
@@ -34,7 +34,7 @@ export type TasksState = {
 
 export type PeriodsState = {
 	taskPeriods: {
-		[taskId: number]: TaskPeriod[]
+		[taskId: number]: Period[]
 	}
 }
 
