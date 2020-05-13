@@ -1,62 +1,21 @@
 import { AxiosError } from 'axios';
 
-interface HttpErrorData {
-	msg: string;
-	code?: number;
-	errorsArray: HttpFieldError[];
-}
-
 type HttpFieldError = {
 	param: string;
 	msg: string;
 };
 
-class HttpError implements HttpErrorData {
-	msg: string;
-	errorsArray: HttpFieldError[];
-	code?: number;
-
-	constructor(
-		msg: string,
-		errorsArray: HttpFieldError[] = [],
-		code?: number
-	) {
-		this.errorsArray = errorsArray;
-		this.msg = msg;
-		this.code = code;
-	}
-}
-
 export default class HttpErrorParser {
-	private error?: HttpError;
+	private error?: AxiosError;
+
 	constructor(err?: AxiosError) {
 		if (err) {
-			this.error = this.getParsedError(err);
+			this.error = err;
 		}
 	}
 
 	setError(err: AxiosError) {
-		this.error = this.getParsedError(err);
-	}
-
-	private getParsedError(err: AxiosError): HttpErrorData {
-		let msg;
-		let errorsArray: HttpFieldError[] = [];
-		if (err.isAxiosError) {
-			if (err.response) {
-				const data = err.response?.data;
-				msg = err.response.data?.message as string;
-				if (data && data.errorsArray) {
-					errorsArray = data.errorsArray;
-				}
-			}
-		}
-
-		if (!msg) {
-			msg = err.message || 'Opss, something went wrong.';
-		}
-
-		return new HttpError(msg, errorsArray, err.code  ? +err.code : undefined);
+		this.error = err;
 	}
 
 	private checkError() {
@@ -67,16 +26,45 @@ export default class HttpErrorParser {
 
 	getMessage() {
 		this.checkError();
-		return this.error!.msg;
+		const code = this.getCode();
+		if (code === 422) {
+			return 'Please correct incorrect entries.';
+		}
+		if (code === 401) {
+			return 'Authorized access.';
+		}
+		if (code === 500) {
+			if (process.env.NODE_ENV === 'development') {
+				return this.error!.message;
+			} else {
+				return 'Sorry, something went wrong. Please try again later.';
+			}
+		}
+		// 406, 409, ...
+		return this.error!.message;
 	}
 
 	getCode() {
 		this.checkError();
-		return this.error!.code;
+		if (this.error!.response) {
+			return this.error!.response.status || 500;
+		}
+		return this.error!.code && !isNaN(parseInt(this.error!.code, 10))
+			? +this.error!.code
+			: 500;
 	}
 
 	getFieldsErrors() {
 		this.checkError();
-		return this.error!.errorsArray;
+		let errorsArray: HttpFieldError[] = [];
+		if (this.error!.isAxiosError) {
+			if (this.error!.response) {
+				const data = this.error!.response?.data;
+				if (data && data.errorsArray) {
+					errorsArray = [...data.errorsArray];
+				}
+			}
+		}
+		return errorsArray;
 	}
 }

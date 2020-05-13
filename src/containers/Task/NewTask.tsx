@@ -16,8 +16,8 @@ import {
 	MenuItem,
 } from '@material-ui/core';
 import {
-	KeyboardDatePicker,
 	MuiPickersUtilsProvider,
+	DatePicker,
 } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import { useSelector, useDispatch } from 'react-redux';
@@ -197,7 +197,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 
 		try {
 			await dispatch(createTask(newTask));
-			history.replace(`/flats/${flat?.id}`);
+			history.replace('/flats/' + flat?.id);
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
@@ -229,7 +229,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 					container
 					spacing={2}
 					direction="column"
-					style={{ maxWidth: '600px' }}
+					style={{ maxWidth: '700px' }}
 				>
 					<Grid item>
 						<Grid
@@ -383,7 +383,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 							spacing={2}
 						>
 							<Grid item>
-								<KeyboardDatePicker
+								<DatePicker
 									error={!!formState.errors.dates}
 									label="Start Date"
 									inputVariant="outlined"
@@ -392,11 +392,11 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 										dateChangeHandler('startDate', date)
 									}
 									minDate={new Date()}
-									format="Do MMMM YYYY"
+									format="MMM Do YYYY"
 								/>
 							</Grid>
 							<Grid item>
-								<KeyboardDatePicker
+								<DatePicker
 									error={!!formState.errors.dates}
 									label="End Date"
 									inputVariant="outlined"
@@ -405,7 +405,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 										dateChangeHandler('endDate', date)
 									}
 									minDate={new Date()}
-									format="Do MMMM YYYY"
+									format="MMM Do YYYY"
 								/>
 							</Grid>
 						</Grid>
@@ -478,8 +478,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 		margin: theme.spacing(4, 0, 2),
 	},
 	paper: {
-		padding: 30,
-		margin: 20,
+		padding: theme.spacing(3),
+		margin: theme.spacing(2),
 	},
 	header: {
 		paddingBottom: theme.spacing(2),
