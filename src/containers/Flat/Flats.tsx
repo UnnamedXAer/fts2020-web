@@ -147,7 +147,7 @@ const Flats: React.FC<Props> = (props) => {
 				aria-label="add"
 				className={[classes.margin, classes.fab].join(' ')}
 			>
-				<AddIcon />
+				<AddIcon style={{ color: 'white' }} />
 			</Fab>
 		</>
 	);
