@@ -17,7 +17,10 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
 import MembersList from '../../components/Flat/MembersList';
 import RootState from '../../store/storeTypes';
-import { StateError, TaskSpeedActions } from '../../ReactTypes/customReactTypes';
+import {
+	StateError,
+	TaskSpeedActions,
+} from '../../ReactTypes/customReactTypes';
 import {
 	fetchTaskMembers,
 	fetchTask,
@@ -27,7 +30,7 @@ import HttpErrorParser from '../../utils/parseError';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TaskInfoTable from '../../components/Task/TaskInfoTable';
 import TaskSchedule from '../../components/Task/TaskSchedule';
-import { fetchTaskPeriods } from '../../store/actions/periods';
+import { fetchTaskPeriods, completePeriod } from '../../store/actions/periods';
 import Alert from '@material-ui/lab/Alert';
 import TaskSpeedDial from '../../components/Task/TaskSpeedDial';
 
@@ -74,6 +77,9 @@ const TaskDetails: React.FC<Props> = (props) => {
 		members: null,
 		schedule: null,
 	});
+	const [periodsLoading, setPeriodsLoading] = useState<{
+		[id: number]: boolean;
+	}>({});
 	const [snackbarError, setSnackbarError] = useState<StateError>(null);
 	const [snackbarOpened, setSnackbarOpened] = useState(false);
 	const [speedDialOpen, setSpeedDialOpen] = useState(false);
@@ -201,22 +207,22 @@ const TaskDetails: React.FC<Props> = (props) => {
 	};
 
 	const completePeriodHandler = async (id: number) => {
+		setPeriodsLoading((prevState) => ({ ...prevState, [id]: true }));
 		try {
-			throw new Error('WWWWrrrrr');
+			await dispatch(completePeriod(id, task!.id!));
 		} catch (err) {
 			const error = new HttpErrorParser(err);
 			setSnackbarError(error.getMessage());
 			setSnackbarOpened(true);
 		}
+		setPeriodsLoading((prevState) => ({ ...prevState, [id]: false }));
 	};
 
 	const snackbarCloseHandler = () => {
 		setSnackbarOpened(false);
 	};
 
-	const speedDialOptionClickHandler = (
-		optionName: TaskSpeedActions
-	) => {
+	const speedDialOptionClickHandler = (optionName: TaskSpeedActions) => {
 		switch (optionName) {
 			case 'add-member':
 				break;
@@ -379,18 +385,19 @@ const TaskDetails: React.FC<Props> = (props) => {
 								(loadingElements.schedule || !periods) &&
 								!elementsErrors.schedule
 							}
+							periodsLoading={periodsLoading}
 							error={elementsErrors.schedule}
 							loggedUserEmailAddress={loggedUser!.emailAddress}
 							onCompletePeriod={completePeriodHandler}
 						/>
 					</Grid>
 				</Grid>
-				<Snackbar open={snackbarOpened} autoHideDuration={6000}>
-					<Alert onClose={snackbarCloseHandler} severity="error">
-						{snackbarError}
-					</Alert>
-				</Snackbar>
 			</Grid>
+			<Snackbar open={snackbarOpened} autoHideDuration={6000}>
+				<Alert onClose={snackbarCloseHandler} severity="error">
+					{snackbarError}
+				</Alert>
+			</Snackbar>
 			<TaskSpeedDial
 				open={speedDialOpen}
 				toggleOpen={() => setSpeedDialOpen((prevState) => !prevState)}

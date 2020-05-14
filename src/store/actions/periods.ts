@@ -19,6 +19,11 @@ export type SetTaskPeriodsActionPayload = {
 	periods: Period[];
 };
 
+export type CompletePeriodActionPayload = {
+	period: Period;
+	taskId: number;
+};
+
 export const fetchTaskPeriods = (
 	taskId: number
 ): ThunkAction<
@@ -48,6 +53,42 @@ export const fetchTaskPeriods = (
 				type: TaskPeriodsTypes.SetTaskPeriods,
 				payload: {
 					periods,
+					taskId,
+				},
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const completePeriod = (
+	id: number,
+	taskId: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<CompletePeriodActionPayload, TaskPeriodsTypes.CompletePeriod>
+> => {
+	return async (dispatch) => {
+		const url = `/tasks/${taskId}/periods/${id}/complete`;
+		try {
+			const { data } = await axios.get<APITaskPeriod>(url);
+			const period = new Period({
+						id: data.id,
+						startDate: new Date(data.startDate),
+						endDate: new Date(data.endDate),
+						assignedTo: data.assignedTo,
+						completedAt: data.completedAt
+							? new Date(data.completedAt)
+							: null,
+						completedBy: data.completedBy,
+					})
+			dispatch({
+				type: TaskPeriodsTypes.CompletePeriod,
+				payload: {
+					period,
 					taskId,
 				},
 			});

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
 	Table,
 	TableHead,
@@ -10,6 +10,9 @@ import {
 	Theme,
 	createStyles,
 	withTheme,
+	CircularProgress,
+	IconButton,
+	Box,
 } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
@@ -42,6 +45,7 @@ interface Props {
 	data: Period[] | undefined;
 	error: StateError;
 	loading: boolean;
+	periodsLoading: { [id: number]: boolean };
 	loggedUserEmailAddress: string;
 	onCompletePeriod: (id: number) => void;
 	theme: Theme;
@@ -53,14 +57,56 @@ const TaskSchedule: React.FC<Props> = ({
 	data,
 	error,
 	loading,
+	periodsLoading,
 	loggedUserEmailAddress,
 	theme,
 	onCompletePeriod,
 }) => {
 	const classes = useStyle();
+
+	const getPeriodStatusIcon = useMemo(
+		() => (
+			period: Period,
+			loading: boolean,
+			onComplete: (id: number) => void
+		) => {
+			let element: JSX.Element;
+			if (period.completedAt) {
+				element = <DoneAllRoundedIcon color="primary" />;
+			} else {
+				let periodStarted = date >= period.startDate;
+				const color =
+					date <= period.endDate
+						? theme.palette.text.secondary
+						: theme.palette.error.main;
+				element = (
+					<IconButton
+						disabled={!periodStarted}
+						onClick={() => onComplete(period.id)}
+					>
+						{loading ? (
+							<CircularProgress
+								color="primary"
+								size={theme.spacing(3)}
+							/>
+						) : (
+							<DoneRoundedIcon
+								style={{
+									color,
+								}}
+							/>
+						)}
+					</IconButton>
+				);
+			}
+			return element;
+		},
+		[theme]
+	);
+
 	return (
 		<>
-			<Table style={{ marginBottom: '8px' }} size="small">
+			<Table style={{ marginBottom: theme.spacing(1) }} size="small">
 				<TableHead>
 					<TableRow>
 						<TableCell>Assigned To</TableCell>
@@ -119,24 +165,11 @@ const TaskSchedule: React.FC<Props> = ({
 												'llll'
 											)}
 									</TableCell>
-									<TableCell>
-										{row.startDate <= date ? (
-											<DoneRoundedIcon
-												style={{
-													color:
-														date <= row.endDate
-															? theme.palette.text
-																	.secondary
-															: theme.palette
-																	.error.main,
-												}}
-											/>
-										) : (
-											<DoneAllRoundedIcon
-												onClick={() =>
-													onCompletePeriod(row.id)
-												}
-											/>
+									<TableCell align="center">
+										{getPeriodStatusIcon(
+											row,
+											periodsLoading[row.id],
+											onCompletePeriod
 										)}
 									</TableCell>
 								</TableRow>

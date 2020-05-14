@@ -24,7 +24,8 @@ export enum TasksActionTypes {
 }
 
 export enum TaskPeriodsTypes {
-	SetTaskPeriods = 'PERIODS_SET_TASK_PERIODS',
+	SetTaskPeriods = 'PERIOD_SET_TASK_PERIODS',
+	CompletePeriod = 'PERIOD_COMPLETE'
 }
 
 export enum UsersActionTypes {
