@@ -17,7 +17,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
 import MembersList from '../../components/Flat/MembersList';
 import RootState from '../../store/storeTypes';
-import { StateError } from '../../ReactTypes/customReactTypes';
+import { StateError, TaskSpeedActions } from '../../ReactTypes/customReactTypes';
 import {
 	fetchTaskMembers,
 	fetchTask,
@@ -29,6 +29,7 @@ import TaskInfoTable from '../../components/Task/TaskInfoTable';
 import TaskSchedule from '../../components/Task/TaskSchedule';
 import { fetchTaskPeriods } from '../../store/actions/periods';
 import Alert from '@material-ui/lab/Alert';
+import TaskSpeedDial from '../../components/Task/TaskSpeedDial';
 
 interface Props extends RouteComponentProps {}
 
@@ -75,6 +76,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 	});
 	const [snackbarError, setSnackbarError] = useState<StateError>(null);
 	const [snackbarOpened, setSnackbarOpened] = useState(false);
+	const [speedDialOpen, setSpeedDialOpen] = useState(false);
 
 	useEffect(() => {
 		if (!task) {
@@ -212,157 +214,189 @@ const TaskDetails: React.FC<Props> = (props) => {
 		setSnackbarOpened(false);
 	};
 
+	const speedDialOptionClickHandler = (
+		optionName: TaskSpeedActions
+	) => {
+		switch (optionName) {
+			case 'add-member':
+				break;
+			case 'close-task':
+				break;
+			case 'reset-periods':
+				break;
+			default:
+				break;
+		}
+		setSpeedDialOpen(false);
+	};
+
 	return (
-		<Grid container spacing={2} direction="column">
-			<Grid item>
-				<Typography variant="h4" component="h1">
-					View Task
-				</Typography>
-			</Grid>
-			{error && (
+		<>
+			<Grid container spacing={2} direction="column">
 				<Grid item>
-					<CustomMuiAlert severity="error">{error}</CustomMuiAlert>
+					<Typography variant="h4" component="h1">
+						View Task
+					</Typography>
 				</Grid>
-			)}
-			<Grid item>
-				<Grid container direction="row" spacing={4} alignItems="center">
+				{error && (
 					<Grid item>
-						<Avatar
-							className={classes.avatar}
-							alt="Task Avatar"
-							src=""
+						<CustomMuiAlert severity="error">
+							{error}
+						</CustomMuiAlert>
+					</Grid>
+				)}
+				<Grid item>
+					<Grid
+						container
+						direction="row"
+						spacing={4}
+						alignItems="center"
+					>
+						<Grid item>
+							<Avatar
+								className={classes.avatar}
+								alt="Task Avatar"
+								src=""
+							>
+								<AllInclusiveRoundedIcon
+									color="primary"
+									aria-label="task icon"
+								/>
+							</Avatar>
+						</Grid>
+						<Grid
+							item
+							container
+							direction="column"
+							style={{ flex: 1 }}
 						>
-							<AllInclusiveRoundedIcon
-								color="primary"
-								aria-label="task icon"
+							<Grid item>
+								{task ? (
+									<Typography
+										variant="h5"
+										component="h2"
+										className={classes.title}
+									>
+										{task.name}
+									</Typography>
+								) : (
+									<Skeleton animation="wave" height={46} />
+								)}
+							</Grid>
+							<Grid item>
+								{task?.owner ? (
+									<Typography
+										variant="subtitle1"
+										color="textSecondary"
+									>
+										Created by{' '}
+										<Link
+											component={RouterLink}
+											to={`/profile/${task.createBy}`}
+										>
+											{task.owner!.emailAddress}
+										</Link>
+									</Typography>
+								) : (
+									<Skeleton animation="wave" />
+								)}
+							</Grid>
+							<Grid item>
+								{task ? (
+									<Typography
+										variant="subtitle1"
+										color="textSecondary"
+									>
+										{moment(task.createAt).format('llll')}
+									</Typography>
+								) : (
+									<Skeleton animation="wave" />
+								)}
+							</Grid>
+							<Grid item>
+								{flatName && task ? (
+									<Typography
+										variant="subtitle1"
+										color="textSecondary"
+									>
+										Flat:{' '}
+										<Link
+											component={RouterLink}
+											to={`/flats/${task!.flatId}`}
+										>
+											{flatName}
+										</Link>
+									</Typography>
+								) : (
+									<Skeleton animation="wave" />
+								)}
+							</Grid>
+						</Grid>
+					</Grid>
+					<Grid item>
+						<Typography variant="h5" component="h3">
+							Informations
+						</Typography>
+					</Grid>
+					<Grid item>
+						<TaskInfoTable task={task} />
+					</Grid>
+					<Grid item>
+						<Typography variant="h5" component="h3">
+							Description
+						</Typography>
+						{task ? (
+							<TextField
+								className={classes.description}
+								value={task.description}
+								multiline
+								rowsMax={4}
+								fullWidth
+								variant="outlined"
+								inputProps={{ readOnly: true }}
 							/>
-						</Avatar>
+						) : (
+							<Skeleton animation="wave" />
+						)}
 					</Grid>
-					<Grid item container direction="column" style={{ flex: 1 }}>
-						<Grid item>
-							{task ? (
-								<Typography
-									variant="h5"
-									component="h2"
-									className={classes.title}
-								>
-									{task.name}
-								</Typography>
-							) : (
-								<Skeleton animation="wave" height={46} />
-							)}
-						</Grid>
-						<Grid item>
-							{task?.owner ? (
-								<Typography
-									variant="subtitle1"
-									color="textSecondary"
-								>
-									Created by{' '}
-									<Link
-										component={RouterLink}
-										to={`/profile/${task.createBy}`}
-									>
-										{task.owner!.emailAddress}
-									</Link>
-								</Typography>
-							) : (
-								<Skeleton animation="wave" />
-							)}
-						</Grid>
-						<Grid item>
-							{task ? (
-								<Typography
-									variant="subtitle1"
-									color="textSecondary"
-								>
-									{moment(task.createAt).format('llll')}
-								</Typography>
-							) : (
-								<Skeleton animation="wave" />
-							)}
-						</Grid>
-						<Grid item>
-							{flatName && task ? (
-								<Typography
-									variant="subtitle1"
-									color="textSecondary"
-								>
-									Flat:{' '}
-									<Link
-										component={RouterLink}
-										to={`/flats/${task!.flatId}`}
-									>
-										{flatName}
-									</Link>
-								</Typography>
-							) : (
-								<Skeleton animation="wave" />
-							)}
-						</Grid>
-					</Grid>
-				</Grid>
-				<Grid item>
-					<Typography variant="h5" component="h3">
-						Informations
-					</Typography>
-				</Grid>
-				<Grid item>
-					<TaskInfoTable task={task} />
-				</Grid>
-				<Grid item>
-					<Typography variant="h5" component="h3">
-						Description
-					</Typography>
-					{task ? (
-						<TextField
-							className={classes.description}
-							value={task.description}
-							multiline
-							rowsMax={4}
-							fullWidth
-							variant="outlined"
-							inputProps={{ readOnly: true }}
+					<Grid item>
+						<Typography variant="h5" component="h3">
+							Members
+						</Typography>
+						<MembersList
+							onMemberSelect={memberSelectHandler}
+							loading={loadingElements.members}
+							members={task?.members}
 						/>
-					) : (
-						<Skeleton animation="wave" />
-					)}
+					</Grid>
+					<Grid item>
+						<Typography variant="h5" component="h3">
+							Schedule
+						</Typography>
+						<TaskSchedule
+							data={periods}
+							loading={
+								(loadingElements.schedule || !periods) &&
+								!elementsErrors.schedule
+							}
+							error={elementsErrors.schedule}
+							loggedUserEmailAddress={loggedUser!.emailAddress}
+							onCompletePeriod={completePeriodHandler}
+						/>
+					</Grid>
 				</Grid>
-				<Grid item>
-					<Typography variant="h5" component="h3">
-						Members
-					</Typography>
-					<MembersList
-						onMemberSelect={memberSelectHandler}
-						loading={loadingElements.members}
-						members={task?.members}
-					/>
-				</Grid>
-				<Grid item>
-					<Typography variant="h5" component="h3">
-						Schedule
-					</Typography>
-					<TaskSchedule
-						data={periods}
-						loading={
-							(loadingElements.schedule || !periods) &&
-							!elementsErrors.schedule
-						}
-						error={elementsErrors.schedule}
-						loggedUserEmailAddress={loggedUser!.emailAddress}
-						onCompletePeriod={completePeriodHandler}
-					/>
-				</Grid>
+				<Snackbar open={snackbarOpened} autoHideDuration={6000}>
+					<Alert onClose={snackbarCloseHandler} severity="error">
+						{snackbarError}
+					</Alert>
+				</Snackbar>
 			</Grid>
-			<Snackbar
-				open={snackbarOpened}
-				autoHideDuration={6000}
-			>
-				<Alert onClose={snackbarCloseHandler} severity="error">
-					{snackbarError}
-				</Alert>
-			</Snackbar>
-		</Grid>
+			<TaskSpeedDial
+				open={speedDialOpen}
+				toggleOpen={() => setSpeedDialOpen((prevState) => !prevState)}
+				onOptionClick={speedDialOptionClickHandler}
+			/>
+		</>
 	);
 };
 
@@ -385,8 +419,8 @@ const useStyles = makeStyles((theme: Theme) =>
 		},
 		fab: {
 			position: 'fixed',
-			bottom: 20,
-			right: 20,
+			bottom: theme.spacing(2),
+			right: theme.spacing(2),
 		},
 		taskInfoContainer: {},
 	})
