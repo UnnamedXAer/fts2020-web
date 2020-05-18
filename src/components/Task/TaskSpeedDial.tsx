@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles, Theme, createStyles } from '@material-ui/core';
+import { makeStyles, Theme, createStyles, FabTypeMap } from '@material-ui/core';
 import SpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
@@ -7,12 +7,14 @@ import PersonAddRoundedIcon from '@material-ui/icons/PersonAddRounded';
 import CancelPresentationRoundedIcon from '@material-ui/icons/CancelPresentationRounded';
 import QueuePlayNextRoundedIcon from '@material-ui/icons/QueuePlayNextRounded';
 import { TaskSpeedActions } from '../../ReactTypes/customReactTypes';
+import { OverrideProps } from '@material-ui/core/OverridableComponent';
 
 interface Props {
 	open: boolean;
 	hidden?: boolean;
 	toggleOpen: () => void;
 	onOptionClick: (optionName: TaskSpeedActions) => void;
+	disabled?: boolean;
 }
 
 const actions: {
@@ -20,14 +22,18 @@ const actions: {
 	name: string;
 	icon: JSX.Element;
 }[] = [
-	{ key: 'add-member', name: 'Add Member', icon: <PersonAddRoundedIcon /> },
 	{
-		key: 'close-task',
+		key: TaskSpeedActions.AddMember,
+		name: 'Add Member',
+		icon: <PersonAddRoundedIcon />,
+	},
+	{
+		key: TaskSpeedActions.CloseTask,
 		name: 'Close Task',
 		icon: <CancelPresentationRoundedIcon />,
 	},
 	{
-		key: 'reset-periods',
+		key: TaskSpeedActions.ResetPeriods,
 		name: 'Reset Periods',
 		icon: <QueuePlayNextRoundedIcon />,
 	},
@@ -35,6 +41,15 @@ const actions: {
 
 const TaskSpeedDial: React.FC<Props> = (props) => {
 	const classes = useStyles();
+	const disabled = props.disabled === true;
+
+	const fabProps: Partial<OverrideProps<
+		FabTypeMap<{}, 'button'>,
+		'button'
+	>> = {
+		color: 'secondary',
+		disabled,
+	};
 
 	return (
 		<SpeedDial
@@ -46,12 +61,11 @@ const TaskSpeedDial: React.FC<Props> = (props) => {
 			onOpen={props.toggleOpen}
 			open={props.open}
 			color="background"
-			FabProps={{
-				color: 'secondary',
-			}}
+			FabProps={fabProps}
 		>
 			{actions.map((action) => (
 				<SpeedDialAction
+					FabProps={fabProps}
 					key={action.key}
 					icon={action.icon}
 					tooltipTitle={action.name}

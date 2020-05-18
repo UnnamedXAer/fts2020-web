@@ -11,6 +11,8 @@ import {
 	TextField,
 	Link,
 	Snackbar,
+	Backdrop,
+	CircularProgress,
 } from '@material-ui/core';
 import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -25,6 +27,7 @@ import {
 	fetchTaskMembers,
 	fetchTask,
 	fetchTaskOwner,
+	updateTask,
 } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
@@ -33,6 +36,7 @@ import TaskSchedule from '../../components/Task/TaskSchedule';
 import { fetchTaskPeriods, completePeriod } from '../../store/actions/periods';
 import Alert from '@material-ui/lab/Alert';
 import TaskSpeedDial from '../../components/Task/TaskSpeedDial';
+import Task from '../../models/task';
 
 interface Props extends RouteComponentProps {}
 
@@ -83,6 +87,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const [snackbarError, setSnackbarError] = useState<StateError>(null);
 	const [snackbarOpened, setSnackbarOpened] = useState(false);
 	const [speedDialOpen, setSpeedDialOpen] = useState(false);
+	const [speedActionLoading, setSpeedActionLoading] = useState(false);
 
 	useEffect(() => {
 		if (!task) {
@@ -222,13 +227,28 @@ const TaskDetails: React.FC<Props> = (props) => {
 		setSnackbarOpened(false);
 	};
 
-	const speedDialOptionClickHandler = (optionName: TaskSpeedActions) => {
+	const speedDialOptionClickHandler = async (
+		optionName: TaskSpeedActions
+	) => {
 		switch (optionName) {
-			case 'add-member':
+			case TaskSpeedActions.AddMember:
 				break;
-			case 'close-task':
+			case TaskSpeedActions.CloseTask:
+				const _task: Partial<Task> = new Task({
+					id: task!.id,
+					active: false,
+				});
+				setSpeedActionLoading(true);
+				try {
+					await dispatch(updateTask(_task));
+				} catch (err) {
+					const httpError = new HttpErrorParser(err);
+					const msg = httpError.getMessage();
+					setSnackbarError(msg);
+				}
+				setSpeedActionLoading(false);
 				break;
-			case 'reset-periods':
+			case TaskSpeedActions.ResetPeriods:
 				break;
 			default:
 				break;
@@ -393,16 +413,34 @@ const TaskDetails: React.FC<Props> = (props) => {
 					</Grid>
 				</Grid>
 			</Grid>
-			<Snackbar open={snackbarOpened} onClose={snackbarCloseHandler} autoHideDuration={4000}>
+			<Snackbar
+				open={snackbarOpened}
+				onClose={snackbarCloseHandler}
+				autoHideDuration={4000}
+			>
 				<Alert onClose={snackbarCloseHandler} severity="error">
 					{snackbarError}
 				</Alert>
 			</Snackbar>
 			<TaskSpeedDial
+				disabled={
+					!task ||
+					!loggedUser ||
+					!task.owner ||
+					loggedUser.id !== task.owner.id
+				}
 				open={speedDialOpen}
 				toggleOpen={() => setSpeedDialOpen((prevState) => !prevState)}
 				onOptionClick={speedDialOptionClickHandler}
 			/>
+			<Backdrop
+				className={classes.backdrop}
+				open={speedActionLoading}
+				mountOnEnter
+				unmountOnExit
+			>
+				<CircularProgress color={'inherit'} />
+			</Backdrop>
 		</>
 	);
 };
@@ -430,6 +468,10 @@ const useStyles = makeStyles((theme: Theme) =>
 			right: theme.spacing(2),
 		},
 		taskInfoContainer: {},
+		backdrop: {
+			zIndex: theme.zIndex.drawer + 1,
+			color: '#fff',
+		},
 	})
 );
 

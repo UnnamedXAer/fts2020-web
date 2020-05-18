@@ -265,3 +265,44 @@ export const fetchTaskOwner = (
 		}
 	};
 };
+
+export const updateTask = (
+	task: Partial<Task>
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<Partial<Task>, string>
+> => {
+	return async (dispatch) => {
+		const url = `/flats/tasks/${task.id}`;
+		try {
+			const requestPayload: Partial<APITask> = {
+				title: task.name!,
+				description: task.description,
+				timePeriodUnit: task.timePeriodUnit,
+				timePeriodValue: task.timePeriodValue,
+				active: task.active,
+			};
+			const { data } = await axios.patch<APITask>(url, requestPayload);
+			const updatedTask = new Task({
+				id: data.id,
+				name: data.title,
+				description: data.description,
+				createAt: new Date(data.createAt!),
+				flatId: data.flatId,
+				active: data.active,
+				startDate: new Date(data.startDate!),
+				endDate: new Date(data.endDate!),
+				timePeriodUnit: data.timePeriodUnit,
+				timePeriodValue: data.timePeriodValue,
+			});
+			dispatch({
+				type: TasksActionTypes.SetTask,
+				payload: updatedTask,
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
