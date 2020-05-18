@@ -74,7 +74,7 @@ export const completePeriod = (
 	return async (dispatch) => {
 		const url = `/tasks/${taskId}/periods/${id}/complete`;
 		try {
-			const { data } = await axios.get<APITaskPeriod>(url);
+			const { data } = await axios.patch<APITaskPeriod>(url);
 			const period = new Period({
 						id: data.id,
 						startDate: new Date(data.startDate),
