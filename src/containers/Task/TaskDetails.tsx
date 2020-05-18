@@ -393,7 +393,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 					</Grid>
 				</Grid>
 			</Grid>
-			<Snackbar open={snackbarOpened} autoHideDuration={6000}>
+			<Snackbar open={snackbarOpened} onClose={snackbarCloseHandler} autoHideDuration={4000}>
 				<Alert onClose={snackbarCloseHandler} severity="error">
 					{snackbarError}
 				</Alert>
