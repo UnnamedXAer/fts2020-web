@@ -27,8 +27,11 @@ export default class HttpErrorParser {
 	getMessage() {
 		this.checkError();
 		const code = this.getCode();
+		if(code === 404) {
+			return 'Recourses not found. Most likely the request address is incorrect.'
+		}
 		if (code === 422) {
-			return 'Please correct incorrect entries.';
+			return 'Please correct wrong entries.';
 		}
 		if (code === 401) {
 			return 'Authorized access.';
