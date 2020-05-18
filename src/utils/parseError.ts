@@ -34,14 +34,14 @@ export default class HttpErrorParser {
 			return 'Authorized access.';
 		}
 		if (code === 500) {
-			if (process.env.NODE_ENV === 'development') {
+			if (process.env.NODE_ENV === 'development' && this.error!.message) {
 				return this.error!.message;
 			} else {
 				return 'Sorry, something went wrong. Please try again later.';
 			}
 		}
 		// 406, 409, ...
-		return this.error!.message;
+		return this.error!.message || 'Sorry, something went wrong. Please try again later.';
 	}
 
 	getCode() {
