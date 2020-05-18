@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
 	Table,
 	TableHead,
@@ -9,37 +9,14 @@ import {
 	Theme,
 	createStyles,
 	withTheme,
-	CircularProgress,
-	IconButton,
-	Tooltip,
 } from '@material-ui/core';
-import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
 import { StateError } from '../../ReactTypes/customReactTypes';
 import CustomMuiAlert from '../UI/CustomMuiAlert';
 import { Period } from '../../models/period';
-import { DoneRounded as DoneRoundedIcon } from '@material-ui/icons';
 import PersonCellValue from './TaskSchedulePersonCellVal';
-
-const LoadingRow = () => (
-	<TableRow>
-		<TableCell>
-			<Skeleton animation="wave" />
-		</TableCell>
-		<TableCell>
-			<Skeleton animation="wave" />
-		</TableCell>
-		<TableCell>
-			<Skeleton animation="wave" />
-		</TableCell>
-		<TableCell>
-			<Skeleton animation="wave" />
-		</TableCell>
-		<TableCell>
-			<Skeleton animation="wave" />
-		</TableCell>
-	</TableRow>
-);
+import TaskPeriodStatusCellVal from './TaskPeriodStatusCellVal';
+import { LoadingTableRows } from '../UI/LoadingTableRows';
 
 interface Props {
 	data: Period[] | undefined;
@@ -51,8 +28,6 @@ interface Props {
 	theme: Theme;
 }
 
-const date = new Date();
-
 const TaskSchedule: React.FC<Props> = ({
 	data,
 	error,
@@ -63,59 +38,6 @@ const TaskSchedule: React.FC<Props> = ({
 	onCompletePeriod,
 }) => {
 	const classes = useStyle();
-
-	const getPeriodStatusIcon = useMemo(
-		() => (
-			period: Period,
-			loading: boolean,
-			onComplete: (id: number) => void
-		) => {
-			let element: JSX.Element;
-			if (period.completedBy) {
-				element = (
-					<PersonCellValue
-						person={period.completedBy}
-						markPerson={
-							loggedUserEmailAddress ===
-							period.completedBy.emailAddress
-						}
-					/>
-				);
-			} else {
-				let periodStarted = date >= period.startDate;
-				const color =
-					date <= period.endDate
-						? theme.palette.text.secondary
-						: theme.palette.error.main;
-				element = (
-					<IconButton
-						disabled={!periodStarted}
-						onClick={() => onComplete(period.id)}
-					>
-						{loading ? (
-							<CircularProgress
-								color="primary"
-								size={theme.spacing(3)}
-							/>
-						) : (
-							<Tooltip
-								title="Complete Period"
-								aria-label="Complete Period"
-							>
-								<DoneRoundedIcon
-									style={{
-										color,
-									}}
-								/>
-							</Tooltip>
-						)}
-					</IconButton>
-				);
-			}
-			return element;
-		},
-		[loggedUserEmailAddress, theme]
-	);
 
 	return (
 		<>
@@ -132,43 +54,72 @@ const TaskSchedule: React.FC<Props> = ({
 				{error === null && (
 					<TableBody>
 						{loading ? (
-							<>
-								<LoadingRow />
-								<LoadingRow />
-							</>
+							<LoadingTableRows rowsNumber={2} colsNumber={5} />
 						) : (
-							data!.map((row, i) => (
-								<TableRow key={i} className={classes.row}>
-									<TableCell>
-										<PersonCellValue
-											person={row.assignedTo}
-											markPerson={
-												loggedUserEmailAddress ===
-												row.assignedTo.emailAddress
-											}
-										/>
-									</TableCell>
-									<TableCell>
-										{moment(row.startDate).format('llll')}
-									</TableCell>
-									<TableCell>
-										{moment(row.endDate).format('llll')}
-									</TableCell>
-									<TableCell align="center">
-										{getPeriodStatusIcon(
-											row,
-											periodsLoading[row.id],
-											onCompletePeriod
-										)}
-									</TableCell>
-									<TableCell>
-										{row.completedAt &&
-											moment(row.completedAt).format(
-												'llll'
+							data!.map((row, i) => {
+								const startDateMidnight = moment(
+									row.startDate
+								).startOf('day');
+								const endDateMidnight = moment(
+									row.endDate
+								).startOf('day');
+								return (
+									<TableRow
+										key={i}
+										className={classes.row}
+										style={
+											loggedUserEmailAddress ===
+											row.assignedTo.emailAddress
+												? {
+														borderLeftColor:
+															theme.palette
+																.secondary
+																.light,
+												  }
+												: {}
+										}
+									>
+										<TableCell
+											style={{ position: 'relative' }}
+										>
+											{loggedUserEmailAddress ===
+												row.assignedTo.emailAddress && (
+												<span
+													className={classes.mark}
+												/>
 											)}
-									</TableCell>
-								</TableRow>
-							))
+											<PersonCellValue
+												person={row.assignedTo}
+											/>
+										</TableCell>
+										<TableCell>
+											{startDateMidnight.format(
+												'dddd, Do MMMM'
+											)}
+										</TableCell>
+										<TableCell>
+											{endDateMidnight.format('ll')}
+										</TableCell>
+										<TableCell align="center">
+											<TaskPeriodStatusCellVal
+												period={row}
+												loading={periodsLoading[row.id]}
+												onComplete={onCompletePeriod}
+												periodDates={{
+													start: startDateMidnight,
+													end: endDateMidnight,
+												}}
+											/>
+										</TableCell>
+										<TableCell>
+											{row.completedAt &&
+												moment(row.completedAt).format(
+													'll'
+												)}
+										</TableCell>
+									</TableRow>
+								);
+							})
 						)}
 					</TableBody>
 				)}
@@ -191,7 +142,17 @@ const useStyle = makeStyles((theme: Theme) =>
 			marginBottom: theme.spacing(1),
 		},
 		row: {
+			borderLeft: '3px solid #ccc',
 			'&:nth-child(odd)': { background: '#eee' },
+		},
+		mark: {
+			position: 'absolute',
+			left: 0,
+			top: 0,
+			width: 0,
+			height: 0,
+			borderTop: '13px solid ' + theme.palette.secondary.light,
+			borderRight: '13px solid transparent',
 		},
 	})
 );

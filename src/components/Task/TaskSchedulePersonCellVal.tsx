@@ -44,7 +44,7 @@ const useStyle = makeStyles((theme: Theme) =>
 			textOverflow: 'ellipsis',
 			overflow: 'hidden',
 			maxWidth: 180,
-			textAlign: 'initial'
+			textAlign: 'initial',
 		},
 	})
 );
