@@ -275,7 +275,7 @@ export const updateTask = (
 	StoreAction<Partial<Task>, string>
 > => {
 	return async (dispatch) => {
-		const url = `/flats/tasks/${task.id}`;
+		const url = `/tasks/${task.id}`;
 		try {
 			const requestPayload: Partial<APITask> = {
 				title: task.name!,

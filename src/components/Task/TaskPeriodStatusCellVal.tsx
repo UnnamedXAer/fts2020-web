@@ -9,12 +9,13 @@ import {
 	withTheme,
 	Theme,
 } from '@material-ui/core';
-import { DoneRounded as DoneRoundedIcon } from '@material-ui/icons';
-
+import DoneRoundedIcon from '@material-ui/icons/DoneRounded';
+import NotInterestedRoundedIcon from '@material-ui/icons/NotInterestedRounded';
 interface Props {
 	period: Period;
 	periodDates: { start: Moment; end: Moment };
 	loading: boolean;
+	disabled: boolean;
 	onComplete: (id: number) => void;
 	theme: Theme;
 }
@@ -25,6 +26,7 @@ export const TaskPeriodStatusCellVal: React.FC<Props> = ({
 	period,
 	periodDates,
 	loading,
+	disabled,
 	onComplete,
 	theme,
 }) => {
@@ -43,10 +45,14 @@ export const TaskPeriodStatusCellVal: React.FC<Props> = ({
 
 		element = (
 			<IconButton
-				disabled={!periodStarted}
+				disabled={disabled || !periodStarted}
 				onClick={() => onComplete(period.id)}
 			>
-				{loading ? (
+				{disabled ? (
+					<NotInterestedRoundedIcon
+						style={{ color: theme.palette.divider }}
+					/>
+				) : loading ? (
 					<CircularProgress color="primary" size={theme.spacing(3)} />
 				) : (
 					<Tooltip

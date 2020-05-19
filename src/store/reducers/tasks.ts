@@ -20,12 +20,20 @@ const setUserTasks: SimpleReducer<TasksState, Task[]> = (state, action) => {
 const setTask: SimpleReducer<TasksState, Task> = (state, action) => {
 	const task = action.payload;
 	const updatedTasks = [...state.tasks];
-
 	const taskIdx = updatedTasks.findIndex((x) => x.id === task.id);
+
 	if (taskIdx === -1) {
 		updatedTasks.push(task);
 	} else {
-		updatedTasks[taskIdx] = task;
+		const updatedTask = new Task({ ...updatedTasks[taskIdx] });
+
+		if (task.owner) {
+			updatedTask.owner = task.owner;
+		}
+		if (task.members) {
+			updatedTask.members = task.members;
+		}
+		updatedTasks[taskIdx] = updatedTask;
 	}
 
 	return {
@@ -80,10 +88,10 @@ const setMembers: SimpleReducer<
 	};
 };
 
-const setOwner: SimpleReducer<
-	TasksState,
-	{ taskId: number; user: User }
-> = (state, action) => {
+const setOwner: SimpleReducer<TasksState, { taskId: number; user: User }> = (
+	state,
+	action
+) => {
 	const { taskId, user } = action.payload;
 	const updatedTasks = [...state.tasks];
 

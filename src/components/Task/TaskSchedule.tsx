@@ -26,6 +26,7 @@ interface Props {
 	loggedUserEmailAddress: string;
 	onCompletePeriod: (id: number) => void;
 	theme: Theme;
+	disabled: boolean;
 }
 
 const TaskSchedule: React.FC<Props> = ({
@@ -35,6 +36,7 @@ const TaskSchedule: React.FC<Props> = ({
 	periodsLoading,
 	loggedUserEmailAddress,
 	theme,
+	disabled,
 	onCompletePeriod,
 }) => {
 	const classes = useStyle();
@@ -102,6 +104,7 @@ const TaskSchedule: React.FC<Props> = ({
 										</TableCell>
 										<TableCell align="center">
 											<TaskPeriodStatusCellVal
+												disabled={disabled}
 												period={row}
 												loading={periodsLoading[row.id]}
 												onComplete={onCompletePeriod}

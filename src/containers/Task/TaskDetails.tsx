@@ -10,9 +10,6 @@ import {
 	createStyles,
 	TextField,
 	Link,
-	Snackbar,
-	Backdrop,
-	CircularProgress,
 } from '@material-ui/core';
 import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -34,9 +31,12 @@ import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TaskInfoTable from '../../components/Task/TaskInfoTable';
 import TaskSchedule from '../../components/Task/TaskSchedule';
 import { fetchTaskPeriods, completePeriod } from '../../store/actions/periods';
-import Alert from '@material-ui/lab/Alert';
 import TaskSpeedDial from '../../components/Task/TaskSpeedDial';
 import Task from '../../models/task';
+import AlertDialog, { AlertDialogData } from '../../components/UI/AlertDialog';
+import AlertSnackbar, {
+	AlertSnackbarData,
+} from '../../components/UI/AlertSnackbar';
 
 interface Props extends RouteComponentProps {}
 
@@ -84,10 +84,19 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const [periodsLoading, setPeriodsLoading] = useState<{
 		[id: number]: boolean;
 	}>({});
-	const [snackbarError, setSnackbarError] = useState<StateError>(null);
-	const [snackbarOpened, setSnackbarOpened] = useState(false);
+	const [snackbarData, setSnackbarData] = useState<AlertSnackbarData>({
+		content: '',
+		onClose: () => {},
+		open: false,
+	});
 	const [speedDialOpen, setSpeedDialOpen] = useState(false);
-	const [speedActionLoading, setSpeedActionLoading] = useState(false);
+	const [dialogData, setDialogData] = useState<AlertDialogData>({
+		content: '',
+		onClose: () => {},
+		title: '',
+		loading: false,
+		open: false,
+	});
 
 	useEffect(() => {
 		if (!task) {
@@ -215,17 +224,77 @@ const TaskDetails: React.FC<Props> = (props) => {
 		setPeriodsLoading((prevState) => ({ ...prevState, [id]: true }));
 		try {
 			await dispatch(completePeriod(id, task!.id!));
+			setSnackbarData({
+				open: true,
+				action: true,
+				severity: 'success',
+				timeout: 3000,
+				content: 'Period completed.',
+				onClose: closeSnackbarAlertHandler,
+			});
 		} catch (err) {
 			const error = new HttpErrorParser(err);
-			setSnackbarError(error.getMessage());
-			setSnackbarOpened(true);
+			const msg = error.getMessage();
+			setSnackbarData({
+				open: true,
+				action: true,
+				severity: 'error',
+				timeout: 4000,
+				content: msg,
+				onClose: closeSnackbarAlertHandler,
+				title: 'Could not complete the period.',
+			});
 		}
 		setPeriodsLoading((prevState) => ({ ...prevState, [id]: false }));
 	};
 
-	const snackbarCloseHandler = () => {
-		setSnackbarOpened(false);
+	const closeSnackbarAlertHandler = () => {
+		setSnackbarData((prevState) => ({
+			...prevState,
+			open: false,
+		}));
 	};
+
+	const taskCloseHandler = async () => {
+		const _task: Partial<Task> = new Task({
+			id: task!.id,
+			active: false,
+		});
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
+
+		setTimeout(async () => {
+			try {
+				await dispatch(updateTask(_task));
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'success',
+					timeout: 3000,
+					content: 'Task closed.',
+					onClose: closeSnackbarAlertHandler,
+				});
+			} catch (err) {
+				const httpError = new HttpErrorParser(err);
+				const msg = httpError.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not close task.',
+				});
+			}
+			setDialogData((prevState) => ({ ...prevState, open: false }));
+		}, 400);
+	};
+
+	const closeDialogAlertHandler = () =>
+		setDialogData((prevState) => ({
+			...prevState,
+			open: prevState.loading,
+		}));
 
 	const speedDialOptionClickHandler = async (
 		optionName: TaskSpeedActions
@@ -234,19 +303,26 @@ const TaskDetails: React.FC<Props> = (props) => {
 			case TaskSpeedActions.AddMember:
 				break;
 			case TaskSpeedActions.CloseTask:
-				const _task: Partial<Task> = new Task({
-					id: task!.id,
-					active: false,
+				setDialogData({
+					open: true,
+					content: 'Do you want to close this task?',
+					title: 'Close Task',
+					onClose: closeDialogAlertHandler,
+					loading: false,
+					actions: [
+						{
+							label: 'Yes',
+							onClick: taskCloseHandler,
+							color: 'primary',
+						},
+						{
+							color: 'secondary',
+							label: 'Cancel',
+							onClick: closeDialogAlertHandler,
+						},
+					],
 				});
-				setSpeedActionLoading(true);
-				try {
-					await dispatch(updateTask(_task));
-				} catch (err) {
-					const httpError = new HttpErrorParser(err);
-					const msg = httpError.getMessage();
-					setSnackbarError(msg);
-				}
-				setSpeedActionLoading(false);
+
 				break;
 			case TaskSpeedActions.ResetPeriods:
 				break;
@@ -303,6 +379,11 @@ const TaskDetails: React.FC<Props> = (props) => {
 										component="h2"
 										className={classes.title}
 									>
+										{!task.active && (
+											<span style={{ color: '#888' }}>
+												[Inactive]{' '}
+											</span>
+										)}
 										{task.name}
 									</Typography>
 								) : (
@@ -401,6 +482,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 						</Typography>
 						<TaskSchedule
 							data={periods}
+							disabled={!task?.active}
 							loading={
 								(loadingElements.schedule || !periods) &&
 								!elementsErrors.schedule
@@ -413,19 +495,13 @@ const TaskDetails: React.FC<Props> = (props) => {
 					</Grid>
 				</Grid>
 			</Grid>
-			<Snackbar
-				open={snackbarOpened}
-				onClose={snackbarCloseHandler}
-				autoHideDuration={4000}
-			>
-				<Alert onClose={snackbarCloseHandler} severity="error">
-					{snackbarError}
-				</Alert>
-			</Snackbar>
+			<AlertSnackbar data={snackbarData} />
+
 			<TaskSpeedDial
 				disabled={
 					!task ||
 					!loggedUser ||
+					!task.active ||
 					!task.owner ||
 					loggedUser.id !== task.owner.id
 				}
@@ -433,14 +509,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 				toggleOpen={() => setSpeedDialOpen((prevState) => !prevState)}
 				onOptionClick={speedDialOptionClickHandler}
 			/>
-			<Backdrop
-				className={classes.backdrop}
-				open={speedActionLoading}
-				mountOnEnter
-				unmountOnExit
-			>
-				<CircularProgress color={'inherit'} />
-			</Backdrop>
+			<AlertDialog data={dialogData} />
 		</>
 	);
 };
