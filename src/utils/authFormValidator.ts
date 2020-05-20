@@ -25,8 +25,6 @@ export default async function validateAuthFormField(
 			break;
 		case 'emailAddress':
 			// const emailAddressRegExp = /^[A-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-			// eslint-disable-next-line no-useless-escape
-			const emailAddressRegExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 			if (!formValues[fieldId]) {
 				error = 'Please enter Email Address.';
 			} else if (!emailAddressRegExp.test(formValues[fieldId])) {
@@ -67,9 +65,8 @@ export default async function validateAuthFormField(
 			if (!isSignIn && formValues[fieldId] !== '') {
 				try {
 					await testImage(formValues[fieldId]);
-				}
-				catch (err) {
-					error = 'That is not correct image url.'
+				} catch (err) {
+					error = 'That is not correct image url.';
 				}
 			}
 			break;
@@ -79,6 +76,9 @@ export default async function validateAuthFormField(
 
 	return error;
 }
+
+// eslint-disable-next-line no-useless-escape
+export const emailAddressRegExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 function testImage(URL: string) {
 	return new Promise((resolve, reject) => {

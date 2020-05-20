@@ -24,14 +24,17 @@ import {
 	HighlightOffRounded,
 	CheckRounded,
 	ClearRounded,
+	HelpOutlineRounded,
 } from '@material-ui/icons';
+import { emailAddressRegExp } from '../../utils/authFormValidator';
 
 enum MembersState {
 	'loading',
-	'not_fount',
+	'not_found',
 	'accepted',
 	'ok',
 	'error',
+	'invalid',
 }
 
 interface Props {
@@ -58,10 +61,6 @@ const FlatMembersSearch: React.FC<Props> = ({
 		[key: string]: MembersState;
 	}>({ [loggedUser.emailAddress]: MembersState.ok });
 
-	const [membersErrors, setMembersErrors] = useState<{
-		[key: string]: string;
-	}>({});
-
 	const inputRef = useRef<HTMLInputElement>();
 
 	useEffect(() => {
@@ -77,67 +76,64 @@ const FlatMembersSearch: React.FC<Props> = ({
 	}, [membersState, updateMembersLoading]);
 
 	const submitMemberHandler = () => {
-		const value = inputValue.trim().toLowerCase();
-		if (
-			value !== '' &&
-			(!membersEmails.includes(value) || membersErrors[value])
-		) {
-			submitMember(value);
+		const email = inputValue.trim().toLowerCase();
+		if (email !== '') {
+			if (!membersEmails.includes(email)) {
+				submitMember(email);
+			}
+			// highlight row
 		}
 		setInputValue('');
 		inputRef.current!.focus();
 	};
 
-	const submitMember = (value: string) => {
-		if (!membersErrors[value]) {
-			setMembersEmails((prevSate) => prevSate.concat(value));
-		}
-		setMembersState((prevState) => ({
-			...prevState,
-			[value]: MembersState.loading,
-		}));
+	const submitMember = (email: string) => {
+		setMembersEmails((prevSate) => prevSate.concat(email));
 
-		setTimeout(() => fetchUserByEmail(value), 1000);
+		const isEmailAddress = emailAddressRegExp.test(email);
+		if (isEmailAddress) {
+			setMembersState((prevState) => ({
+				...prevState,
+				[email]: MembersState.loading,
+			}));
+			fetchUserByEmail(email);
+		} else {
+			setMembersState((prevState) => ({
+				...prevState,
+				[email]: MembersState.invalid,
+			}));
+		}
 	};
 
-	const fetchUserByEmail = useCallback(async (value: string) => {
+	const fetchUserByEmail = useCallback(async (email: string) => {
 		const url = `/users/emailAddress`;
 		try {
 			const response = await axios.post(url, {
-				emailAddress: value,
+				emailAddress: email,
 			});
 
 			if (response.status === 204) {
 				setMembersState((prevState) => ({
 					...prevState,
-					[value]: MembersState.not_fount,
+					[email]: MembersState.not_found,
 				}));
 			} else {
 				setMembersState((prevState) => ({
 					...prevState,
-					[value]: MembersState.accepted,
+					[email]: MembersState.accepted,
 				}));
 				setTimeout(() => {
 					setMembersState((prevState) => ({
 						...prevState,
-						[value]: MembersState.ok,
+						[email]: MembersState.ok,
 					}));
 				}, 1200);
 				setMembers((prevSate) => prevSate.concat(response.data));
 			}
-			setMembersErrors((prevState) => {
-				const updatedState = { ...prevState };
-				delete updatedState[value];
-				return updatedState;
-			});
 		} catch (err) {
 			setMembersState((prevState) => ({
 				...prevState,
-				[value]: MembersState.error,
-			}));
-			setMembersErrors((prevState) => ({
-				...prevState,
-				[value]: 'Error: ' + err.message,
+				[email]: MembersState.error,
 			}));
 		}
 	}, []);
@@ -158,6 +154,10 @@ const FlatMembersSearch: React.FC<Props> = ({
 
 		setMembersEmails((prevState) => prevState.filter((x) => x !== email));
 	};
+
+	const validEmailsCount = Object.values(membersState).filter(
+		(x) => x !== MembersState.invalid && x !== MembersState.loading
+	).length;
 
 	return (
 		<div className={classes.container}>
@@ -257,7 +257,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 							);
 							secondaryText = member ? member.userName : '';
 							break;
-						default:
+						case MembersState.invalid:
 							secondaryTextColor = 'error';
 							sateIndicator = (
 								<ListItemAvatar
@@ -271,11 +271,35 @@ const FlatMembersSearch: React.FC<Props> = ({
 								</ListItemAvatar>
 							);
 							secondaryText =
-								membersErrors[email] ||
-								'Email address not found.';
+								'Error: This is not a valid email address.';
+							break;
+						case MembersState.not_found:
+							secondaryTextColor = 'secondary';
+							sateIndicator = (
+								<ListItemAvatar className={classes.itemAvatar}>
+									<Avatar alt="User avatar" src="" />
+								</ListItemAvatar>
+							);
+							secondaryText =
+								'Info: Email address is not registered in FTS2020, but invitation will be sent.';
+							break;
+						default:
+							secondaryTextColor = 'secondary';
+							sateIndicator = (
+								<ListItemAvatar
+									className={classes.itemAvatar}
+									style={{ height: '100%' }}
+								>
+									<HelpOutlineRounded
+										color="secondary"
+										fontSize="large"
+									/>
+								</ListItemAvatar>
+							);
+							secondaryText =
+								'Info: Could not check if email address is registered in FTS2020 due to internal error, but invitation will be sent.';
 							break;
 					}
-
 					return (
 						<React.Fragment key={email}>
 							<ListItem alignItems="flex-start">
@@ -327,13 +351,13 @@ const FlatMembersSearch: React.FC<Props> = ({
 				})}
 			</List>
 			<p className={classes.summary}>
-				{members.length === 0
-					? 'No members added'
-					: members.length === 1
-					? 'Only You will be the member.'
-					: `${members.length - 1} user${
-							members.length === 1 ? '' : 's'
-					  } will be invited.`}
+				{validEmailsCount === 1
+					? 'Add email addresses to invite people to your flat.'
+					: validEmailsCount === 2
+					? 'One invitation will be sent.'
+					: `${validEmailsCount - 1} invitation${
+							validEmailsCount === 2 ? '' : 's'
+					  } will be sent.`}
 			</p>
 		</div>
 	);
