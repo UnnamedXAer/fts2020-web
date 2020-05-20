@@ -83,7 +83,6 @@ export const createTask = (
 				payload: createdTask,
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};

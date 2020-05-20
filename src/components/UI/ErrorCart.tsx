@@ -13,7 +13,7 @@ const ErrorCart: React.FC<Props> = ({
 	message,
 	headerMessage = 'An error occurred',
 	showHeader,
-	iconSize = 'default'
+	iconSize = 'default',
 }) => {
 	const classes = useStyle();
 	return message !== null ? (
@@ -37,8 +37,8 @@ const ErrorCart: React.FC<Props> = ({
 
 const useStyle = makeStyles({
 	cart: {
-		padding: 16
-	}
+		padding: 16,
+	},
 });
 
 export default ErrorCart;

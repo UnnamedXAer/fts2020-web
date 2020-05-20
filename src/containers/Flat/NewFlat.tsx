@@ -11,14 +11,14 @@ import {
 	CircularProgress,
 	Button,
 	useMediaQuery,
-	useTheme
+	useTheme,
 } from '@material-ui/core';
 import { useSelector, useDispatch } from 'react-redux';
 import RootState from '../../store/storeTypes';
 import useForm, {
 	ActionType,
 	FormAction,
-	FormState
+	FormState,
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
 import { PhotoCamera } from '@material-ui/icons';
@@ -34,28 +34,31 @@ interface Props extends RouteComponentProps {
 	flatId?: number;
 }
 
-const descriptionPlaceholder = `eg. lodgings ${new Date().getFullYear()}/10 - ${new Date().getFullYear() +
-	1}-07`;
+const descriptionPlaceholder = `eg. lodgings ${new Date().getFullYear()}/10 - ${
+	new Date().getFullYear() + 1
+}-07`;
 
 const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 	const classes = useStyles();
 
-	const loggedUser = useSelector<RootState, User>(state => state.auth.user!);
+	const loggedUser = useSelector<RootState, User>(
+		(state) => state.auth.user!
+	);
 	const flat = useSelector((state: RootState) =>
-		state.flats.flats.find(x => x.id === flatId)
+		state.flats.flats.find((x) => x.id === flatId)
 	);
 	const initialFormStateRef = useRef<FormState>({
 		formValidity: !!flatId,
 		values: {
 			name: flat ? flat.name : '',
 			description: flat ? flat.description : '',
-			avatarUrl: ''
+			avatarUrl: '',
 		},
 		errors: {
 			name: null,
 			description: null,
-			avatarUrl: null
-		}
+			avatarUrl: null,
+		},
 	});
 
 	const dispatch = useDispatch();
@@ -88,26 +91,30 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 		};
 	});
 
-	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = ev => {
+	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
+		ev
+	) => {
 		const { name, value } = ev.target;
 
 		const action: FormAction = {
 			type: ActionType.UpdateValue,
 			fieldId: name,
-			value: value
+			value: value,
 		};
 
 		formDispatch(action);
 	};
 
-	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = ev => {
+	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = (
+		ev
+	) => {
 		const { name } = ev.target;
 		let error = validateFlatFormField(name, formState.values);
 
 		const action: FormAction = {
 			type: ActionType.SetError,
 			fieldId: name,
-			error: error
+			error: error,
 		};
 
 		formDispatch(action);
@@ -121,7 +128,7 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 		setMembersLoading(isLoading);
 	};
 
-	const submitHandler: React.FormEventHandler = async ev => {
+	const submitHandler: React.FormEventHandler = async (ev) => {
 		setError(null);
 		setLoading(true);
 
@@ -131,7 +138,7 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 			const action: FormAction = {
 				type: ActionType.SetError,
 				fieldId: name,
-				error: error
+				error: error,
 			};
 
 			formDispatch(action);
@@ -148,7 +155,7 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 			members: members,
 			description: formState.values.description,
 			name: formState.values.name,
-			ownerId: loggedUser.id
+			ownerId: loggedUser.id,
 		});
 
 		try {
@@ -157,11 +164,11 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach(x =>
+			fieldsErrors.forEach((x) =>
 				formDispatch({
 					type: ActionType.SetError,
 					fieldId: x.param,
-					error: x.msg
+					error: x.msg,
 				})
 			);
 
@@ -307,7 +314,7 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 								<Button
 									style={{
 										paddingLeft: 40,
-										paddingRight: 40
+										paddingRight: 40,
 									}}
 									disabled={
 										membersLoading ||
@@ -330,51 +337,40 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
-	title: {
-		margin: theme.spacing(4, 0, 2)
-	},
-	paper: {
-		padding: 30,
-		margin: 20
-	},
 	header: {
-		paddingBottom: theme.spacing(2)
+		paddingBottom: theme.spacing(2),
 	},
 	gridContainer: {
 		width: '100%',
 		display: 'flex',
-		justifyContent: 'center'
+		justifyContent: 'center',
 	},
 	avatarBox: {
 		position: 'relative',
 		width: theme.spacing(12),
-		height: theme.spacing(12)
+		height: theme.spacing(12),
 	},
 	avatar: {
 		width: '100%',
-		height: '100%'
+		height: '100%',
 	},
 	avatarCamera: {
 		position: 'absolute',
 		bottom: -10,
 		right: -10,
-		background: 'white'
+		background: 'white',
 	},
 	fieldError: {
 		color: theme.palette.error.main,
 		fontSize: '0.7em',
 		height: '0.8em',
-		marginBlockStart: '0.2em'
+		marginBlockStart: '0.2em',
 	},
 	submitWrapper: {
 		justifyContent: 'center',
 		alignItems: 'center',
-		display: 'flex'
+		display: 'flex',
 	},
-	formErrorText: {
-		color: theme.palette.error.main,
-		fontWeight: 'bold'
-	}
 }));
 
 export default NewFlat;

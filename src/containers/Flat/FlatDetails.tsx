@@ -105,7 +105,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 
 	const memberSelectHandler = (id: number) => {
 		props.history.push(`/profile/${id}`);
-	}
+	};
 
 	return (
 		<>
@@ -133,11 +133,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 							</Avatar>
 						</Grid>
 						<Grid item>
-							<Typography
-								variant="h5"
-								component="h2"
-								className={classes.title}
-							>
+							<Typography variant="h5" component="h2">
 								{flat.name}
 							</Typography>
 							{flat.owner ? (
@@ -209,7 +205,6 @@ const FlatDetails: React.FC<Props> = (props) => {
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
-		title: {},
 		description: {
 			paddingTop: 10,
 			paddingBottom: 10,

@@ -15,7 +15,7 @@ import {
 	ListItemIcon,
 	ListItemSecondaryAction,
 	IconButton,
-	Box
+	Box,
 } from '@material-ui/core';
 import User from '../../models/user';
 import axios from '../../axios/axios';
@@ -23,7 +23,7 @@ import {
 	AddRounded,
 	HighlightOffRounded,
 	CheckRounded,
-	ClearRounded
+	ClearRounded,
 } from '@material-ui/icons';
 
 enum MembersState {
@@ -31,7 +31,7 @@ enum MembersState {
 	'not_fount',
 	'accepted',
 	'ok',
-	'error'
+	'error',
 }
 
 interface Props {
@@ -45,13 +45,13 @@ const FlatMembersSearch: React.FC<Props> = ({
 	updateMembers,
 	loggedUser,
 	formLoading,
-	updateMembersLoading
+	updateMembersLoading,
 }) => {
 	const classes = useStyles();
 
 	const [inputValue, setInputValue] = useState('');
 	const [membersEmails, setMembersEmails] = React.useState<string[]>([
-		loggedUser.emailAddress
+		loggedUser.emailAddress,
 	]);
 	const [members, setMembers] = React.useState<User[]>([loggedUser]);
 	const [membersState, setMembersState] = useState<{
@@ -66,12 +66,11 @@ const FlatMembersSearch: React.FC<Props> = ({
 
 	useEffect(() => {
 		updateMembers(members);
-		console.log('pushing members');
 	}, [members, updateMembers]);
 
 	useEffect(() => {
 		const membersLoading = Object.values(membersState).some(
-			x => x === MembersState.loading
+			(x) => x === MembersState.loading
 		);
 
 		updateMembersLoading(membersLoading);
@@ -91,11 +90,11 @@ const FlatMembersSearch: React.FC<Props> = ({
 
 	const submitMember = (value: string) => {
 		if (!membersErrors[value]) {
-			setMembersEmails(prevSate => prevSate.concat(value));
+			setMembersEmails((prevSate) => prevSate.concat(value));
 		}
-		setMembersState(prevState => ({
+		setMembersState((prevState) => ({
 			...prevState,
-			[value]: MembersState.loading
+			[value]: MembersState.loading,
 		}));
 
 		setTimeout(() => fetchUserByEmail(value), 1000);
@@ -105,60 +104,59 @@ const FlatMembersSearch: React.FC<Props> = ({
 		const url = `/users/emailAddress`;
 		try {
 			const response = await axios.post(url, {
-				emailAddress: value
+				emailAddress: value,
 			});
 
 			if (response.status === 204) {
-				setMembersState(prevState => ({
+				setMembersState((prevState) => ({
 					...prevState,
-					[value]: MembersState.not_fount
+					[value]: MembersState.not_fount,
 				}));
 			} else {
-				setMembersState(prevState => ({
+				setMembersState((prevState) => ({
 					...prevState,
-					[value]: MembersState.accepted
+					[value]: MembersState.accepted,
 				}));
 				setTimeout(() => {
-					setMembersState(prevState => ({
+					setMembersState((prevState) => ({
 						...prevState,
-						[value]: MembersState.ok
+						[value]: MembersState.ok,
 					}));
 				}, 1200);
-				setMembers(prevSate => prevSate.concat(response.data));
+				setMembers((prevSate) => prevSate.concat(response.data));
 			}
-			setMembersErrors(prevState => {
+			setMembersErrors((prevState) => {
 				const updatedState = { ...prevState };
 				delete updatedState[value];
 				return updatedState;
 			});
 		} catch (err) {
-			setMembersState(prevState => ({
+			setMembersState((prevState) => ({
 				...prevState,
-				[value]: MembersState.error
+				[value]: MembersState.error,
 			}));
-			setMembersErrors(prevState => ({
+			setMembersErrors((prevState) => ({
 				...prevState,
-				[value]: 'Error: ' + err.message
+				[value]: 'Error: ' + err.message,
 			}));
-			console.log('fetch user,err: ', err);
 		}
 	}, []);
 
 	const removeMemberHandler = (email: string) => {
-		setMembers(prevMembers => {
+		setMembers((prevMembers) => {
 			const updatedMembers = prevMembers.filter(
-				x => x.emailAddress.toLowerCase() !== email
+				(x) => x.emailAddress.toLowerCase() !== email
 			);
 			return updatedMembers;
 		});
 
-		setMembersState(prevState => {
+		setMembersState((prevState) => {
 			const updatedState = { ...prevState };
 			delete updatedState[email];
 			return updatedState;
 		});
 
-		setMembersEmails(prevState => prevState.filter(x => x !== email));
+		setMembersEmails((prevState) => prevState.filter((x) => x !== email));
 	};
 
 	return (
@@ -181,10 +179,10 @@ const FlatMembersSearch: React.FC<Props> = ({
 			>
 				<TextField
 					inputRef={inputRef}
-					onChange={ev => {
+					onChange={(ev) => {
 						setInputValue(ev.target.value);
 					}}
-					onKeyDown={ev => {
+					onKeyDown={(ev) => {
 						if (ev.key === 'Enter') {
 							submitMemberHandler();
 						}
@@ -209,7 +207,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 
 			<List className={classes.list}>
 				{membersEmails.map((email, i) => {
-					const member = members.find(x => {
+					const member = members.find((x) => {
 						return (
 							x.emailAddress.toLowerCase() === email.toLowerCase()
 						);
@@ -347,27 +345,27 @@ const useStyles = makeStyles((theme: Theme) =>
 			display: 'flex',
 			flexDirection: 'column',
 			justifyContent: 'flex-start',
-			alignItems: 'center'
+			alignItems: 'center',
 		},
 		list: {
 			width: '100%',
 			backgroundColor: theme.palette.background.paper,
-			overflow: 'auto'
+			overflow: 'auto',
 		},
 		inline: {
-			display: 'inline'
+			display: 'inline',
 		},
 		itemAvatar: {
 			display: 'flex',
 			justifyContent: 'center',
-			alignItems: 'center'
+			alignItems: 'center',
 		},
 		summary: {
 			color: theme.palette.info.light,
 			fontStyle: 'italic',
 			fontSize: 12,
-			alignSelf: 'flex-end'
-		}
+			alignSelf: 'flex-end',
+		},
 	})
 );
 

@@ -59,7 +59,6 @@ const Flats: React.FC<Props> = (props) => {
 	}, [dispatch, flatsLoadTime]);
 
 	const flatClickHandler = (flatId: number) => {
-		console.log(flatId);
 		setSelectedFlat(flatId);
 	};
 
@@ -154,9 +153,6 @@ const Flats: React.FC<Props> = (props) => {
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
-	title: {
-		margin: theme.spacing(4, 0, 2),
-	},
 	fab: {
 		position: 'fixed',
 		bottom: 20,

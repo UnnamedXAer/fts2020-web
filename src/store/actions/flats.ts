@@ -38,7 +38,6 @@ export const createFlat = (
 				payload: createdFlat
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};
@@ -70,7 +69,6 @@ export const fetchFlats = (): ThunkAction<
 				payload: flats
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};
@@ -108,7 +106,6 @@ export const fetchFlatOwner = (
 				}
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};
@@ -139,7 +136,6 @@ export const fetchFlatMembers = (
 						user.active
 					)
 			);
-			console.log(members);
 			dispatch({
 				type: FlatsActionTypes.SetMembers,
 				payload: {
@@ -148,7 +144,6 @@ export const fetchFlatMembers = (
 				}	
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};

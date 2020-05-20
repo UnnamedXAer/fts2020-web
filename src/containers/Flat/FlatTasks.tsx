@@ -24,7 +24,7 @@ import TaskInfoModalContent from '../../components/Flat/TaskInfoModalContent';
 
 interface Props {
 	flatId: number;
-} 
+}
 
 const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	const classes = useStyles();
@@ -32,8 +32,8 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const tasks = useSelector<RootState, Task[]>(
-		(state) => state.tasks.tasks.filter(x => x.flatId === flatId)
+	const tasks = useSelector<RootState, Task[]>((state) =>
+		state.tasks.tasks.filter((x) => x.flatId === flatId)
 	);
 	const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 	const [showTaskModal, setShowTaskModal] = useState(false);
@@ -107,7 +107,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 
 	const memberSelectHandler = (id: number) => {
 		history.push(`/profile/${id}`);
-	}
+	};
 
 	if (error) {
 		return <ErrorCart message={error} showHeader />;
@@ -174,7 +174,7 @@ const useStyles = makeStyles((theme: Theme) =>
 			maxHeight: '90vh',
 			overflowX: 'hidden',
 			overflowY: 'auto',
-			boxSizing: 'border-box'
+			boxSizing: 'border-box',
 		},
 		modalCloseBox: {
 			display: 'flex',
@@ -184,7 +184,7 @@ const useStyles = makeStyles((theme: Theme) =>
 			position: 'sticky',
 			top: 0,
 			backgroundColor: theme.palette.background.paper,
-			padding: theme.spacing(1, 0,0,0),
+			padding: theme.spacing(1, 0, 0, 0),
 		},
 	})
 );

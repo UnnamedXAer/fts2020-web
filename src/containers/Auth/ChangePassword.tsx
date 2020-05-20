@@ -284,15 +284,6 @@ const ChangePassword: React.FC<Props> = (props) => {
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
-		container: {
-			height: '100vh',
-			display: 'flex',
-			justifyContent: 'stretch',
-			alignItems: 'center',
-		},
-		header: {
-			paddingBottom: theme.spacing(2),
-		},
 		fieldError: {
 			color: theme.palette.error.main,
 			fontSize: '0.7em',
@@ -303,10 +294,6 @@ const useStyles = makeStyles((theme: Theme) =>
 			justifyContent: 'space-around',
 			alignItems: 'center',
 			display: 'flex',
-		},
-		formErrorText: {
-			color: theme.palette.error.main,
-			fontWeight: 'bold',
 		},
 	})
 );

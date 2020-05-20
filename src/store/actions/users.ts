@@ -43,7 +43,6 @@ export const fetchUser = (
 				payload: user,
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};
@@ -76,7 +75,6 @@ export const updateUser = (
 				payload: updatedUser,
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};

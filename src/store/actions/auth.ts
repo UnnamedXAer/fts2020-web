@@ -29,7 +29,6 @@ export const authorize = (
 		const url = `/auth/${isLogIn ? 'login' : 'register'}`;
 		try {
 			const { data } = await axios.post(url, credentials);
-			console.log('auth data: ', data);
 
 			const user = new User(
 				data.user.id,
@@ -58,7 +57,6 @@ export const authorize = (
 			localStorage.setItem('loggedUser', JSON.stringify(user));
 			localStorage.setItem('expirationTime', '' + expirationTime);
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};
@@ -146,7 +144,6 @@ export const updatePassword = (
 				payload: void 0,
 			});
 		} catch (err) {
-			console.log(err);
 			throw err;
 		}
 	};

@@ -170,12 +170,7 @@ const Profile: React.FC<Props> = (props) => {
 							User Name
 						</Typography>
 					</Grid>
-					<Grid
-						item
-						container
-						style={{ minHeight: 36 }}
-						className={classes.editable}
-					>
+					<Grid item container style={{ minHeight: 36 }}>
 						{user ? (
 							<>
 								<Typography variant="h5">
@@ -201,12 +196,7 @@ const Profile: React.FC<Props> = (props) => {
 							Email Address
 						</Typography>
 					</Grid>
-					<Grid
-						item
-						container
-						style={{ minHeight: 36 }}
-						className={classes.editable}
-					>
+					<Grid item container style={{ minHeight: 36 }}>
 						{user ? (
 							<>
 								<Typography variant="h5">
@@ -351,7 +341,6 @@ const Profile: React.FC<Props> = (props) => {
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
-		editable: {},
 		modifyFieldIcon: {
 			paddingLeft: theme.spacing(3),
 			paddingRight: theme.spacing(3),
@@ -363,11 +352,6 @@ const useStyles = makeStyles((theme: Theme) =>
 		avatar: {
 			width: theme.spacing(12),
 			height: theme.spacing(12),
-		},
-		fab: {
-			position: 'fixed',
-			bottom: 20,
-			right: 20,
 		},
 		modal: {
 			display: 'flex',

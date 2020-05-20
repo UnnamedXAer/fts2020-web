@@ -15,10 +15,7 @@ import {
 	Select,
 	MenuItem,
 } from '@material-ui/core';
-import {
-	MuiPickersUtilsProvider,
-	DatePicker,
-} from '@material-ui/pickers';
+import { MuiPickersUtilsProvider, DatePicker } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import { useSelector, useDispatch } from 'react-redux';
 import RootState from '../../store/storeTypes';
@@ -474,13 +471,6 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
-	title: {
-		margin: theme.spacing(4, 0, 2),
-	},
-	paper: {
-		padding: theme.spacing(3),
-		margin: theme.spacing(2),
-	},
 	header: {
 		paddingBottom: theme.spacing(2),
 	},
@@ -488,21 +478,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 		width: '100%',
 		display: 'flex',
 		justifyContent: 'center',
-	},
-	avatarBox: {
-		position: 'relative',
-		width: theme.spacing(12),
-		height: theme.spacing(12),
-	},
-	avatar: {
-		width: '100%',
-		height: '100%',
-	},
-	avatarCamera: {
-		position: 'absolute',
-		bottom: -10,
-		right: -10,
-		background: 'white',
 	},
 	fieldError: {
 		color: theme.palette.error.main,
@@ -514,10 +489,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 		justifyContent: 'center',
 		alignItems: 'center',
 		display: 'flex',
-	},
-	formErrorText: {
-		color: theme.palette.error.main,
-		fontWeight: 'bold',
 	},
 }));
 

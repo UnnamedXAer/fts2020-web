@@ -374,11 +374,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 						>
 							<Grid item>
 								{task ? (
-									<Typography
-										variant="h5"
-										component="h2"
-										className={classes.title}
-									>
+									<Typography variant="h5" component="h2">
 										{!task.active && (
 											<span style={{ color: '#888' }}>
 												[Inactive]{' '}
@@ -516,7 +512,6 @@ const TaskDetails: React.FC<Props> = (props) => {
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
-		title: {},
 		description: {
 			paddingTop: theme.spacing(1),
 			paddingBottom: theme.spacing(1),
@@ -527,19 +522,6 @@ const useStyles = makeStyles((theme: Theme) =>
 		avatar: {
 			width: theme.spacing(10),
 			height: theme.spacing(10),
-		},
-		margin: {
-			margin: theme.spacing(1),
-		},
-		fab: {
-			position: 'fixed',
-			bottom: theme.spacing(2),
-			right: theme.spacing(2),
-		},
-		taskInfoContainer: {},
-		backdrop: {
-			zIndex: theme.zIndex.drawer + 1,
-			color: '#fff',
 		},
 	})
 );
