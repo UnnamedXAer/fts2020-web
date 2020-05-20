@@ -12,6 +12,8 @@ import {
 	CircularProgress,
 	Box,
 	Link,
+	FormControlLabel,
+	Checkbox,
 } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
@@ -27,16 +29,17 @@ interface Props extends RouteComponentProps {}
 const UserTasks: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
+	const [showInactive, setShowInactive] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
-	const tasks = useSelector<RootState, UserTask[]>(
-		(state) => state.tasks.userTasks
+	const tasks = useSelector<RootState, UserTask[]>((state) =>
+		showInactive
+			? state.tasks.userTasks
+			: state.tasks.userTasks.filter((x) => x.active)
 	);
 	const userTasksLoadTime = useSelector<RootState, number>(
 		(state) => state.tasks.userTasksLoadTime
 	);
-
 	const [selectedTask, setSelectedTask] = useState<number | null>(null);
 
 	useEffect(() => {
@@ -59,6 +62,13 @@ const UserTasks: React.FC<Props> = (props) => {
 		setSelectedTask(taskId);
 	};
 
+	const showInactiveChangeHandler = (
+		_: React.ChangeEvent<HTMLInputElement>,
+		checked: boolean
+	) => {
+		setShowInactive(checked);
+	};
+
 	let content = (
 		<Box textAlign="center">
 			<CircularProgress size={36} color="primary" />
@@ -76,56 +86,80 @@ const UserTasks: React.FC<Props> = (props) => {
 		if (tasks.length === 0) {
 			content = (
 				<CustomMuiAlert severity="info">
-					<span>You are not a member of any task.</span>
+					<span>
+						You are not a member of any task. You can go to{' '}
+						<Link
+							className={classes.alertLink}
+							color="inherit"
+							title="Go to My Flats"
+							component={RouterLink}
+							to="/flats"
+						>
+							Your Flats
+						</Link>{' '}
+						section and create task for a flat.
+					</span>
 				</CustomMuiAlert>
 			);
 		} else {
 			content = (
-				<List dense={false}>
-					{tasks.map((task) => (
-						<ListItem
-							key={task.id}
-							button
-							onClick={() => taskClickHandler(task.id!)}
-						>
-							<ListItemAvatar>
-								<Avatar>
-									<AllInclusiveRoundedIcon color="primary" />
-								</Avatar>
-							</ListItemAvatar>
-							<ListItemText
-								primary={task.name}
-								secondary={
-									<>
-										<Typography component="span">
-											Flat:{' '}
-											<Link
-												component={RouterLink}
-												to={`/flats/${task.flatId}`}
-												color="primary"
-												variant="body1"
-											>
-												{task.flatName}
-											</Link>
-										</Typography>{' '}
-										<br />
-										<Typography component="span">
-											Period:{' '}
-											<Typography
-												component="span"
-												color="textPrimary"
-											>
-												{task.timePeriodValue}{' '}
-												{task.timePeriodUnit?.toLocaleLowerCase()}
-												{task.timePeriodValue! > 1 &&
-													's'}
+				<List dense={false} style={{ paddingTop: 0 }}>
+					{tasks.map((task) => {
+						const name = (
+							<>
+								{!task.active && (
+									<span style={{ color: '#888' }}>
+										[Inactive]{' '}
+									</span>
+								)}
+								{task.name}
+							</>
+						);
+						return (
+							<ListItem
+								key={task.id}
+								button
+								onClick={() => taskClickHandler(task.id!)}
+							>
+								<ListItemAvatar>
+									<Avatar>
+										<AllInclusiveRoundedIcon color="primary" />
+									</Avatar>
+								</ListItemAvatar>
+								<ListItemText
+									primary={name}
+									secondary={
+										<>
+											<Typography component="span">
+												Flat:{' '}
+												<Link
+													component={RouterLink}
+													to={`/flats/${task.flatId}`}
+													color="primary"
+													variant="body1"
+												>
+													{task.flatName}
+												</Link>
+											</Typography>{' '}
+											<br />
+											<Typography component="span">
+												Period:{' '}
+												<Typography
+													component="span"
+													color="textPrimary"
+												>
+													{task.timePeriodValue}{' '}
+													{task.timePeriodUnit?.toLocaleLowerCase()}
+													{task.timePeriodValue! >
+														1 && 's'}
+												</Typography>
 											</Typography>
-										</Typography>
-									</>
-								}
-							/>
-						</ListItem>
-					))}
+										</>
+									}
+								/>
+							</ListItem>
+						);
+					})}
 				</List>
 			);
 		}
@@ -138,8 +172,21 @@ const UserTasks: React.FC<Props> = (props) => {
 					<Typography variant="h4" component="h1">
 						Your Tasks
 					</Typography>
+					<FormControlLabel
+						control={
+							<Checkbox
+								checked={showInactive}
+								onChange={showInactiveChangeHandler}
+								name="showInactive"
+								color="primary"
+							/>
+						}
+						label="Show inactive"
+					/>
 				</Grid>
-				<Grid item>{content}</Grid>
+				<Grid item style={{ paddingTop: 0 }}>
+					{content}
+				</Grid>
 			</Grid>
 		</>
 	);
