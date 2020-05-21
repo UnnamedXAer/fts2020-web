@@ -27,6 +27,9 @@ import {
 	HelpOutlineRounded,
 } from '@material-ui/icons';
 import { emailAddressRegExp } from '../../utils/authFormValidator';
+import { NewFlatMember } from '../../containers/Flat/NewFlat';
+import { APP_NAME } from '../../config/config';
+import { APIUser } from '../../store/actions/users';
 
 enum MembersState {
 	'loading',
@@ -38,7 +41,7 @@ enum MembersState {
 }
 
 interface Props {
-	updateMembers: (newMembers: User[]) => void;
+	updateMembers: (newMembers: NewFlatMember[]) => void;
 	loggedUser: User;
 	formLoading: boolean;
 	updateMembersLoading: (isLoading: boolean) => void;
@@ -53,10 +56,10 @@ const FlatMembersSearch: React.FC<Props> = ({
 	const classes = useStyles();
 
 	const [inputValue, setInputValue] = useState('');
-	const [membersEmails, setMembersEmails] = React.useState<string[]>([
-		loggedUser.emailAddress,
-	]);
-	const [members, setMembers] = React.useState<User[]>([loggedUser]);
+	const [membersEmails, setMembersEmails] = React.useState<
+		NewFlatMember['emailAddress'][]
+	>([loggedUser.emailAddress]);
+	const [members, setMembers] = React.useState<Partial<User>[]>([loggedUser]);
 	const [membersState, setMembersState] = useState<{
 		[key: string]: MembersState;
 	}>({ [loggedUser.emailAddress]: MembersState.ok });
@@ -64,7 +67,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 	const inputRef = useRef<HTMLInputElement>();
 
 	useEffect(() => {
-		updateMembers(members);
+		updateMembers(members as NewFlatMember[]);
 	}, [members, updateMembers]);
 
 	useEffect(() => {
@@ -87,7 +90,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 		inputRef.current!.focus();
 	};
 
-	const submitMember = (email: string) => {
+	const submitMember = (email: NewFlatMember['emailAddress']) => {
 		setMembersEmails((prevSate) => prevSate.concat(email));
 
 		const isEmailAddress = emailAddressRegExp.test(email);
@@ -96,6 +99,9 @@ const FlatMembersSearch: React.FC<Props> = ({
 				...prevState,
 				[email]: MembersState.loading,
 			}));
+			setMembers((prevSate) =>
+				prevSate.concat({ emailAddress: email } as Partial<User>)
+			);
 			fetchUserByEmail(email);
 		} else {
 			setMembersState((prevState) => ({
@@ -105,54 +111,70 @@ const FlatMembersSearch: React.FC<Props> = ({
 		}
 	};
 
-	const fetchUserByEmail = useCallback(async (email: string) => {
-		const url = `/users/emailAddress`;
-		try {
-			const response = await axios.post(url, {
-				emailAddress: email,
-			});
+	const fetchUserByEmail = useCallback(
+		async (email: NewFlatMember['emailAddress']) => {
+			const url = `/users?emailAddress=${email}`;
+			try {
+				const response = await axios.get<APIUser>(url);
 
-			if (response.status === 204) {
-				setMembersState((prevState) => ({
-					...prevState,
-					[email]: MembersState.not_found,
-				}));
-			} else {
-				setMembersState((prevState) => ({
-					...prevState,
-					[email]: MembersState.accepted,
-				}));
-				setTimeout(() => {
+				if (response.status === 204) {
 					setMembersState((prevState) => ({
 						...prevState,
-						[email]: MembersState.ok,
+						[email]: MembersState.not_found,
 					}));
-				}, 1200);
-				setMembers((prevSate) => prevSate.concat(response.data));
+				} else {
+					setMembersState((prevState) => ({
+						...prevState,
+						[email]: MembersState.accepted,
+					}));
+					setTimeout(() => {
+						setMembersState((prevState) => ({
+							...prevState,
+							[email]: MembersState.ok,
+						}));
+					}, 1200);
+					setMembers((prevSate) => {
+						const idx = prevSate.findIndex(
+							(x) => x.emailAddress === response.data.emailAddress
+						);
+						const updatedState = [...prevSate];
+						updatedState[idx] = new User(
+							response.data.id,
+							response.data.emailAddress.toLowerCase(),
+							response.data.userName,
+							response.data.provider,
+							response.data.joinDate,
+							response.data.avatarUrl,
+							response.data.active
+						);
+						return updatedState;
+					});
+				}
+			} catch (err) {
+				setMembersState((prevState) => ({
+					...prevState,
+					[email]: MembersState.error,
+				}));
 			}
-		} catch (err) {
-			setMembersState((prevState) => ({
-				...prevState,
-				[email]: MembersState.error,
-			}));
-		}
-	}, []);
+		},
+		[]
+	);
 
-	const removeMemberHandler = (email: string) => {
+	const removeMemberHandler = (email: NewFlatMember['emailAddress']) => {
 		setMembers((prevMembers) => {
 			const updatedMembers = prevMembers.filter(
-				(x) => x.emailAddress.toLowerCase() !== email
+				(x) => x.emailAddress !== email
 			);
 			return updatedMembers;
 		});
+
+		setMembersEmails((prevState) => prevState.filter((x) => x !== email));
 
 		setMembersState((prevState) => {
 			const updatedState = { ...prevState };
 			delete updatedState[email];
 			return updatedState;
 		});
-
-		setMembersEmails((prevState) => prevState.filter((x) => x !== email));
 	};
 
 	const validEmailsCount = Object.values(membersState).filter(
@@ -166,8 +188,11 @@ const FlatMembersSearch: React.FC<Props> = ({
 			</Box>
 			<Typography variant="body2">
 				Add users by entering their email address. These users will
-				receive an email asking them to accept the invitation. This list
-				can be updated later.
+				receive an email asking them to accept the invitation.
+				Invitation will be sent also to people not registered in{' '}
+				{APP_NAME}.
+				<br />
+				List of members can be updated later.
 			</Typography>
 			<Box
 				display="flex"
@@ -191,9 +216,9 @@ const FlatMembersSearch: React.FC<Props> = ({
 					value={inputValue}
 					fullWidth
 					name="addMember"
-					helperText="Type email address of user that you want to add as flat member."
+					helperText="Type email address of person that you want to add as flat member."
 					type="email"
-					placeholder="Type email address and press enter to add"
+					placeholder="Type email address and press enter to add."
 				/>
 				<IconButton
 					type="submit"
@@ -206,11 +231,9 @@ const FlatMembersSearch: React.FC<Props> = ({
 			</Box>
 
 			<List className={classes.list}>
-				{membersEmails.map((email, i) => {
+				{membersEmails.map((email) => {
 					const member = members.find((x) => {
-						return (
-							x.emailAddress.toLowerCase() === email.toLowerCase()
-						);
+						return x.emailAddress === email;
 					});
 
 					const isLoggedUser = loggedUser.id === member?.id;
@@ -243,7 +266,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 									/>
 								</ListItemAvatar>
 							);
-							secondaryText = member ? member.userName : '';
+							secondaryText = member ? member.userName! : '';
 							break;
 						case MembersState.accepted:
 							secondaryTextColor = 'primary';
@@ -255,7 +278,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 									/>
 								</ListItemAvatar>
 							);
-							secondaryText = member ? member.userName : '';
+							secondaryText = member ? member.userName! : '';
 							break;
 						case MembersState.invalid:
 							secondaryTextColor = 'error';
@@ -281,7 +304,8 @@ const FlatMembersSearch: React.FC<Props> = ({
 								</ListItemAvatar>
 							);
 							secondaryText =
-								'Info: Email address is not registered in FTS2020, but invitation will be sent.';
+								'Email address is not registered in ' +
+								APP_NAME;
 							break;
 						default:
 							secondaryTextColor = 'secondary';
@@ -296,8 +320,7 @@ const FlatMembersSearch: React.FC<Props> = ({
 									/>
 								</ListItemAvatar>
 							);
-							secondaryText =
-								'Info: Could not check if email address is registered in FTS2020 due to internal error, but invitation will be sent.';
+							secondaryText = `Info: Could not check if email address is registered in ${APP_NAME} due to internal error, but invitation will be sent.`;
 							break;
 					}
 					return (

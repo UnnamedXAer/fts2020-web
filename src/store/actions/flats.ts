@@ -1,4 +1,4 @@
-import Flat from '../../models/flat';
+import Flat, { FlatData } from '../../models/flat';
 import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
 import { FlatsActionTypes } from './actionTypes';
@@ -15,17 +15,12 @@ type APIFlat = {
 };
 
 export const createFlat = (
-	flat: Flat
+	flat: FlatData
 ): ThunkAction<Promise<void>, RootState, any, StoreAction<Flat, string>> => {
 	return async dispatch => {
 		const url = '/flats';
 		try {
-			const requestPayload = {
-				name: flat.name,
-				description: flat.description,
-				members: flat.members!.map(x => x.id)
-			};
-			const { data } = await axios.post<APIFlat>(url, requestPayload);
+			const { data } = await axios.post<APIFlat>(url, flat);
 			const createdFlat = new Flat({
 				id: data.id,
 				name: data.name,

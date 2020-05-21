@@ -14,6 +14,7 @@ import {
 	useTheme,
 } from '@material-ui/core';
 import { useSelector, useDispatch } from 'react-redux';
+import { RouteComponentProps } from 'react-router-dom';
 import RootState from '../../store/storeTypes';
 import useForm, {
 	ActionType,
@@ -22,36 +23,36 @@ import useForm, {
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
 import { PhotoCamera } from '@material-ui/icons';
-import Flat from '../../models/flat';
+import { FlatData } from '../../models/flat';
 import validateFlatFormField from '../../utils/flatFormValidator';
 import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
 import User from '../../models/user';
 import { createFlat } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
-import { RouteComponentProps } from 'react-router-dom';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
-interface Props extends RouteComponentProps {
-	flatId?: number;
-}
+interface Props extends RouteComponentProps {}
 
 const descriptionPlaceholder = `eg. lodgings ${new Date().getFullYear()}/10 - ${
 	new Date().getFullYear() + 1
 }-07`;
 
-const NewFlat: React.FC<Props> = ({ flatId, history }) => {
+export type NewFlatMember = {
+	emailAddress: User['emailAddress'];
+	userName: User['userName'];
+};
+
+const NewFlat: React.FC<Props> = ({ history }) => {
 	const classes = useStyles();
 
 	const loggedUser = useSelector<RootState, User>(
 		(state) => state.auth.user!
 	);
-	const flat = useSelector((state: RootState) =>
-		state.flats.flats.find((x) => x.id === flatId)
-	);
 	const initialFormStateRef = useRef<FormState>({
-		formValidity: !!flatId,
+		formValidity: false,
 		values: {
-			name: flat ? flat.name : '',
-			description: flat ? flat.description : '',
+			name: '',
+			description: '',
 			avatarUrl: '',
 		},
 		errors: {
@@ -64,10 +65,10 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 	const dispatch = useDispatch();
 
 	const [formState, formDispatch] = useForm(initialFormStateRef.current);
-	const [members, setMembers] = useState<User[]>([]);
+	const [members, setMembers] = useState<NewFlatMember[]>([]);
 	const [membersLoading, setMembersLoading] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<StateError>(null);
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
@@ -120,7 +121,7 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 		formDispatch(action);
 	};
 
-	const updateMembersHandler = useCallback((newMembers: User[]) => {
+	const updateMembersHandler = useCallback((newMembers: NewFlatMember[]) => {
 		setMembers(newMembers);
 	}, []);
 
@@ -150,12 +151,10 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 			return;
 		}
 
-		const newFlat = new Flat({
-			id: flat?.id,
-			members: members,
+		const newFlat = new FlatData({
+			members: members.map((x) => x.emailAddress),
 			description: formState.values.description,
 			name: formState.values.name,
-			ownerId: loggedUser.id,
 		});
 
 		try {
@@ -181,7 +180,7 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 		<>
 			<Box className={classes.header}>
 				<Typography variant="h3" align="center" color="primary">
-					{flatId ? 'Edit flat' : 'Add Flat'}
+					Add Flat
 				</Typography>
 			</Box>
 			<Box className={classes.gridContainer}>
@@ -325,7 +324,7 @@ const NewFlat: React.FC<Props> = ({ flatId, history }) => {
 									color="primary"
 									type="submit"
 								>
-									{flatId ? 'Update' : 'Create'}
+									Create
 								</Button>
 							)}
 						</Box>

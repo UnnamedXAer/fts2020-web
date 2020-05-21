@@ -17,7 +17,7 @@ export default class Flat {
 			members,
 			owner,
 			ownerId,
-			createAt
+			createAt,
 		} = prams;
 
 		this.id = id;
@@ -27,5 +27,19 @@ export default class Flat {
 		this.owner = owner;
 		this.ownerId = ownerId;
 		this.createAt = createAt;
+	}
+}
+
+export class FlatData {
+	name: string;
+	description: string;
+	members?: User['emailAddress'][];
+
+	constructor(prams: FlatData = {} as FlatData) {
+		const { name, description, members } = prams;
+
+		this.name = name;
+		this.description = description;
+		this.members = members;
 	}
 }
