@@ -47,9 +47,9 @@ const setFlatTasks: SimpleReducer<
 	{ flatId: number; tasks: Task[] }
 > = (state, action) => {
 	const { flatId, tasks } = action.payload;
-	const updatedTasks = state.tasks.filter((x) => x.flatId !== flatId);
-
-	updatedTasks.concat(tasks);
+	const updatedTasks = state.tasks
+		.filter((x) => x.flatId !== flatId)
+		.concat(tasks);
 
 	return {
 		...state,
