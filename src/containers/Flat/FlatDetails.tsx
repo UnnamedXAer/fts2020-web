@@ -206,7 +206,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 	) => {
 		switch (optionName) {
 			case FlatSpeedActions.AddMember:
-				
+				props.history.push(`/flats/${flat.id}/invite-members`);
 				break;
 			case FlatSpeedActions.CloseFlat:
 				setDialogData({
