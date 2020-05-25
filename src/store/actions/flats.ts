@@ -17,7 +17,7 @@ type APIFlat = {
 export const createFlat = (
 	flat: FlatData
 ): ThunkAction<Promise<void>, RootState, any, StoreAction<Flat, string>> => {
-	return async dispatch => {
+	return async (dispatch) => {
 		const url = '/flats';
 		try {
 			const { data } = await axios.post<APIFlat>(url, flat);
@@ -26,11 +26,11 @@ export const createFlat = (
 				name: data.name,
 				description: data.description,
 				createAt: data.createAt,
-				ownerId: data.createBy
+				ownerId: data.createBy,
 			});
 			dispatch({
 				type: FlatsActionTypes.Add,
-				payload: createdFlat
+				payload: createdFlat,
 			});
 		} catch (err) {
 			throw err;
@@ -50,18 +50,18 @@ export const fetchFlats = (): ThunkAction<
 		try {
 			const { data } = await axios.get<APIFlat[]>(url);
 			const flats = data.map(
-				x =>
+				(x) =>
 					new Flat({
 						id: x.id,
 						name: x.name,
 						description: x.description,
 						ownerId: x.createBy,
-						createAt: x.createAt
+						createAt: x.createAt,
 					})
 			);
 			dispatch({
 				type: FlatsActionTypes.Set,
-				payload: flats
+				payload: flats,
 			});
 		} catch (err) {
 			throw err;
@@ -78,7 +78,7 @@ export const fetchFlatOwner = (
 	any,
 	StoreAction<{ user: User; flatId: number }, FlatsActionTypes.SetOwner>
 > => {
-	return async dispatch => {
+	return async (dispatch) => {
 		const url = `/users/${userId}`;
 		try {
 			const { data } = await axios.get(url);
@@ -97,8 +97,8 @@ export const fetchFlatOwner = (
 				type: FlatsActionTypes.SetOwner,
 				payload: {
 					user,
-					flatId
-				}
+					flatId,
+				},
 			});
 		} catch (err) {
 			throw err;
@@ -112,9 +112,12 @@ export const fetchFlatMembers = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<{flatId: number, members: User[]}, FlatsActionTypes.SetMembers>
+	StoreAction<
+		{ flatId: number; members: User[] },
+		FlatsActionTypes.SetMembers
+	>
 > => {
-	return async dispatch => {
+	return async (dispatch) => {
 		const url = `/flats/${flatId}/members`;
 		try {
 			const { data } = await axios.get(url);
@@ -135,8 +138,42 @@ export const fetchFlatMembers = (
 				type: FlatsActionTypes.SetMembers,
 				payload: {
 					members,
-					flatId 
-				}	
+					flatId,
+				},
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const updateFlat = (
+	flat: Partial<FlatData>
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<Partial<Flat>, string>
+> => {
+	return async (dispatch) => {
+		const url = `/flats/${flat.id}`;
+		try {
+			const requestPayload: Partial<APIFlat> = {
+				name: flat.name!,
+				description: flat.description,
+				// active: flat.active,
+			};
+			const { data } = await axios.patch<APIFlat>(url, requestPayload);
+			const updatedTask = new Flat({
+				id: data.id,
+				name: data.name,
+				description: data.description,
+				createAt: new Date(data.createAt!),
+				ownerId: data.createBy,
+			});
+			dispatch({
+				type: FlatsActionTypes.Set,
+				payload: updatedTask,
 			});
 		} catch (err) {
 			throw err;

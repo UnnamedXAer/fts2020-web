@@ -9,25 +9,58 @@ import {
 	Theme,
 	createStyles,
 	TextField,
-	Fab,
 } from '@material-ui/core';
-import {
-	HomeWorkOutlined as HomeIcon,
-	Add as AddIcon,
-} from '@material-ui/icons';
+import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
 import MembersList from '../../components/Flat/MembersList';
 import RootState from '../../store/storeTypes';
 import FlatTasks from './FlatTasks';
-import { fetchFlatOwner, fetchFlatMembers } from '../../store/actions/flats';
-import { StateError } from '../../ReactTypes/customReactTypes';
+import {
+	fetchFlatOwner,
+	fetchFlatMembers,
+	updateFlat,
+} from '../../store/actions/flats';
+import {
+	StateError,
+	FlatSpeedActions,
+} from '../../ReactTypes/customReactTypes';
+import CustomSpeedDial, {
+	SpeedDialAction,
+} from '../../components/UI/CustomSpeedDial';
+import AlertDialog, { AlertDialogData } from '../../components/UI/AlertDialog';
+import AlertSnackbar, {
+	AlertSnackbarData,
+} from '../../components/UI/AlertSnackbar';
+import PersonAddRoundedIcon from '@material-ui/icons/PersonAddRounded';
+import CancelPresentationRoundedIcon from '@material-ui/icons/CancelPresentationRounded';
+import QueuePlayNextRoundedIcon from '@material-ui/icons/QueuePlayNextRounded';
+import HttpErrorParser from '../../utils/parseError';
+import { FlatData } from '../../models/flat';
 
 interface Props extends RouteComponentProps {}
 
 type RouterParams = {
 	id: string;
 };
+
+const actions: SpeedDialAction<FlatSpeedActions>[] = [
+	{
+		key: FlatSpeedActions.AddMember,
+		name: 'Add Member',
+		icon: <PersonAddRoundedIcon />,
+	},
+	{
+		key: FlatSpeedActions.CloseFlat,
+		name: 'Close Flat',
+		icon: <CancelPresentationRoundedIcon />,
+	},
+	{
+		key: FlatSpeedActions.AddTask,
+		name: 'Add Task',
+		icon: <QueuePlayNextRoundedIcon />,
+	},
+];
 
 const FlatDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
@@ -37,6 +70,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find((x) => x.id === id)
 	)!;
+	const loggedUser = useSelector((state: RootState) => state.auth.user);
 
 	const [loadingElements, setLoadingElements] = useState({
 		owner: !!flat.owner,
@@ -49,6 +83,19 @@ const FlatDetails: React.FC<Props> = (props) => {
 	}>({
 		owner: null,
 		members: null,
+	});
+	const [snackbarData, setSnackbarData] = useState<AlertSnackbarData>({
+		content: '',
+		onClose: () => {},
+		open: false,
+	});
+	const [speedDialOpen, setSpeedDialOpen] = useState(false);
+	const [dialogData, setDialogData] = useState<AlertDialogData>({
+		content: '',
+		onClose: () => {},
+		title: '',
+		loading: false,
+		open: false,
 	});
 
 	useEffect(() => {
@@ -105,6 +152,91 @@ const FlatDetails: React.FC<Props> = (props) => {
 
 	const memberSelectHandler = (id: number) => {
 		props.history.push(`/profile/${id}`);
+	};
+
+	const closeFlatHandler = async () => {
+		const _flat: Partial<FlatData> = new FlatData({
+			id: flat!.id,
+			active: false,
+		});
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
+
+		setTimeout(async () => {
+			try {
+				await dispatch(updateFlat(_flat));
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'success',
+					timeout: 3000,
+					content: 'Flat closed.',
+					onClose: closeSnackbarAlertHandler,
+				});
+			} catch (err) {
+				const httpError = new HttpErrorParser(err);
+				const msg = httpError.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not close flat.',
+				});
+			}
+			setDialogData((prevState) => ({ ...prevState, open: false }));
+		}, 400);
+	};
+
+	const closeDialogAlertHandler = () =>
+		setDialogData((prevState) => ({
+			...prevState,
+			open: prevState.loading,
+		}));
+
+	const closeSnackbarAlertHandler = () =>
+		setSnackbarData((prevState) => ({
+			...prevState,
+			open: false,
+		}));
+
+	const speedDialOptionClickHandler = async (
+		optionName: FlatSpeedActions
+	) => {
+		switch (optionName) {
+			case FlatSpeedActions.AddMember:
+				
+				break;
+			case FlatSpeedActions.CloseFlat:
+				setDialogData({
+					open: true,
+					content: 'Do you want to close this flat?',
+					title: 'Close Flat',
+					onClose: closeDialogAlertHandler,
+					loading: false,
+					actions: [
+						{
+							label: 'Yes',
+							onClick: closeFlatHandler,
+							color: 'primary',
+						},
+						{
+							color: 'secondary',
+							label: 'Cancel',
+							onClick: closeDialogAlertHandler,
+						},
+					],
+				});
+
+				break;
+			case FlatSpeedActions.AddTask:
+				props.history.push(`/flats/${flat.id}/tasks/add`);
+				break;
+			default:
+				break;
+		}
+		setSpeedDialOpen(false);
 	};
 
 	return (
@@ -186,19 +318,20 @@ const FlatDetails: React.FC<Props> = (props) => {
 					</Grid>
 				</Grid>
 			</Grid>
-			{flat.members && (
-				<Fab
-					onClick={() =>
-						props.history.push(`/flats/${flat.id}/tasks/add`)
-					}
-					size="medium"
-					color="secondary"
-					aria-label="add"
-					className={[classes.margin, classes.fab].join(' ')}
-				>
-					<AddIcon style={{ color: 'white' }} />
-				</Fab>
-			)}
+			<AlertSnackbar data={snackbarData} />
+			<CustomSpeedDial
+				actions={actions}
+				disabled={
+					!flat ||
+					!loggedUser ||
+					!flat.owner ||
+					loggedUser.id !== flat.owner.id
+				}
+				open={speedDialOpen}
+				toggleOpen={() => setSpeedDialOpen((prevState) => !prevState)}
+				onOptionClick={speedDialOptionClickHandler}
+			/>
+			<AlertDialog data={dialogData} />
 		</>
 	);
 };

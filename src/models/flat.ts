@@ -8,6 +8,7 @@ export default class Flat {
 	ownerId: number;
 	owner?: User;
 	createAt?: Date;
+	active?: boolean;
 
 	constructor(prams: Flat = {} as Flat) {
 		const {
@@ -18,6 +19,7 @@ export default class Flat {
 			owner,
 			ownerId,
 			createAt,
+			active,
 		} = prams;
 
 		this.id = id;
@@ -27,19 +29,24 @@ export default class Flat {
 		this.owner = owner;
 		this.ownerId = ownerId;
 		this.createAt = createAt;
+		this.active = active;
 	}
 }
 
 export class FlatData {
-	name: string;
-	description: string;
+	id?: number
+	name?: string;
+	description?: string;
 	members?: User['emailAddress'][];
+	active?: boolean;
 
 	constructor(prams: FlatData = {} as FlatData) {
-		const { name, description, members } = prams;
+		const { id, name, description, members, active } = prams;
 
+		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.members = members;
+		this.active = active;
 	}
 }

@@ -14,6 +14,9 @@ import {
 import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
+import PersonAddRoundedIcon from '@material-ui/icons/PersonAddRounded';
+import CancelPresentationRoundedIcon from '@material-ui/icons/CancelPresentationRounded';
+import QueuePlayNextRoundedIcon from '@material-ui/icons/QueuePlayNextRounded';
 import MembersList from '../../components/Flat/MembersList';
 import RootState from '../../store/storeTypes';
 import {
@@ -31,7 +34,9 @@ import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TaskInfoTable from '../../components/Task/TaskInfoTable';
 import TaskSchedule from '../../components/Task/TaskSchedule';
 import { fetchTaskPeriods, completePeriod } from '../../store/actions/periods';
-import TaskSpeedDial from '../../components/Task/TaskSpeedDial';
+import CustomSpeedDial, {
+	SpeedDialAction,
+} from '../../components/UI/CustomSpeedDial';
 import Task from '../../models/task';
 import AlertDialog, { AlertDialogData } from '../../components/UI/AlertDialog';
 import AlertSnackbar, {
@@ -43,6 +48,24 @@ interface Props extends RouteComponentProps {}
 type RouterParams = {
 	id: string;
 };
+
+const actions: SpeedDialAction<TaskSpeedActions>[] = [
+	{
+		key: TaskSpeedActions.AddMember,
+		name: 'Add Member',
+		icon: <PersonAddRoundedIcon />,
+	},
+	{
+		key: TaskSpeedActions.CloseTask,
+		name: 'Close Task',
+		icon: <CancelPresentationRoundedIcon />,
+	},
+	{
+		key: TaskSpeedActions.ResetPeriods,
+		name: 'Reset Periods',
+		icon: <QueuePlayNextRoundedIcon />,
+	},
+];
 
 const TaskDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
@@ -493,7 +516,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 			</Grid>
 			<AlertSnackbar data={snackbarData} />
 
-			<TaskSpeedDial
+			<CustomSpeedDial
+				actions={actions}
 				disabled={
 					!task ||
 					!loggedUser ||

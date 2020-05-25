@@ -4,3 +4,9 @@ export enum TaskSpeedActions {
 	CloseTask,
 	ResetPeriods,
 }
+
+export enum FlatSpeedActions {
+	AddMember,
+	CloseFlat,
+	AddTask,
+}
