@@ -30,6 +30,7 @@ import NewTask from './containers/Task/NewTask';
 import Profile from './containers/Auth/Profile';
 import ChangePassword from './containers/Auth/ChangePassword';
 import AppDrawer from './containers/Navigation/AppDrawer';
+import FlatInviteMembers from './containers/Flat/FlatInviteMembers';
 
 const drawerWidth = 240;
 
@@ -57,6 +58,11 @@ const StyledApp = () => {
 				<Container maxWidth="md" className={classes.container}>
 					<Switch>
 						<Route path="/flats/add" exact component={NewFlat} />
+						<Route
+							path="/flats/:id/invite-members"
+							exact
+							component={FlatInviteMembers}
+						/>
 						<Route
 							path="/flats/:flatId/tasks/add"
 							exact
