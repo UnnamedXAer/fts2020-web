@@ -3,35 +3,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchFlatTasks, fetchTaskMembers } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
 import { useHistory } from 'react-router-dom';
-import {
-	CircularProgress,
-	Modal,
-	Backdrop,
-	Fade,
-	makeStyles,
-	createStyles,
-	Theme,
-	Container,
-	IconButton,
-	Box,
-} from '@material-ui/core';
-import { CloseRounded as CloseRoundedIcon } from '@material-ui/icons';
+import { CircularProgress } from '@material-ui/core';
 import ErrorCart from '../../components/UI/ErrorCart';
 import RootState from '../../store/storeTypes';
 import Task from '../../models/task';
 import FlatTasksTable from '../../components/Flat/FlatTasksTable';
 import TaskInfoModalContent from '../../components/Flat/TaskInfoModalContent';
+import CustomModal from '../../components/UI/CustomModal';
 
 interface Props {
 	flatId: number;
 }
 
 const FlatTasks: React.FC<Props> = ({ flatId }) => {
-	const classes = useStyles();
 	const history = useHistory();
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [tasksFetchTime, setTasksFetchTime] = useState(0);
 	const tasks = useSelector<RootState, Task[]>((state) =>
 		state.tasks.tasks.filter((x) => x.flatId === flatId)
 	);
@@ -45,9 +34,15 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	}>({});
 
 	useEffect(() => {
-		if (!tasks) {
+		if (
+			!loading &&
+			!error &&
+			tasks.length === 0 &&
+			tasksFetchTime < Date.now() - 1000 * 60 * 60 * 1
+		) {
 			setLoading(true);
 			setError(null);
+			setTasksFetchTime(Date.now());
 			const loadTasks = async () => {
 				try {
 					await dispatch(fetchFlatTasks(flatId));
@@ -62,7 +57,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 		} else {
 			setLoading(false);
 		}
-	}, [dispatch, flatId, tasks]);
+	}, [dispatch, error, flatId, loading, tasks, tasksFetchTime]);
 
 	useEffect(() => {
 		if (
@@ -117,76 +112,26 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	return (
 		<>
 			<FlatTasksTable tasks={tasks} onTaskSelected={taskSelectHandler} />
-			<Modal
-				aria-labelledby="modal-task-title-id"
-				aria-describedby="modal-task-description-id"
-				className={classes.modal}
-				open={showTaskModal}
+			<CustomModal
 				onClose={() => {
 					setShowTaskModal(false);
 				}}
-				closeAfterTransition
-				BackdropComponent={Backdrop}
-				BackdropProps={{
-					timeout: 500,
+				onCloseIconClick={() => {
+					setShowTaskModal(false);
 				}}
+				open={showTaskModal}
 			>
-				<Fade in={showTaskModal} unmountOnExit mountOnEnter>
-					<Container className={classes.modalContent} maxWidth="md">
-						<Box className={classes.modalCloseBox}>
-							<IconButton
-								onClick={() => {
-									setShowTaskModal(false);
-								}}
-							>
-								<CloseRoundedIcon />
-							</IconButton>
-						</Box>
-						{selectedTaskId && (
-							<TaskInfoModalContent
-								task={
-									tasks.find((x) => x.id === selectedTaskId)!
-								}
-								membersError={membersError[selectedTaskId]}
-								membersLoading={membersLoading[selectedTaskId]}
-								onMemberSelect={memberSelectHandler}
-							/>
-						)}
-					</Container>
-				</Fade>
-			</Modal>
+				{selectedTaskId && (
+					<TaskInfoModalContent
+						task={tasks.find((x) => x.id === selectedTaskId)!}
+						membersError={membersError[selectedTaskId]}
+						membersLoading={membersLoading[selectedTaskId]}
+						onMemberSelect={memberSelectHandler}
+					/>
+				)}
+			</CustomModal>
 		</>
 	);
 };
-
-const useStyles = makeStyles((theme: Theme) =>
-	createStyles({
-		modal: {
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'center',
-		},
-		modalContent: {
-			backgroundColor: theme.palette.background.paper,
-			border: '2px solid #000',
-			boxShadow: theme.shadows[5],
-			padding: theme.spacing(0, 4, 3),
-			maxHeight: '90vh',
-			overflowX: 'hidden',
-			overflowY: 'auto',
-			boxSizing: 'border-box',
-		},
-		modalCloseBox: {
-			display: 'flex',
-			justifyContent: 'flex-end',
-			alignItems: 'center',
-			width: '100%',
-			position: 'sticky',
-			top: 0,
-			backgroundColor: theme.palette.background.paper,
-			padding: theme.spacing(1, 0, 0, 0),
-		},
-	})
-);
 
 export default FlatTasks;
