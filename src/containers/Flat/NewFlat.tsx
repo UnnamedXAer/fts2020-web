@@ -13,9 +13,8 @@ import {
 	useMediaQuery,
 	useTheme,
 } from '@material-ui/core';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
-import RootState from '../../store/storeTypes';
 import useForm, {
 	ActionType,
 	FormAction,
@@ -25,8 +24,6 @@ import HttpErrorParser from '../../utils/parseError';
 import { PhotoCamera } from '@material-ui/icons';
 import { FlatData } from '../../models/flat';
 import validateFlatFormField from '../../utils/flatFormValidator';
-import FlatMembersSearch from '../../components/Flat/FlatMembersSearch';
-import User from '../../models/user';
 import { createFlat } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { StateError } from '../../ReactTypes/customReactTypes';
@@ -37,17 +34,9 @@ const descriptionPlaceholder = `eg. lodgings ${new Date().getFullYear()}/10 - ${
 	new Date().getFullYear() + 1
 }-07`;
 
-export type NewFlatMember = {
-	emailAddress: User['emailAddress'];
-	userName: User['userName'];
-};
-
 const NewFlat: React.FC<Props> = ({ history }) => {
 	const classes = useStyles();
 
-	const loggedUser = useSelector<RootState, User>(
-		(state) => state.auth.user!
-	);
 	const initialFormStateRef = useRef<FormState>({
 		formValidity: false,
 		values: {
@@ -65,8 +54,6 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 	const dispatch = useDispatch();
 
 	const [formState, formDispatch] = useForm(initialFormStateRef.current);
-	const [members, setMembers] = useState<NewFlatMember[]>([]);
-	const [membersLoading, setMembersLoading] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
@@ -121,14 +108,6 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 		formDispatch(action);
 	};
 
-	const updateMembersHandler = useCallback((newMembers: NewFlatMember[]) => {
-		setMembers(newMembers);
-	}, []);
-
-	const updateMembersLoadingHandler = (isLoading: boolean) => {
-		setMembersLoading(isLoading);
-	};
-
 	const submitHandler: React.FormEventHandler = async (ev) => {
 		setError(null);
 		setLoading(true);
@@ -152,7 +131,6 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 		}
 
 		const newFlat = new FlatData({
-			members: members.map((x) => x.emailAddress),
 			description: formState.values.description,
 			name: formState.values.name,
 		});
@@ -286,15 +264,6 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 						</Grid>
 					</Grid>
 					<Grid item>
-						<FlatMembersSearch
-							formLoading={loading}
-							loggedUser={loggedUser}
-							updateMembers={updateMembersHandler}
-							updateMembersLoading={updateMembersLoadingHandler}
-						/>
-					</Grid>
-
-					<Grid item>
 						{error && (
 							<CustomMuiAlert
 								severity="error"
@@ -315,10 +284,7 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 										paddingLeft: 40,
 										paddingRight: 40,
 									}}
-									disabled={
-										membersLoading ||
-										!formState.formValidity
-									}
+									disabled={!formState.formValidity}
 									onClick={submitHandler}
 									variant="contained"
 									color="primary"
