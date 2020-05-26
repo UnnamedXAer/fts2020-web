@@ -36,6 +36,15 @@ interface Props {
 	onRemove: (email: string) => void;
 }
 
+type TextColor =
+	| 'initial'
+	| 'inherit'
+	| 'primary'
+	| 'secondary'
+	| 'textPrimary'
+	| 'textSecondary'
+	| 'error';
+
 const InvitationMembersList: React.FC<Props> = ({
 	emails,
 	loggedUser,
@@ -59,24 +68,21 @@ const InvitationMembersList: React.FC<Props> = ({
 
 					const isLoggedUser = loggedUser.id === member?.id;
 
-					let secondaryTextColor:
-						| 'initial'
-						| 'inherit'
-						| 'primary'
-						| 'secondary'
-						| 'textPrimary'
-						| 'textSecondary'
-						| 'error' = 'textSecondary';
+					let secondaryTextColor: TextColor;
 					let sateIndicator: React.ReactNode;
-					let secondaryText = '';
+					let secondaryText: string;
+
 					switch (membersStatus[email]) {
 						case MembersStatus.loading:
+							secondaryTextColor = 'textSecondary';
 							sateIndicator = (
 								<ListItemIcon className={classes.itemAvatar}>
 									<CircularProgress size={25} />
 								</ListItemIcon>
 							);
+							secondaryText = 'Loading...';
 							break;
+						case MembersStatus.already_member:
 						case MembersStatus.ok:
 							secondaryTextColor = 'primary';
 							sateIndicator = (
@@ -104,10 +110,7 @@ const InvitationMembersList: React.FC<Props> = ({
 						case MembersStatus.invalid:
 							secondaryTextColor = 'error';
 							sateIndicator = (
-								<ListItemAvatar
-									className={classes.itemAvatar}
-									style={{ height: '100%' }}
-								>
+								<ListItemAvatar className={classes.itemAvatar}>
 									<HighlightOffRounded
 										color="error"
 										fontSize="large"
@@ -144,6 +147,18 @@ const InvitationMembersList: React.FC<Props> = ({
 							secondaryText = `Info: Could not check if email address is registered in ${APP_NAME} due to internal error, but invitation will be sent.`;
 							break;
 					}
+					let primaryTextColor: TextColor = 'textPrimary';
+					let primaryText = email;
+					if (isLoggedUser) {
+						primaryTextColor = 'textSecondary';
+						primaryText = '[You] ' + primaryText;
+					} else if (
+						membersStatus[email] === MembersStatus.already_member
+					) {
+						primaryTextColor = 'textSecondary';
+						primaryText = '[Already flat member] ' + primaryText;
+					}
+
 					return (
 						<React.Fragment key={email}>
 							<ListItem alignItems="flex-start">
@@ -151,18 +166,13 @@ const InvitationMembersList: React.FC<Props> = ({
 								<ListItemText
 									primary={
 										<Typography
-											color={
-												isLoggedUser
-													? 'textSecondary'
-													: 'textPrimary'
-											}
+											color={primaryTextColor}
 											style={{
 												overflowWrap: 'break-word',
 											}}
 											title={email}
 										>
-											{isLoggedUser && <>[You] </>}
-											{email}
+											{primaryText}
 										</Typography>
 									}
 									secondary={
@@ -226,6 +236,7 @@ const useStyles = makeStyles((theme: Theme) =>
 			display: 'flex',
 			justifyContent: 'center',
 			alignItems: 'center',
+			height: 40,
 		},
 		summary: {
 			color: theme.palette.info.light,

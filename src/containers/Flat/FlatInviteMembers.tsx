@@ -13,7 +13,6 @@ import User from '../../models/user';
 import axios from '../../axios/axios';
 import { AddRounded } from '@material-ui/icons';
 import { emailAddressRegExp } from '../../utils/authFormValidator';
-import { NewFlatMember } from '../../containers/Flat/NewFlat';
 import { APP_NAME } from '../../config/config';
 import { APIUser } from '../../store/actions/users';
 import { RouteComponentProps } from 'react-router-dom';
@@ -25,6 +24,11 @@ import HttpErrorParser from '../../utils/parseError';
 import InvitationMembersList from '../../components/Flat/InvitationMembersList';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 
+export type NewFlatMember = {
+	emailAddress: User['emailAddress'];
+	userName: User['userName'];
+};
+
 export enum MembersStatus {
 	'loading',
 	'not_found',
@@ -32,6 +36,7 @@ export enum MembersStatus {
 	'ok',
 	'error',
 	'invalid',
+	'already_member',
 }
 
 interface Props {}
@@ -48,6 +53,10 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 	const [error, setError] = useState<StateError>(null);
 	const [inputValue, setInputValue] = useState('');
 	const loggedUser = useSelector((state: RootState) => state.auth.user)!;
+	const flatMembers = useSelector(
+		(state: RootState) =>
+			state.flats.flats.find((x) => x.id === flatId)?.members
+	);
 	const [membersEmails, setMembersEmails] = React.useState<
 		NewFlatMember['emailAddress'][]
 	>([loggedUser.emailAddress]);
@@ -55,43 +64,55 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 	const [membersStatus, setMembersStatus] = useState<{
 		[key: string]: MembersStatus;
 	}>({ [loggedUser.emailAddress]: MembersStatus.ok });
+	const [inputError, setInputError] = useState(false);
 
 	const inputRef = useRef<HTMLInputElement>();
 
 	useEffect(() => {
-		const loadMembers = async () => {
-			setError(null);
-			setLoading(true);
-			try {
-				await dispatch(fetchFlatMembers(flatId!));
-			} catch (err) {
-				const error = new HttpErrorParser(err);
-				const msg = error.getMessage();
-				setError(msg);
-			}
-			setLoading(false);
-		};
+		if (!flatMembers) {
+			const loadMembers = async () => {
+				setError(null);
+				setLoading(true);
+				try {
+					await dispatch(fetchFlatMembers(flatId!));
+				} catch (err) {
+					const error = new HttpErrorParser(err);
+					const msg = error.getMessage();
+					setError(msg);
+				}
+				setLoading(false);
+			};
 
-		loadMembers();
-	}, [dispatch, flatId]);
+			loadMembers();
+		}
+	}, [dispatch, flatId, flatMembers]);
 
 	const submitMemberHandler = () => {
 		const email = inputValue.trim().toLowerCase();
-		if (email !== '') {
+		const emailValid = emailAddressRegExp.test(email);
+		if (emailValid) {
 			if (!membersEmails.includes(email)) {
 				submitMember(email);
 			}
-			// highlight row
+			setInputValue('');
+			setInputError(false);
+			inputRef.current!.focus();
+		} else {
+			setInputError(true);
 		}
-		setInputValue('');
-		inputRef.current!.focus();
 	};
 
 	const submitMember = (email: NewFlatMember['emailAddress']) => {
 		setMembersEmails((prevSate) => [email].concat(prevSate));
 
-		const isEmailAddress = emailAddressRegExp.test(email);
-		if (isEmailAddress) {
+		let member: User | undefined;
+		if (flatMembers) {
+			member = flatMembers.find((x) => x.emailAddress === email);
+			if (member instanceof User) {
+				addUserToMembers(member, MembersStatus.already_member);
+			}
+		}
+		if (!member) {
 			setMembersStatus((prevState) => ({
 				...prevState,
 				[email]: MembersStatus.loading,
@@ -99,16 +120,46 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 			setMembers((prevSate) =>
 				prevSate.concat({ emailAddress: email } as Partial<User>)
 			);
-			fetchUserByEmail(email);
-		} else {
-			setMembersStatus((prevState) => ({
-				...prevState,
-				[email]: MembersStatus.invalid,
-			}));
+			getUserByEmail(email);
 		}
 	};
 
-	const fetchUserByEmail = useCallback(
+	const addUserToMembers = (user: User, status: MembersStatus) => {
+		setMembersStatus((prevState) => ({
+			...prevState,
+			[user.emailAddress]: MembersStatus.accepted,
+		}));
+		setTimeout(() => {
+			setMembersStatus((prevState) => ({
+				...prevState,
+				[user.emailAddress]: status,
+			}));
+		}, 1200);
+
+		setMembers((prevSate) => {
+			const idx = prevSate.findIndex(
+				(x) => x.emailAddress === user.emailAddress
+			);
+			const updatedState = [...prevSate];
+			const updatedUser = new User(
+				user.id,
+				user.emailAddress.toLowerCase(),
+				user.userName,
+				user.provider,
+				user.joinDate,
+				user.avatarUrl,
+				user.active
+			);
+			if (idx === -1) {
+				updatedState.push(updatedUser);
+			} else {
+				updatedState[idx] = updatedUser;
+			}
+			return updatedState;
+		});
+	};
+
+	const getUserByEmail = useCallback(
 		async (email: NewFlatMember['emailAddress']) => {
 			const url = `/users?emailAddress=${email}`;
 			try {
@@ -120,32 +171,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 						[email]: MembersStatus.not_found,
 					}));
 				} else {
-					setMembersStatus((prevState) => ({
-						...prevState,
-						[email]: MembersStatus.accepted,
-					}));
-					setTimeout(() => {
-						setMembersStatus((prevState) => ({
-							...prevState,
-							[email]: MembersStatus.ok,
-						}));
-					}, 1200);
-					setMembers((prevSate) => {
-						const idx = prevSate.findIndex(
-							(x) => x.emailAddress === response.data.emailAddress
-						);
-						const updatedState = [...prevSate];
-						updatedState[idx] = new User(
-							response.data.id,
-							response.data.emailAddress.toLowerCase(),
-							response.data.userName,
-							response.data.provider,
-							response.data.joinDate,
-							response.data.avatarUrl,
-							response.data.active
-						);
-						return updatedState;
-					});
+					addUserToMembers(response.data, MembersStatus.ok);
 				}
 			} catch (err) {
 				setMembersStatus((prevState) => ({
@@ -174,10 +200,31 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 		});
 	};
 
-	const submitHandler = () => {
-		// post
-
-		history.replace(`/flats/${flatId}`);
+	const submitHandler = async () => {
+		setLoading(true);
+		setError(null);
+		const emails: User['emailAddress'][] = [];
+		members.forEach(({ emailAddress }) => {
+			const status = membersStatus[emailAddress!];
+			if (
+				status !== MembersStatus.invalid &&
+				status !== MembersStatus.already_member &&
+				emailAddress !== loggedUser.emailAddress
+			) {
+				emails.push(emailAddress!);
+			}
+		});
+		try {
+			await axios.post(`/flats${flatId}/members/invite`, {
+				members: emails,
+			});
+			history.replace(`/flats/${flatId}`);
+		} catch (err) {
+			const error = new HttpErrorParser(err);
+			const msg = error.getMessage();
+			setError(msg);
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -222,9 +269,14 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 							inputMode="email"
 							disabled={loading}
 							value={inputValue}
+							error={inputError}
 							fullWidth
 							name="addEmail"
-							helperText="Type email address of person that you want to add as flat member."
+							helperText={
+								inputError
+									? 'Enter valid email address.'
+									: 'Type email address of person that you want to add as flat member.'
+							}
 							type="email"
 							placeholder="Type email address and press enter to add."
 						/>
