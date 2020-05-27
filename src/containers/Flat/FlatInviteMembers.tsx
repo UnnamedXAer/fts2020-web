@@ -59,11 +59,11 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 	);
 	const [membersEmails, setMembersEmails] = React.useState<
 		NewFlatMember['emailAddress'][]
-	>([loggedUser.emailAddress]);
-	const [members, setMembers] = React.useState<Partial<User>[]>([loggedUser]);
+	>([]);
+	const [members, setMembers] = React.useState<Partial<User>[]>([]);
 	const [membersStatus, setMembersStatus] = useState<{
 		[key: string]: MembersStatus;
-	}>({ [loggedUser.emailAddress]: MembersStatus.ok });
+	}>({});
 	const [inputError, setInputError] = useState(false);
 
 	const inputRef = useRef<HTMLInputElement>();

@@ -56,7 +56,10 @@ const InvitationMembersList: React.FC<Props> = ({
 	const classes = useStyles();
 
 	const validEmailsCount = Object.values(membersStatus).filter(
-		(x) => x !== MembersStatus.invalid && x !== MembersStatus.loading
+		(x) =>
+			x === MembersStatus.ok ||
+			x === MembersStatus.error ||
+			x === MembersStatus.not_found
 	).length;
 	return (
 		<>
@@ -192,16 +195,14 @@ const InvitationMembersList: React.FC<Props> = ({
 									}
 								/>
 								<ListItemSecondaryAction>
-									{!isLoggedUser && (
-										<IconButton
-											edge="end"
-											aria-label="delete"
-											disabled={formLoading}
-											onClick={() => onRemove(email)}
-										>
-											<ClearRounded />
-										</IconButton>
-									)}
+									<IconButton
+										edge="end"
+										aria-label="delete"
+										disabled={formLoading}
+										onClick={() => onRemove(email)}
+									>
+										<ClearRounded />
+									</IconButton>
 								</ListItemSecondaryAction>
 							</ListItem>
 							<Divider variant="inset" component="li" />
@@ -210,13 +211,11 @@ const InvitationMembersList: React.FC<Props> = ({
 				})}
 			</List>
 			<p className={classes.summary}>
-				{validEmailsCount === 1
+				{validEmailsCount === 0
 					? 'Add email addresses to invite people to your flat.'
-					: validEmailsCount === 2
+					: validEmailsCount === 1
 					? 'One invitation will be sent.'
-					: `${validEmailsCount - 1} invitation${
-							validEmailsCount === 2 ? '' : 's'
-					  } will be sent.`}
+					: `${validEmailsCount} invitations will be sent.`}
 			</p>
 		</>
 	);
