@@ -6,7 +6,7 @@ export enum TaskSpeedActions {
 }
 
 export enum FlatSpeedActions {
-	AddMember,
+	InviteMember,
 	CloseFlat,
 	AddTask,
 }

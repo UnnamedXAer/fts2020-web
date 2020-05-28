@@ -46,8 +46,8 @@ type RouterParams = {
 
 const actions: SpeedDialAction<FlatSpeedActions>[] = [
 	{
-		key: FlatSpeedActions.AddMember,
-		name: 'Add Member',
+		key: FlatSpeedActions.InviteMember,
+		name: 'Invite new member',
 		icon: <PersonAddRoundedIcon />,
 	},
 	{
@@ -205,7 +205,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 		optionName: FlatSpeedActions
 	) => {
 		switch (optionName) {
-			case FlatSpeedActions.AddMember:
+			case FlatSpeedActions.InviteMember:
 				props.history.push(`/flats/${flat.id}/invite-members`);
 				break;
 			case FlatSpeedActions.CloseFlat:
