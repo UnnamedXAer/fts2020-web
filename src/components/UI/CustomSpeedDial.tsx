@@ -44,16 +44,17 @@ const CustomSpeedDial: React.FC<Props> = (props) => {
 			color="background"
 			FabProps={fabProps}
 		>
-			{props.actions.map((action) => (
-				<SpeedDialAction
-					FabProps={fabProps}
-					key={action.key}
-					icon={action.icon}
-					tooltipTitle={action.name}
-					tooltipOpen
-					onClick={() => props.onOptionClick(action.key)}
-				/>
-			))}
+			{props.actions.map((action) => {
+				return (
+					<SpeedDialAction
+						FabProps={fabProps}
+						key={action.key}
+						icon={action.icon}
+						tooltipTitle={action.name}
+						onClick={() => props.onOptionClick(action.key)}
+					/>
+				);
+			})}
 		</SpeedDial>
 	);
 };
