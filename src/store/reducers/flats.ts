@@ -2,10 +2,12 @@ import { AppReducer, FlatsState, SimpleReducer } from '../storeTypes';
 import { FlatsActionTypes } from '../actions/actionTypes';
 import Flat from '../../models/flat';
 import User from '../../models/user';
+import { AddFlatActionPayload } from '../actions/flats';
 
 const initialState: FlatsState = {
 	flats: [],
 	flatsLoadTime: 0,
+	createdFlatsTmpIds: {},
 };
 
 const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
@@ -16,10 +18,16 @@ const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
 	};
 };
 
-const addFlat: SimpleReducer<FlatsState, Flat> = (state, action) => {
+const addFlat: SimpleReducer<FlatsState, AddFlatActionPayload> = (
+	state,
+	action
+) => {
+	const { flat, tmpId } = action.payload;
+
 	return {
 		...state,
-		flats: state.flats.concat(action.payload),
+		flats: state.flats.concat(flat),
+		createdFlatsTmpIds: { ...state.createdFlatsTmpIds, [tmpId]: flat.id },
 	};
 };
 

@@ -9,7 +9,7 @@ export type RootState = {
 	flats: FlatsState;
 	tasks: TasksState;
 	users: UsersState;
-	periods: PeriodsState
+	periods: PeriodsState;
 };
 
 export type AuthState = {
@@ -24,19 +24,20 @@ export type UsersState = {
 export type FlatsState = {
 	flats: Flat[];
 	flatsLoadTime: number;
+	createdFlatsTmpIds: { [key: string]: number | undefined };
 };
 
 export type TasksState = {
 	tasks: Task[];
-	userTasks: UserTask[]
+	userTasks: UserTask[];
 	userTasksLoadTime: number;
 };
 
 export type PeriodsState = {
 	taskPeriods: {
-		[taskId: number]: Period[]
-	}
-}
+		[taskId: number]: Period[];
+	};
+};
 
 export type AppReducer<TState, AType = string, APayload = any> = (
 	state: TState,

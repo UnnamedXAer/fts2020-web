@@ -14,9 +14,17 @@ type APIFlat = {
 	createAt: Date;
 };
 
+export type AddFlatActionPayload = { flat: Flat; tmpId: string };
+
 export const createFlat = (
-	flat: FlatData
-): ThunkAction<Promise<void>, RootState, any, StoreAction<Flat, string>> => {
+	flat: FlatData,
+	tmpId: string
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<AddFlatActionPayload, string>
+> => {
 	return async (dispatch) => {
 		const url = '/flats';
 		try {
@@ -28,9 +36,13 @@ export const createFlat = (
 				createAt: data.createAt,
 				ownerId: data.createBy,
 			});
+
 			dispatch({
 				type: FlatsActionTypes.Add,
-				payload: createdFlat,
+				payload: {
+					flat: createdFlat,
+					tmpId: tmpId,
+				},
 			});
 		} catch (err) {
 			throw err;

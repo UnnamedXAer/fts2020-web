@@ -13,7 +13,7 @@ import {
 	useMediaQuery,
 	useTheme,
 } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import useForm, {
 	ActionType,
@@ -27,6 +27,8 @@ import validateFlatFormField from '../../utils/flatFormValidator';
 import { createFlat } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { StateError } from '../../ReactTypes/customReactTypes';
+import RootState from '../../store/storeTypes';
+import { getRandomInt } from '../../utils/random';
 
 interface Props extends RouteComponentProps {}
 
@@ -52,7 +54,12 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 	});
 
 	const dispatch = useDispatch();
-
+	const [tmpFlatId] = useState(
+		String.fromCharCode(getRandomInt(97, 123)) + Date.now()
+	);
+	const flatId = useSelector(
+		(state: RootState) => state.flats.createdFlatsTmpIds[tmpFlatId]
+	);
 	const [formState, formDispatch] = useForm(initialFormStateRef.current);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
@@ -70,6 +77,12 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 		}
 		setTextFieldSize(updatedSize);
 	}, []);
+
+	React.useEffect(() => {
+		if (flatId) {
+			history.replace(`/flats/${flatId}/invite-members?new=flat`);
+		}
+	}, [flatId, history]);
 
 	React.useEffect(() => {
 		window.addEventListener('resize', resizeHandler);
@@ -136,8 +149,7 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 		});
 
 		try {
-			await dispatch(createFlat(newFlat));
-			history.replace('/flats');
+			await dispatch(createFlat(newFlat, tmpFlatId));
 		} catch (err) {
 			const errorData = new HttpErrorParser(err);
 			const fieldsErrors = errorData.getFieldsErrors();

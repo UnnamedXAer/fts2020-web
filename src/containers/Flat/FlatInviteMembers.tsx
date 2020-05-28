@@ -49,6 +49,7 @@ interface Props extends RouteComponentProps<RouterParams> {}
 const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 	const dispatch = useDispatch();
 	const flatId = +match.params.id;
+	const isNewFlat = !!new URLSearchParams(location.search).get('new');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
 	const [inputValue, setInputValue] = useState('');
@@ -201,8 +202,6 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 	};
 
 	const submitHandler = async () => {
-		setLoading(true);
-		setError(null);
 		const emails: User['emailAddress'][] = [];
 		members.forEach(({ emailAddress }) => {
 			const status = membersStatus[emailAddress!];
@@ -214,8 +213,14 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 				emails.push(emailAddress!);
 			}
 		});
+
+		if (emails.length === 0) {
+			return setError('There is no one to invite.');
+		}
+		setError(null);
+		setLoading(true);
 		try {
-			await axios.post(`/flats${flatId}/members/invite`, {
+			await axios.post(`/flats/${flatId}/members/invite`, {
 				members: emails,
 			});
 			history.replace(`/flats/${flatId}`);
@@ -243,8 +248,9 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 						will receive an email asking them to accept the
 						invitation. Invitation will be sent also to people not
 						registered in {APP_NAME}.
-						<br />
-						'New members can be invited later.'
+					</Typography>
+					<Typography variant="caption" color="textSecondary">
+						New members can be invited later.
 					</Typography>
 				</Grid>
 				<Grid item>
@@ -324,12 +330,18 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 										paddingLeft: 40,
 										paddingRight: 40,
 									}}
-									onClick={() => history.goBack()}
+									onClick={() =>
+										isNewFlat
+											? history.replace(
+													`/flats/${flatId}`
+											  )
+											: history.goBack()
+									}
 									variant="text"
 									color="primary"
 									type="button"
 								>
-									Back
+									{isNewFlat ? 'Later' : 'Back'}
 								</Button>
 								<Button
 									style={{
@@ -341,7 +353,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 									color="primary"
 									type="submit"
 								>
-									Save
+									Send
 								</Button>
 							</>
 						)}
