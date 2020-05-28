@@ -169,6 +169,33 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 					style={{ maxWidth: '550px' }}
 				>
 					<Grid item>
+						<Typography paragraph>
+							Every "Flat" represent a group of people most likely
+							living together in apartment. That flats could be
+							used to track repetitive tasks such as weekly
+							cleaning or taking out the trash where those tasks
+							are executed in queue by members.
+						</Typography>
+						<Typography
+							variant="caption"
+							color="textSecondary"
+							paragraph
+						>
+							Members for the flat could be invited on next screen
+							or later from flat details option.
+						</Typography>
+						<Typography
+							variant="caption"
+							color="textSecondary"
+							paragraph
+						>
+							Flat name or description do not required real
+							informations they are just for you and your
+							flatmates to easily corelate place with flat in
+							application.
+						</Typography>
+					</Grid>
+					<Grid item>
 						<Grid
 							item
 							container
