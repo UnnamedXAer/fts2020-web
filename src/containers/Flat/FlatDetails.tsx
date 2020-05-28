@@ -20,6 +20,7 @@ import {
 	fetchFlatOwner,
 	fetchFlatMembers,
 	updateFlat,
+	fetchFlatInvitations,
 } from '../../store/actions/flats';
 import {
 	StateError,
@@ -37,6 +38,7 @@ import CancelPresentationRoundedIcon from '@material-ui/icons/CancelPresentation
 import QueuePlayNextRoundedIcon from '@material-ui/icons/QueuePlayNextRounded';
 import HttpErrorParser from '../../utils/parseError';
 import { FlatData } from '../../models/flat';
+import InvitationsTable from '../../components/Flat/InvitationsTable';
 
 interface Props extends RouteComponentProps {}
 
@@ -75,14 +77,17 @@ const FlatDetails: React.FC<Props> = (props) => {
 	const [loadingElements, setLoadingElements] = useState({
 		owner: !!flat.owner,
 		members: !!flat.members,
+		invitations: !!flat.invitations,
 	});
 
 	const [elementsErrors, setElementsErrors] = useState<{
 		owner: StateError;
 		members: StateError;
+		invitations: StateError;
 	}>({
 		owner: null,
 		members: null,
+		invitations: null,
 	});
 	const [snackbarData, setSnackbarData] = useState<AlertSnackbarData>({
 		content: '',
@@ -147,6 +152,33 @@ const FlatDetails: React.FC<Props> = (props) => {
 			};
 
 			loadMembers();
+		}
+
+		if (
+			!flat.invitations &&
+			!loadingElements.invitations &&
+			!elementsErrors.invitations
+		) {
+			const loadInvitations = async () => {
+				setLoadingElements((prevState) => ({
+					...prevState,
+					invitations: true,
+				}));
+				try {
+					await dispatch(fetchFlatInvitations(flat.id!));
+				} catch (err) {
+					setElementsErrors((prevState) => ({
+						...prevState,
+						invitations: err.message,
+					}));
+				}
+				setLoadingElements((prevState) => ({
+					...prevState,
+					invitations: false,
+				}));
+			};
+
+			loadInvitations();
 		}
 	}, [flat, dispatch, loadingElements, elementsErrors]);
 
@@ -306,8 +338,18 @@ const FlatDetails: React.FC<Props> = (props) => {
 						</Typography>
 						<MembersList
 							onMemberSelect={memberSelectHandler}
-							loading={!flat.members}
+							loading={loadingElements.members}
 							members={flat.members}
+						/>
+					</Grid>
+					<Grid item>
+						<Typography variant="h5" component="h3">
+							Invited People
+						</Typography>
+						<InvitationsTable
+							loading={loadingElements.invitations}
+							invitations={flat.invitations}
+							onInvitationSelect={() => {}}
 						/>
 					</Grid>
 					<Grid item>

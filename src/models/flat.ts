@@ -1,10 +1,12 @@
 import User from './user';
+import Invitation from './invitation';
 
 export default class Flat {
 	id?: number;
 	name: string;
 	description: string;
 	members?: User[];
+	invitations?: Invitation[];
 	ownerId: number;
 	owner?: User;
 	createAt?: Date;
@@ -16,6 +18,7 @@ export default class Flat {
 			name,
 			description,
 			members,
+			invitations,
 			owner,
 			ownerId,
 			createAt,
@@ -26,6 +29,7 @@ export default class Flat {
 		this.name = name;
 		this.description = description;
 		this.members = members;
+		this.invitations = invitations;
 		this.owner = owner;
 		this.ownerId = ownerId;
 		this.createAt = createAt;
@@ -34,7 +38,7 @@ export default class Flat {
 }
 
 export class FlatData {
-	id?: number
+	id?: number;
 	name?: string;
 	description?: string;
 	members?: User['emailAddress'][];

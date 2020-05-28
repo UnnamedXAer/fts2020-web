@@ -4,6 +4,7 @@ import RootState, { StoreAction } from '../storeTypes';
 import { FlatsActionTypes } from './actionTypes';
 import axios from '../../axios/axios';
 import User from '../../models/user';
+import Invitation, { InvitationStatus } from '../../models/invitation';
 
 type APIFlat = {
 	id: number;
@@ -14,7 +15,22 @@ type APIFlat = {
 	createAt: Date;
 };
 
+type APIInvitation = {
+	id: number;
+	flatId: number;
+	createBy: number;
+	createAt: string;
+	emailAddress: User['emailAddress'];
+	actionDate: string | null;
+	sendDate: string | null;
+	status: InvitationStatus;
+};
+
 export type AddFlatActionPayload = { flat: Flat; tmpId: string };
+export type SetFlatInvitationsActionPayload = {
+	flatId: number;
+	invitations: Invitation[];
+};
 
 export const createFlat = (
 	flat: FlatData,
@@ -186,6 +202,44 @@ export const updateFlat = (
 			dispatch({
 				type: FlatsActionTypes.Set,
 				payload: updatedTask,
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const fetchFlatInvitations = (
+	flatId: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<SetFlatInvitationsActionPayload, FlatsActionTypes.SetInvitations>
+> => {
+	return async (dispatch) => {
+		const url = `/flats/${flatId}/invitations`;
+		try {
+			const { data } = await axios.get<APIInvitation[]>(url);
+
+			const invitations = data.map(
+				(inv) =>
+					new Invitation({
+						id: inv.id,
+						createBy: inv.createBy,
+						createAt: inv.createAt,
+						emailAddress: inv.emailAddress,
+						actionDate: inv.actionDate,
+						sendDate: inv.sendDate,
+						status: inv.status,
+					})
+			);
+			dispatch({
+				type: FlatsActionTypes.SetInvitations,
+				payload: {
+					invitations,
+					flatId,
+				},
 			});
 		} catch (err) {
 			throw err;

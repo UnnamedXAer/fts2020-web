@@ -10,6 +10,7 @@ export enum FlatsActionTypes {
 	Add = 'FLAT_ADD',
 	SetOwner = 'FLAT_SET_OWNER',
 	SetMembers = 'FLAT_SET_MEMBERS',
+	SetInvitations = 'FLAT_SET_INVITATIONS',
 	ClearState = 'FLAT_CLEAR_STATE',
 }
 
@@ -25,7 +26,7 @@ export enum TasksActionTypes {
 
 export enum TaskPeriodsTypes {
 	SetTaskPeriods = 'PERIOD_SET_TASK_PERIODS',
-	CompletePeriod = 'PERIOD_COMPLETE'
+	CompletePeriod = 'PERIOD_COMPLETE',
 }
 
 export enum UsersActionTypes {
