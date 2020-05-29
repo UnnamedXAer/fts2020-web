@@ -75,9 +75,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 	const loggedUser = useSelector((state: RootState) => state.auth.user);
 
 	const [loadingElements, setLoadingElements] = useState({
-		owner: !!flat.owner,
-		members: !!flat.members,
-		invitations: !!flat.invitations,
+		owner: false,
+		members: false,
+		invitations: false,
 	});
 
 	const [elementsErrors, setElementsErrors] = useState<{
