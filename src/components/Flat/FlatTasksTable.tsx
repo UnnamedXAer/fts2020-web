@@ -46,7 +46,7 @@ const FlatTasksTable: React.FC<Props> = ({
 						</StyledTableCell>
 						<StyledTableCell align="right">Active</StyledTableCell>
 						<StyledTableCell align="right">
-							Actions
+							Info
 						</StyledTableCell>
 					</TableRow>
 				</TableHead>
