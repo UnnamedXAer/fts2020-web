@@ -15,6 +15,7 @@ import { InfoOutlined as InfoOutlinedIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import Invitation, { InvitationStatusInfo } from '../../models/invitation';
 import { StyledTableCell, StyledTableRow } from '../UI/Table';
+import { LoadingTableRows } from '../UI/LoadingTableRows';
 
 interface Props {
 	invitations: Invitation[] | undefined;
@@ -47,10 +48,7 @@ const InvitationsTable: React.FC<Props> = ({
 				</TableHead>
 				<TableBody>
 					{loading ? (
-						<>
-							<Skeleton animation="wave" height={46} />
-							<Skeleton animation="wave" height={46} />
-						</>
+						<LoadingTableRows colsNumber={5} rowsNumber={2} />
 					) : (
 						invitations?.map((inv) => (
 							<StyledTableRow key={inv.id} hover>
