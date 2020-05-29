@@ -349,7 +349,8 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<InvitationsTable
 							loading={loadingElements.invitations}
 							invitations={flat.invitations}
-							onInvitationSelect={() => {}}
+							flatOwner={loggedUser!.id === flat.ownerId}
+							flatId={id}
 						/>
 					</Grid>
 					<Grid item>

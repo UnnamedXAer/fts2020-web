@@ -11,6 +11,7 @@ export enum FlatsActionTypes {
 	SetOwner = 'FLAT_SET_OWNER',
 	SetMembers = 'FLAT_SET_MEMBERS',
 	SetInvitations = 'FLAT_SET_INVITATIONS',
+	SetInvitation = 'FLAT_SET_INVITATION',
 	ClearState = 'FLAT_CLEAR_STATE',
 }
 

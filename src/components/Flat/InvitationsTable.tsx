@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
 	IconButton,
 	TableContainer,
@@ -9,83 +9,196 @@ import {
 	TableBody,
 	makeStyles,
 	Theme,
+	Menu,
+	MenuItem,
+	CircularProgress,
 } from '@material-ui/core';
 import moment from 'moment';
-import { InfoOutlined as InfoOutlinedIcon } from '@material-ui/icons';
-import Skeleton from '@material-ui/lab/Skeleton';
-import Invitation, { InvitationStatusInfo } from '../../models/invitation';
+import MoreVertRoundedIcon from '@material-ui/icons/MoreVertRounded';
+import Invitation, {
+	InvitationStatusInfo,
+	InvitationStatus,
+	InvitationAction,
+} from '../../models/invitation';
 import { StyledTableCell, StyledTableRow } from '../UI/Table';
 import { LoadingTableRows } from '../UI/LoadingTableRows';
+import { StateError } from '../../ReactTypes/customReactTypes';
+import HttpErrorParser from '../../utils/parseError';
+import { useDispatch } from 'react-redux';
+import { updateInvitation } from '../../store/actions/flats';
 
 interface Props {
 	invitations: Invitation[] | undefined;
 	loading: boolean;
-	onInvitationSelect: (id: number) => void;
+	flatOwner: boolean;
+	flatId: number;
 }
 
 const InvitationsTable: React.FC<Props> = ({
 	invitations,
 	loading,
-	onInvitationSelect,
+	flatOwner,
+	flatId,
 }) => {
 	const classes = useStyles();
+	const dispatch = useDispatch();
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const [selectedInId, setSelectedInId] = useState<number | null>(null);
+	const [loadingInvs, setLoadingInvs] = useState<{ [key: number]: boolean }>(
+		{}
+	);
+	const [invsErrors, setInvsErrors] = useState<{ [key: number]: StateError }>(
+		{}
+	);
+
+	const openMenuHandler = (
+		ev: React.MouseEvent<HTMLButtonElement>,
+		id: number
+	) => {
+		setAnchorEl(ev.currentTarget);
+		setSelectedInId(id);
+	};
+
+	const closeMenuHandler = () => {
+		setAnchorEl(null);
+		setSelectedInId(null);
+	};
+
+	const menuActionHandler = async (id: number, action: InvitationAction) => {
+		setLoadingInvs((prevState) => ({ ...prevState, [id]: true }));
+		try {
+			await dispatch(updateInvitation(id, flatId, action));
+		} catch (err) {
+			const error = new HttpErrorParser(err);
+			const msg = error.getMessage();
+			setInvsErrors((prevState) => ({ ...prevState, [id]: msg }));
+		}
+		setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
+	};
 
 	return (
-		<TableContainer component={Paper}>
-			<Table className={classes.table} aria-label="flat tasks">
-				<TableHead>
-					<TableRow>
-						<StyledTableCell>Email Address</StyledTableCell>
-						<StyledTableCell align="right">
-							Create Date
-						</StyledTableCell>
-						<StyledTableCell align="right">Status</StyledTableCell>
-						<StyledTableCell align="right">
-							Action Date
-						</StyledTableCell>
-						<StyledTableCell align="right">Actions</StyledTableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{loading ? (
-						<LoadingTableRows colsNumber={5} rowsNumber={2} />
-					) : (
-						invitations?.map((inv) => (
-							<StyledTableRow key={inv.id} hover>
-								<StyledTableCell component="th" scope="row">
-									{inv.emailAddress}
-								</StyledTableCell>
+		<>
+			<TableContainer component={Paper}>
+				<Table className={classes.table} aria-label="flat tasks">
+					<TableHead>
+						<TableRow>
+							<StyledTableCell>Email Address</StyledTableCell>
+							<StyledTableCell align="right">
+								Create Date
+							</StyledTableCell>
+							<StyledTableCell align="right">
+								Status
+							</StyledTableCell>
+							<StyledTableCell align="right">
+								Action Date
+							</StyledTableCell>
+							{flatOwner && (
 								<StyledTableCell align="right">
-									{moment(inv.createAt).format(
-										'Do MMMM YYYY'
+									Actions
+								</StyledTableCell>
+							)}
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{loading ? (
+							<LoadingTableRows
+								colsNumber={flatOwner ? 5 : 4}
+								rowsNumber={2}
+							/>
+						) : (
+							invitations?.map((inv) => (
+								<StyledTableRow key={inv.id} hover>
+									<StyledTableCell component="th" scope="row">
+										{inv.emailAddress}
+									</StyledTableCell>
+									<StyledTableCell align="right">
+										{moment(inv.createAt).format(
+											'Do MMMM YYYY'
+										)}
+									</StyledTableCell>
+									<StyledTableCell align="right">
+										{InvitationStatusInfo[inv.status]}
+									</StyledTableCell>
+									<StyledTableCell align="right">
+										{inv.actionDate
+											? moment(inv.actionDate).format(
+													'Do MMMM YYYY'
+											  )
+											: ''}
+									</StyledTableCell>
+									{flatOwner && (
+										<StyledTableCell align="right">
+											{loadingInvs[inv.id] ? (
+												<CircularProgress />
+											) : (
+												<IconButton
+													title="Invitation menu"
+													onClick={(ev) =>
+														openMenuHandler(
+															ev,
+															inv.id!
+														)
+													}
+												>
+													<MoreVertRoundedIcon />
+												</IconButton>
+											)}
+										</StyledTableCell>
 									)}
-								</StyledTableCell>
-								<StyledTableCell align="right">
-									{InvitationStatusInfo[inv.status]}
-								</StyledTableCell>
-								<StyledTableCell align="right">
-									{inv.actionDate
-										? moment(inv.actionDate).format(
-												'Do MMMM YYYY'
-										  )
-										: ''}
-								</StyledTableCell>
-								<StyledTableCell align="right">
-									<IconButton
-										title="Task quick info"
-										onClick={() =>
-											onInvitationSelect(inv.id!)
-										}
-									>
-										<InfoOutlinedIcon />
-									</IconButton>
-								</StyledTableCell>
-							</StyledTableRow>
-						))
+								</StyledTableRow>
+							))
+						)}
+					</TableBody>
+				</Table>
+			</TableContainer>
+			<Menu
+				id="invitation-menu"
+				anchorEl={anchorEl}
+				keepMounted
+				open={Boolean(anchorEl)}
+				onClose={closeMenuHandler}
+			>
+				{invitations &&
+					selectedInId &&
+					[
+						InvitationStatus.PENDING,
+						InvitationStatus.NOT_SENT,
+						InvitationStatus.SEND_ERROR,
+					].includes(
+						invitations!.find((x) => x.id === selectedInId!)!.status
+					) && (
+						<MenuItem
+							onClick={() =>
+								menuActionHandler(
+									selectedInId!,
+									InvitationAction.CANCEL
+								)
+							}
+						>
+							Cancel
+						</MenuItem>
 					)}
-				</TableBody>
-			</Table>
-		</TableContainer>
+				{invitations &&
+					selectedInId &&
+					![
+						InvitationStatus.PENDING,
+						InvitationStatus.ACCEPTED,
+					].includes(
+						invitations!.find((x) => x.id === selectedInId!)!.status
+					) && (
+						<MenuItem
+							onClick={() =>
+								menuActionHandler(
+									selectedInId!,
+									InvitationAction.RESEND
+								)
+							}
+						>
+							Resend
+						</MenuItem>
+					)}
+			</Menu>
+		</>
 	);
 };
 

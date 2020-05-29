@@ -45,6 +45,7 @@ export enum InvitationAction {
 	'ACCEPT' = 'ACCEPT',
 	'REJECT' = 'REJECT',
 	'CANCEL' = 'CANCEL',
+	'RESEND' = 'RESEND',
 }
 
 export enum InvitationStatus {
