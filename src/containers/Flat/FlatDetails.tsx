@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import {
@@ -103,86 +103,127 @@ const FlatDetails: React.FC<Props> = (props) => {
 		open: false,
 	});
 
+	const isMounted = useRef<number | null>(id);
 	useEffect(() => {
-		if (!flat.owner && !loadingElements.owner && !elementsErrors.owner) {
-			const loadOwner = async () => {
-				setLoadingElements((prevState) => ({
-					...prevState,
-					owner: true,
-				}));
-				try {
-					await dispatch(fetchFlatOwner(flat.ownerId, flat.id!));
-				} catch (err) {
+		isMounted.current = id;
+		return () => {
+			isMounted.current = null;
+		};
+	}, [id]);
+
+	// useEffect(() => {
+	// 	let isMounted = true;
+	// 	console.log('setting isMounted to true');
+
+	// 	if (!flat.owner && !loadingElements.owner && !elementsErrors.owner) {
+	// 	const loadOwner = async () => {
+	// 		setLoadingElements((prevState) => ({
+	// 			...prevState,
+	// 			owner: true,
+	// 		}));
+	// 		try {
+	// 			console.log('about to dispatch, isMounted 1.0: ', isMounted);
+	// 			await dispatch(fetchFlatOwner(flat.ownerId, flat.id!));
+	// 			console.log('after dispatch, isMounted 1.1: ', isMounted);
+	// 		} catch (err) {
+	// 			console.log('isMounted 2.0: ', isMounted);
+	// 			if (isMounted) {
+	// 				setElementsErrors((prevState) => ({
+	// 					...prevState,
+	// 					owner: err.message,
+	// 				}));
+	// 			}
+	// 		}
+	// 		console.log('isMounted 3.0: ', isMounted);
+	// 		if (isMounted) {
+	// 			console.log('isMounted 3.1: ', isMounted);
+	// 			console.log('setting owner loading to false');
+	// 			setLoadingElements((prevState) => ({
+	// 				...prevState,
+	// 				owner: false,
+	// 			}));
+	// 		}
+	// 	};
+	// 	setTimeout(async () => {
+	// 		loadOwner();
+	// 	}, 2000);
+	// 	}
+	// 	return () => {
+	// 		console.log('cleaning');
+	// 		isMounted = false;
+	// 	};
+	// }, [dispatch, elementsErrors.owner, flat.id, flat.owner, flat.ownerId, loadingElements.owner]);
+
+	const loadMembers = useCallback(
+		async (flatId) => {
+			setLoadingElements((prevState) => ({
+				...prevState,
+				members: true,
+			}));
+			try {
+				await dispatch(fetchFlatMembers(flatId));
+			} catch (err) {
+				if (isMounted.current === flatId) {
 					setElementsErrors((prevState) => ({
 						...prevState,
-						owner: err.message,
+						members: err.message,
 					}));
 				}
+			}
+			if (isMounted.current === flatId) {
 				setLoadingElements((prevState) => ({
 					...prevState,
-					owner: false,
+					members: false,
 				}));
-			};
+			}
+		},
+		[dispatch]
+	);
 
-			loadOwner();
-		}
-
+	useEffect(() => {
 		if (
 			!flat.members &&
 			!loadingElements.members &&
 			!elementsErrors.members
 		) {
-			const loadMembers = async () => {
-				setLoadingElements((prevState) => ({
-					...prevState,
-					members: true,
-				}));
-				setTimeout(async () => {
-					try {
-						await dispatch(fetchFlatMembers(flat.id!));
-					} catch (err) {
-						setElementsErrors((prevState) => ({
-							...prevState,
-							members: err.message,
-						}));
-					}
-					setLoadingElements((prevState) => ({
-						...prevState,
-						members: false,
-					}));
-				}, 2000);
-			};
-
-			loadMembers();
+			loadMembers(id);
 		}
+	}, [
+		elementsErrors.members,
+		flat.members,
+		id,
+		loadMembers,
+		loadingElements.members,
+	]);
 
-		if (
-			!flat.invitations &&
-			!loadingElements.invitations &&
-			!elementsErrors.invitations
-		) {
-			const loadInvitations = async () => {
-				setLoadingElements((prevState) => ({
-					...prevState,
-					invitations: true,
-				}));
-				try {
-					await dispatch(fetchFlatInvitations(flat.id!));
-				} catch (err) {
-					setElementsErrors((prevState) => ({
-						...prevState,
-						invitations: err.message,
-					}));
-				}
-				setLoadingElements((prevState) => ({
-					...prevState,
-					invitations: false,
-				}));
-			};
+	// useEffect(() => {
+	// 	if (
+	// 		!flat.invitations &&
+	// 		!loadingElements.invitations &&
+	// 		!elementsErrors.invitations
+	// 	) {
+	// 		const loadInvitations = async () => {
+	// 			setLoadingElements((prevState) => ({
+	// 				...prevState,
+	// 				invitations: true,
+	// 			}));
+	// 			try {
+	// 				await dispatch(fetchFlatInvitations(flat.id!));
+	// 			} catch (err) {
+	// 				setElementsErrors((prevState) => ({
+	// 					...prevState,
+	// 					invitations: err.message,
+	// 				}));
+	// 			}
+	// 			setLoadingElements((prevState) => ({
+	// 				...prevState,
+	// 				invitations: false,
+	// 			}));
+	// 		};
 
-			loadInvitations();
-		}
-	}, [flat, dispatch, loadingElements, elementsErrors]);
+	// 		loadInvitations();
+	// 	}
+	// }, [dispatch, elementsErrors.invitations, flat.id, flat.invitations, loadingElements.invitations]);
 
 	const memberSelectHandler = (id: number) => {
 		props.history.push(`/profile/${id}`);
@@ -327,6 +368,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<TextField
 							className={classes.description}
 							value={flat.description}
+							placeholder="no description"
 							multiline
 							rowsMax={4}
 							fullWidth
@@ -349,19 +391,19 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<Typography variant="h5" component="h3">
 							Invited People
 						</Typography>
-						<InvitationsTable
+						{/* <InvitationsTable
 							error={elementsErrors.invitations}
 							loading={loadingElements.invitations}
 							invitations={flat.invitations}
 							flatOwner={loggedUser!.id === flat.ownerId}
 							flatId={id}
-						/>
+						/> */}
 					</Grid>
 					<Grid item className={classes.gridItem}>
 						<Typography variant="h5" component="h3">
 							Tasks
 						</Typography>
-						<FlatTasks flatId={flat.id as number} />
+						{/* <FlatTasks flatId={flat.id as number} /> */}
 					</Grid>
 				</Grid>
 			</Grid>
