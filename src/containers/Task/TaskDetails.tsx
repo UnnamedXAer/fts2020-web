@@ -490,6 +490,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 							Members
 						</Typography>
 						<MembersList
+							error={elementsErrors.members}
 							onMemberSelect={memberSelectHandler}
 							loading={loadingElements.members}
 							members={task?.members}

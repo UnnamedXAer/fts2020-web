@@ -1,18 +1,9 @@
 import React from 'react';
 import Task from '../../models/task';
-import {
-	Grid,
-	Typography,
-	CircularProgress,
-	ListItem,
-	List,
-	ListItemAvatar,
-	Avatar,
-	ListItemText,
-} from '@material-ui/core';
+import { Grid, Typography, CircularProgress } from '@material-ui/core';
 import moment from 'moment';
 import CustomMuiAlert from '../UI/CustomMuiAlert';
-import { SupervisedUserCircle as UserCircleIcon } from '@material-ui/icons';
+import MembersList from './MembersList';
 
 interface Props {
 	task: Task;
@@ -31,15 +22,8 @@ const TaskInfoModalContent: React.FC<Props> = ({
 	if (!task) {
 		return <CircularProgress color="primary" />;
 	}
-	if (membersError) {
-		membersContent = (
-			<CustomMuiAlert variant="filled" severity="error">
-				{membersError}
-			</CustomMuiAlert>
-		);
-	} else if (membersLoading) {
-		membersContent = <CircularProgress color="primary" />;
-	} else if (!task.members || task.members.length === 0) {
+
+	if (task.members && task.members.length === 0) {
 		membersContent = (
 			<CustomMuiAlert variant="outlined" severity="warning">
 				There are no members for this task.
@@ -47,27 +31,12 @@ const TaskInfoModalContent: React.FC<Props> = ({
 		);
 	} else {
 		membersContent = (
-			<List>
-				{task.members.map((member) => {
-					return (
-						<ListItem
-							button
-							key={member.id}
-							onClick={() => onMemberSelect(member.id)}
-						>
-							<ListItemAvatar>
-								<Avatar src={member.avatarUrl}>
-									<UserCircleIcon />
-								</Avatar>
-							</ListItemAvatar>
-							<ListItemText
-								primary={member.emailAddress}
-								secondary={member.userName}
-							/>
-						</ListItem>
-					);
-				})}
-			</List>
+			<MembersList
+				error={membersError}
+				loading={membersLoading}
+				members={task.members}
+				onMemberSelect={onMemberSelect}
+			/>
 		);
 	}
 

@@ -137,18 +137,20 @@ const FlatDetails: React.FC<Props> = (props) => {
 					...prevState,
 					members: true,
 				}));
-				try {
-					await dispatch(fetchFlatMembers(flat.id!));
-				} catch (err) {
-					setElementsErrors((prevState) => ({
+				setTimeout(async () => {
+					try {
+						await dispatch(fetchFlatMembers(flat.id!));
+					} catch (err) {
+						setElementsErrors((prevState) => ({
+							...prevState,
+							members: err.message,
+						}));
+					}
+					setLoadingElements((prevState) => ({
 						...prevState,
-						members: err.message,
+						members: false,
 					}));
-				}
-				setLoadingElements((prevState) => ({
-					...prevState,
-					members: false,
-				}));
+				}, 2000);
 			};
 
 			loadMembers();
@@ -318,7 +320,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 							</Typography>
 						</Grid>
 					</Grid>
-					<Grid item>
+					<Grid item className={classes.gridItem}>
 						<Typography variant="h5" component="h3">
 							Description
 						</Typography>
@@ -332,28 +334,30 @@ const FlatDetails: React.FC<Props> = (props) => {
 							inputProps={{ readOnly: true }}
 						/>
 					</Grid>
-					<Grid item>
+					<Grid item className={classes.gridItem}>
 						<Typography variant="h5" component="h3">
 							Members
 						</Typography>
 						<MembersList
+							error={elementsErrors.members}
 							onMemberSelect={memberSelectHandler}
 							loading={loadingElements.members}
 							members={flat.members}
 						/>
 					</Grid>
-					<Grid item>
+					<Grid item className={classes.gridItem}>
 						<Typography variant="h5" component="h3">
 							Invited People
 						</Typography>
 						<InvitationsTable
+							error={elementsErrors.invitations}
 							loading={loadingElements.invitations}
 							invitations={flat.invitations}
 							flatOwner={loggedUser!.id === flat.ownerId}
 							flatId={id}
 						/>
 					</Grid>
-					<Grid item>
+					<Grid item className={classes.gridItem}>
 						<Typography variant="h5" component="h3">
 							Tasks
 						</Typography>
@@ -384,8 +388,6 @@ const useStyles = makeStyles((theme: Theme) =>
 		description: {
 			paddingTop: 10,
 			paddingBottom: 10,
-			paddingLeft: 16,
-			paddingRight: 16,
 			boxSizing: 'border-box',
 		},
 		avatar: {
@@ -394,6 +396,10 @@ const useStyles = makeStyles((theme: Theme) =>
 		},
 		margin: {
 			margin: theme.spacing(1),
+		},
+		gridItem: {
+			marginTop: theme.spacing(2),
+			marginBottom: theme.spacing(1),
 		},
 		fab: {
 			position: 'fixed',

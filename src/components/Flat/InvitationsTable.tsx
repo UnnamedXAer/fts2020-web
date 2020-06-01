@@ -26,10 +26,12 @@ import { StateError } from '../../ReactTypes/customReactTypes';
 import HttpErrorParser from '../../utils/parseError';
 import { useDispatch } from 'react-redux';
 import { updateInvitation } from '../../store/actions/flats';
+import CustomMuiAlert from '../UI/CustomMuiAlert';
 
 interface Props {
 	invitations: Invitation[] | undefined;
 	loading: boolean;
+	error: StateError;
 	flatOwner: boolean;
 	flatId: number;
 }
@@ -37,6 +39,7 @@ interface Props {
 const InvitationsTable: React.FC<Props> = ({
 	invitations,
 	loading,
+	error,
 	flatOwner,
 	flatId,
 }) => {
@@ -151,6 +154,7 @@ const InvitationsTable: React.FC<Props> = ({
 					</TableBody>
 				</Table>
 			</TableContainer>
+			{error && <CustomMuiAlert title="Could not load invitations." severity="error">{error}</CustomMuiAlert>}
 			<Menu
 				id="invitation-menu"
 				anchorEl={anchorEl}

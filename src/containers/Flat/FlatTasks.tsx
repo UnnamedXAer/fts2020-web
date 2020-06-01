@@ -3,8 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchFlatTasks, fetchTaskMembers } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
 import { useHistory } from 'react-router-dom';
-import { CircularProgress } from '@material-ui/core';
-import ErrorCart from '../../components/UI/ErrorCart';
 import RootState from '../../store/storeTypes';
 import Task from '../../models/task';
 import FlatTasksTable from '../../components/Flat/FlatTasksTable';
@@ -18,9 +16,11 @@ interface Props {
 const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	const history = useHistory();
 	const dispatch = useDispatch();
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [tasksFetchTime, setTasksFetchTime] = useState(0);
+	const flatTasksLoadTime = useSelector<RootState, number | undefined>(
+		(state) => state.tasks.flatTasksLoadTime[flatId]
+	);
 	const tasks = useSelector<RootState, Task[]>((state) =>
 		state.tasks.tasks.filter((x) => x.flatId === flatId)
 	);
@@ -34,15 +34,9 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	}>({});
 
 	useEffect(() => {
-		if (
-			!loading &&
-			!error &&
-			tasks.length === 0 &&
-			tasksFetchTime < Date.now() - 1000 * 60 * 60 * 1
-		) {
+		if (!flatTasksLoadTime && !loading && !error) {
 			setLoading(true);
 			setError(null);
-			setTasksFetchTime(Date.now());
 			const loadTasks = async () => {
 				try {
 					await dispatch(fetchFlatTasks(flatId));
@@ -52,12 +46,9 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 				}
 				setLoading(false);
 			};
-
 			loadTasks();
-		} else {
-			setLoading(false);
 		}
-	}, [dispatch, error, flatId, loading, tasks, tasksFetchTime]);
+	}, [dispatch, error, flatId, flatTasksLoadTime, loading]);
 
 	useEffect(() => {
 		if (
@@ -104,14 +95,14 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 		history.push(`/profile/${id}`);
 	};
 
-	if (error) {
-		return <ErrorCart message={error} showHeader />;
-	} else if (loading) {
-		return <CircularProgress color="primary" />;
-	}
 	return (
 		<>
-			<FlatTasksTable tasks={tasks} onTaskSelected={taskSelectHandler} />
+			<FlatTasksTable
+				error={error}
+				loading={loading}
+				tasks={tasks}
+				onTaskSelected={taskSelectHandler}
+			/>
 			<CustomModal
 				onClose={() => {
 					setShowTaskModal(false);

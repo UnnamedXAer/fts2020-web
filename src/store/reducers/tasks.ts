@@ -5,6 +5,7 @@ import User from '../../models/user';
 
 const initialState: TasksState = {
 	tasks: [],
+	flatTasksLoadTime: {},
 	userTasks: [],
 	userTasksLoadTime: 0,
 };
@@ -54,6 +55,7 @@ const setFlatTasks: SimpleReducer<
 	return {
 		...state,
 		tasks: updatedTasks,
+		flatTasksLoadTime: { ...state.flatTasksLoadTime, [flatId]: Date.now() },
 	};
 };
 

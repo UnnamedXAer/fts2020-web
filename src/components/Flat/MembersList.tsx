@@ -15,8 +15,11 @@ import {
 	DeleteRounded as DeleteIcon,
 } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
+import { StateError } from '../../ReactTypes/customReactTypes';
+import CustomMuiAlert from '../UI/CustomMuiAlert';
 
 interface Props {
+	error: StateError;
 	members: User[] | undefined;
 	loading: boolean;
 	onMemberSelect: (id: number) => void;
@@ -25,12 +28,21 @@ interface Props {
 }
 
 const MembersList: React.FC<Props> = ({
+	error,
 	members,
 	loading,
 	onMemberSelect,
 	onMemberDelete,
 	onMemberMessage,
 }) => {
+	if (error) {
+		return (
+			<CustomMuiAlert title="Could not load members." severity="error">
+				{error}
+			</CustomMuiAlert>
+		);
+	}
+
 	if (loading || !members) {
 		return (
 			<>

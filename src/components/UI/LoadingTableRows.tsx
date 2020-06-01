@@ -5,11 +5,13 @@ import Skeleton from '@material-ui/lab/Skeleton';
 interface Props {
 	colsNumber: number;
 	rowsNumber: number;
+	height?: number;
 }
 
 export const LoadingTableRows: React.FC<Props> = ({
 	rowsNumber,
 	colsNumber,
+	height,
 }) => {
 	const cells: React.ReactElement[] = [],
 		rows: React.ReactElement[] = [];
@@ -17,7 +19,7 @@ export const LoadingTableRows: React.FC<Props> = ({
 	for (let i = 0; i < colsNumber; i++) {
 		cells.push(
 			<TableCell key={i}>
-				<Skeleton animation="wave" />
+				<Skeleton animation="wave" height={height} />
 			</TableCell>
 		);
 	}
