@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RouteComponentProps, Link as RouterLink } from 'react-router-dom';
 import {
@@ -120,6 +120,13 @@ const TaskDetails: React.FC<Props> = (props) => {
 		loading: false,
 		open: false,
 	});
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!task) {
@@ -128,9 +135,11 @@ const TaskDetails: React.FC<Props> = (props) => {
 				try {
 					await dispatch(fetchTask(id));
 				} catch (err) {
-					const error = new HttpErrorParser(err);
-					const msg = error.getMessage();
-					setError(msg);
+					if (isMounted.current) {
+						const error = new HttpErrorParser(err);
+						const msg = error.getMessage();
+						setError(msg);
+					}
 				}
 			};
 			loadTask(id);
@@ -152,17 +161,20 @@ const TaskDetails: React.FC<Props> = (props) => {
 				try {
 					await dispatch(fetchTaskPeriods(id));
 				} catch (err) {
-					const error = new HttpErrorParser(err);
-					const msg = error.getMessage();
-					setElementsErrors((prevState) => ({
-						...prevState,
-						schedule: msg,
-					}));
+					if (isMounted.current) {
+						const error = new HttpErrorParser(err);
+						const msg = error.getMessage();
+						setElementsErrors((prevState) => ({
+							...prevState,
+							schedule: msg,
+						}));
+					}
 				}
-				setLoadingElements((prevState) => ({
-					...prevState,
-					schedule: false,
-				}));
+				isMounted.current &&
+					setLoadingElements((prevState) => ({
+						...prevState,
+						schedule: false,
+					}));
 			};
 			loadSchedule(task.id!);
 		}
@@ -189,15 +201,20 @@ const TaskDetails: React.FC<Props> = (props) => {
 				try {
 					await dispatch(fetchTaskOwner(task.createBy!, task.id!));
 				} catch (err) {
-					setElementsErrors((prevState) => ({
-						...prevState,
-						owner: err.message,
-					}));
+					if (isMounted.current) {
+						const error = new HttpErrorParser(err);
+						const msg = error.getMessage();
+						setElementsErrors((prevState) => ({
+							...prevState,
+							owner: msg,
+						}));
+					}
 				}
-				setLoadingElements((prevState) => ({
-					...prevState,
-					owner: false,
-				}));
+				isMounted.current &&
+					setLoadingElements((prevState) => ({
+						...prevState,
+						owner: false,
+					}));
 			};
 
 			loadOwner();
@@ -217,15 +234,20 @@ const TaskDetails: React.FC<Props> = (props) => {
 				try {
 					await dispatch(fetchTaskMembers(task.id!));
 				} catch (err) {
-					setElementsErrors((prevState) => ({
-						...prevState,
-						members: err.message,
-					}));
+					if (isMounted.current) {
+						const error = new HttpErrorParser(err);
+						const msg = error.getMessage();
+						setElementsErrors((prevState) => ({
+							...prevState,
+							members: msg,
+						}));
+					}
 				}
-				setLoadingElements((prevState) => ({
-					...prevState,
-					members: false,
-				}));
+				isMounted.current &&
+					setLoadingElements((prevState) => ({
+						...prevState,
+						members: false,
+					}));
 			};
 
 			loadMembers();
@@ -247,28 +269,32 @@ const TaskDetails: React.FC<Props> = (props) => {
 		setPeriodsLoading((prevState) => ({ ...prevState, [id]: true }));
 		try {
 			await dispatch(completePeriod(id, task!.id!));
-			setSnackbarData({
-				open: true,
-				action: true,
-				severity: 'success',
-				timeout: 3000,
-				content: 'Period completed.',
-				onClose: closeSnackbarAlertHandler,
-			});
+			isMounted.current &&
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'success',
+					timeout: 3000,
+					content: 'Period completed.',
+					onClose: closeSnackbarAlertHandler,
+				});
 		} catch (err) {
-			const error = new HttpErrorParser(err);
-			const msg = error.getMessage();
-			setSnackbarData({
-				open: true,
-				action: true,
-				severity: 'error',
-				timeout: 4000,
-				content: msg,
-				onClose: closeSnackbarAlertHandler,
-				title: 'Could not complete the period.',
-			});
+			if (isMounted.current) {
+				const error = new HttpErrorParser(err);
+				const msg = error.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not complete the period.',
+				});
+			}
 		}
-		setPeriodsLoading((prevState) => ({ ...prevState, [id]: false }));
+		isMounted.current &&
+			setPeriodsLoading((prevState) => ({ ...prevState, [id]: false }));
 	};
 
 	const closeSnackbarAlertHandler = () => {
@@ -285,9 +311,9 @@ const TaskDetails: React.FC<Props> = (props) => {
 		});
 		setDialogData((prevState) => ({ ...prevState, loading: true }));
 
-		setTimeout(async () => {
-			try {
-				await dispatch(updateTask(_task));
+		try {
+			await dispatch(updateTask(_task));
+			isMounted.current &&
 				setSnackbarData({
 					open: true,
 					action: true,
@@ -296,7 +322,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 					content: 'Task closed.',
 					onClose: closeSnackbarAlertHandler,
 				});
-			} catch (err) {
+		} catch (err) {
+			if (isMounted.current) {
 				const httpError = new HttpErrorParser(err);
 				const msg = httpError.getMessage();
 				setSnackbarData({
@@ -309,8 +336,9 @@ const TaskDetails: React.FC<Props> = (props) => {
 					title: 'Could not close task.',
 				});
 			}
+		}
+		isMounted.current &&
 			setDialogData((prevState) => ({ ...prevState, open: false }));
-		}, 400);
 	};
 
 	const closeDialogAlertHandler = () =>

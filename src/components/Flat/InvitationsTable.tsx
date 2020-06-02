@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
 	IconButton,
 	TableContainer,
@@ -53,6 +53,13 @@ const InvitationsTable: React.FC<Props> = ({
 	const [invsErrors, setInvsErrors] = useState<{ [key: number]: StateError }>(
 		{}
 	);
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	const openMenuHandler = (
 		ev: React.MouseEvent<HTMLButtonElement>,
@@ -72,11 +79,14 @@ const InvitationsTable: React.FC<Props> = ({
 		try {
 			await dispatch(updateInvitation(id, flatId, action));
 		} catch (err) {
-			const error = new HttpErrorParser(err);
-			const msg = error.getMessage();
-			setInvsErrors((prevState) => ({ ...prevState, [id]: msg }));
+			if (isMounted.current) {
+				const error = new HttpErrorParser(err);
+				const msg = error.getMessage();
+				setInvsErrors((prevState) => ({ ...prevState, [id]: msg }));
+			}
 		}
-		setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
+		isMounted.current &&
+			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
 	};
 
 	return (
@@ -154,7 +164,14 @@ const InvitationsTable: React.FC<Props> = ({
 					</TableBody>
 				</Table>
 			</TableContainer>
-			{error && <CustomMuiAlert title="Could not load invitations." severity="error">{error}</CustomMuiAlert>}
+			{error && (
+				<CustomMuiAlert
+					title="Could not load invitations."
+					severity="error"
+				>
+					{error}
+				</CustomMuiAlert>
+			)}
 			<Menu
 				id="invitation-menu"
 				anchorEl={anchorEl}

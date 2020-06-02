@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
 	Grid,
 	Typography,
@@ -50,6 +50,13 @@ const ChangePassword: React.FC<Props> = (props) => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
 		ev
@@ -130,22 +137,24 @@ const ChangePassword: React.FC<Props> = (props) => {
 					formState.values.confirmPassword
 				)
 			);
-			setSuccess(true);
+			isMounted.current && setSuccess(true);
 		} catch (err) {
-			const errorData = new HttpErrorParser(err);
-			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach((x) =>
-				formDispatch({
-					type: ActionType.SetError,
-					fieldId: x.param,
-					error: x.msg,
-				})
-			);
+			if (isMounted.current) {
+				const httpError = new HttpErrorParser(err);
+				const fieldsErrors = httpError.getFieldsErrors();
+				fieldsErrors.forEach((x) =>
+					formDispatch({
+						type: ActionType.SetError,
+						fieldId: x.param,
+						error: x.msg,
+					})
+				);
 
-			setError(errorData.getMessage());
-			setSuccess(false);
+				setError(httpError.getMessage());
+				setSuccess(false);
+			}
 		}
-		setLoading(false);
+		isMounted.current && setLoading(false);
 	};
 
 	return (

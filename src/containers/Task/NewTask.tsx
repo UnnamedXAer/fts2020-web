@@ -1,4 +1,14 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, {
+	useCallback,
+	useState,
+	useRef,
+	FC,
+	useEffect,
+	ChangeEventHandler,
+	FocusEventHandler,
+	FormEventHandler,
+	ChangeEvent,
+} from 'react';
 import {
 	makeStyles,
 	Theme,
@@ -43,7 +53,7 @@ type RouterParams = {
 	flatId: string;
 };
 
-const NewTask: React.FC<Props> = ({ history, match }) => {
+const NewTask: FC<Props> = ({ history, match }) => {
 	const classes = useStyles();
 	const flat = useSelector((state: RootState) =>
 		state.flats.flats.find(
@@ -79,9 +89,15 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
-
 	const theme = useTheme();
 	const matchesSMSize = useMediaQuery(theme.breakpoints.up('sm'));
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	const resizeHandler = useCallback(() => {
 		let updatedSize: 'small' | 'medium' = 'small';
@@ -91,7 +107,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 		setTextFieldSize(updatedSize);
 	}, []);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		window.addEventListener('resize', resizeHandler);
 
 		return () => {
@@ -99,9 +115,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 		};
 	});
 
-	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
-		ev
-	) => {
+	const fieldChangeHandler: ChangeEventHandler<HTMLInputElement> = (ev) => {
 		const { name, value } = ev.target;
 
 		const action: FormAction = {
@@ -113,9 +127,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 		formDispatch(action);
 	};
 
-	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = (
-		ev
-	) => {
+	const fieldBlurHandler: FocusEventHandler<HTMLInputElement> = (ev) => {
 		const { name } = ev.target;
 		let error = validateTaskFormField(name, formState.values);
 
@@ -158,7 +170,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 		[flat]
 	);
 
-	const submitHandler: React.FormEventHandler = async (ev) => {
+	const submitHandler: FormEventHandler = async (ev) => {
 		setError(null);
 		setLoading(true);
 
@@ -194,23 +206,25 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 
 		try {
 			await dispatch(createTask(newTask));
-			history.replace('/flats/' + flat?.id);
+			isMounted.current && history.replace('/flats/' + flat?.id);
 		} catch (err) {
-			const errorData = new HttpErrorParser(err);
-			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach((x) => {
-				const fieldName =
-					x.param === 'startDate' || x.param === 'endDate'
-						? 'dates'
-						: x.param;
-				formDispatch({
-					type: ActionType.SetError,
-					fieldId: fieldName,
-					error: x.msg,
+			if (isMounted.current) {
+				const errorData = new HttpErrorParser(err);
+				const fieldsErrors = errorData.getFieldsErrors();
+				fieldsErrors.forEach((x) => {
+					const fieldName =
+						x.param === 'startDate' || x.param === 'endDate'
+							? 'dates'
+							: x.param;
+					formDispatch({
+						type: ActionType.SetError,
+						fieldId: fieldName,
+						error: x.msg,
+					});
 				});
-			});
-			setError(errorData.getMessage());
-			setLoading(false);
+				setError(errorData.getMessage());
+				setLoading(false);
+			}
 		}
 	};
 
@@ -329,9 +343,7 @@ const NewTask: React.FC<Props> = ({ history, match }) => {
 									value={formState.values.timePeriodUnit}
 									onChange={(ev, el) => {
 										fieldChangeHandler(
-											ev as React.ChangeEvent<
-												HTMLInputElement
-											>
+											ev as ChangeEvent<HTMLInputElement>
 										);
 									}}
 									disabled={loading}

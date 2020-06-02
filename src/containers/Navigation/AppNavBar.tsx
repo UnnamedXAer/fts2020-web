@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -27,6 +27,13 @@ const AppNavBar: React.FC<Props> = (props) => {
 	);
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorEl(event.currentTarget);
@@ -38,7 +45,7 @@ const AppNavBar: React.FC<Props> = (props) => {
 
 	const logoutHandler = async () => {
 		await dispatch(logOut());
-		setAnchorEl(null);
+		isMounted.current && setAnchorEl(null);
 	};
 
 	const openProfileHandler = () => {

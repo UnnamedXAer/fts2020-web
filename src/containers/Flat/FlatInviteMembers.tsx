@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
 	TextField,
 	Typography,
@@ -19,7 +19,6 @@ import { RouteComponentProps } from 'react-router-dom';
 import RootState from '../../store/storeTypes';
 import { useSelector, useDispatch } from 'react-redux';
 import { StateError } from '../../ReactTypes/customReactTypes';
-import { fetchFlatMembers } from '../../store/actions/flats';
 import HttpErrorParser from '../../utils/parseError';
 import InvitationMembersList from '../../components/Flat/InvitationMembersList';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
@@ -69,25 +68,6 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 
 	const inputRef = useRef<HTMLInputElement>();
 
-	useEffect(() => {
-		if (!flatMembers) {
-			const loadMembers = async () => {
-				setError(null);
-				setLoading(true);
-				try {
-					await dispatch(fetchFlatMembers(flatId!));
-				} catch (err) {
-					const error = new HttpErrorParser(err);
-					const msg = error.getMessage();
-					setError(msg);
-				}
-				setLoading(false);
-			};
-
-			loadMembers();
-		}
-	}, [dispatch, flatId, flatMembers]);
-
 	const submitMemberHandler = () => {
 		const email = inputValue.trim().toLowerCase();
 		const emailValid = emailAddressRegExp.test(email);
@@ -130,12 +110,10 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 			...prevState,
 			[user.emailAddress]: MembersStatus.accepted,
 		}));
-		setTimeout(() => {
-			setMembersStatus((prevState) => ({
-				...prevState,
-				[user.emailAddress]: status,
-			}));
-		}, 1200);
+		setMembersStatus((prevState) => ({
+			...prevState,
+			[user.emailAddress]: status,
+		}));
 
 		setMembers((prevSate) => {
 			const idx = prevSate.findIndex(
@@ -165,20 +143,23 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 			const url = `/users?emailAddress=${email}`;
 			try {
 				const response = await axios.get<APIUser>(url);
-
-				if (response.status === 204) {
-					setMembersStatus((prevState) => ({
-						...prevState,
-						[email]: MembersStatus.not_found,
-					}));
-				} else {
-					addUserToMembers(response.data, MembersStatus.ok);
+				if (inputRef.current) {
+					if (response.status === 204) {
+						setMembersStatus((prevState) => ({
+							...prevState,
+							[email]: MembersStatus.not_found,
+						}));
+					} else {
+						addUserToMembers(response.data, MembersStatus.ok);
+					}
 				}
 			} catch (err) {
-				setMembersStatus((prevState) => ({
-					...prevState,
-					[email]: MembersStatus.error,
-				}));
+				if (inputRef.current) {
+					setMembersStatus((prevState) => ({
+						...prevState,
+						[email]: MembersStatus.error,
+					}));
+				}
 			}
 		},
 		[]
@@ -223,12 +204,16 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 			await axios.post(`/flats/${flatId}/members/invite`, {
 				members: emails,
 			});
-			history.replace(`/flats/${flatId}`);
+			if (inputRef.current) {
+				history.replace(`/flats/${flatId}`);
+			}
 		} catch (err) {
-			const error = new HttpErrorParser(err);
-			const msg = error.getMessage();
-			setError(msg);
-			setLoading(false);
+			if (inputRef.current) {
+				const error = new HttpErrorParser(err);
+				const msg = error.getMessage();
+				setError(msg);
+				setLoading(false);
+			}
 		}
 	};
 

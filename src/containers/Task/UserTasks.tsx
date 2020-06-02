@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
 	Grid,
 	List,
@@ -23,6 +23,7 @@ import RootState from '../../store/storeTypes';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { fetchUserTasks } from '../../store/actions/tasks';
+import HttpErrorParser from '../../utils/parseError';
 
 interface Props extends RouteComponentProps {}
 
@@ -41,6 +42,13 @@ const UserTasks: React.FC<Props> = (props) => {
 		(state) => state.tasks.userTasksLoadTime
 	);
 	const [selectedTask, setSelectedTask] = useState<number | null>(null);
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	useEffect(() => {
 		if (userTasksLoadTime < Date.now() - 1000 * 60 * 60 * 8) {
@@ -50,9 +58,13 @@ const UserTasks: React.FC<Props> = (props) => {
 				try {
 					await dispatch(fetchUserTasks());
 				} catch (err) {
-					setError(err.message);
+					if (isMounted.current) {
+						const error = new HttpErrorParser(err);
+						const msg = error.getMessage();
+						setError(msg);
+					}
 				}
-				setLoading(false);
+				isMounted.current && setLoading(false);
 			};
 			loadTasks();
 		}

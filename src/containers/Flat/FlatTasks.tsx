@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFlatTasks, fetchTaskMembers } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
@@ -8,6 +8,7 @@ import Task from '../../models/task';
 import FlatTasksTable from '../../components/Flat/FlatTasksTable';
 import TaskInfoModalContent from '../../components/Flat/TaskInfoModalContent';
 import CustomModal from '../../components/UI/CustomModal';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props {
 	flatId: number;
@@ -17,7 +18,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	const history = useHistory();
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<StateError>(null);
 	const flatTasksLoadTime = useSelector<RootState, number | undefined>(
 		(state) => state.tasks.flatTasksLoadTime[flatId]
 	);
@@ -30,8 +31,15 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 		[taskId: number]: boolean;
 	}>({});
 	const [membersError, setMembersError] = useState<{
-		[taskId: number]: string | null;
+		[taskId: number]: StateError;
 	}>({});
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!flatTasksLoadTime && !loading && !error) {
@@ -41,10 +49,13 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 				try {
 					await dispatch(fetchFlatTasks(flatId));
 				} catch (err) {
-					const message = new HttpErrorParser(err).getMessage();
-					setError(message);
+					if (isMounted.current) {
+						const message = new HttpErrorParser(err).getMessage();
+						setError(message);
+					}
 				}
-				setLoading(false);
+
+				isMounted.current && setLoading(false);
 			};
 			loadTasks();
 		}
@@ -70,15 +81,20 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 					try {
 						await dispatch(fetchTaskMembers(taskId));
 					} catch (err) {
-						setMembersError((prevState) => ({
-							...prevState,
-							[taskId]: err.message,
-						}));
+						if (isMounted.current) {
+							const error = new HttpErrorParser(err);
+							const msg = error.getMessage();
+							setMembersError((prevState) => ({
+								...prevState,
+								[taskId]: msg,
+							}));
+						}
 					}
-					setMembersLoading((prevState) => ({
-						...prevState,
-						[taskId]: false,
-					}));
+					isMounted.current &&
+						setMembersLoading((prevState) => ({
+							...prevState,
+							[taskId]: false,
+						}));
 				};
 
 				loadMembers(selectedTaskId);

@@ -111,48 +111,44 @@ const FlatDetails: React.FC<Props> = (props) => {
 		};
 	}, [id]);
 
-	// useEffect(() => {
-	// 	let isMounted = true;
-	// 	console.log('setting isMounted to true');
+	const loadOwner = useCallback(
+		async (userId, flatId) => {
+			setLoadingElements((prevState) => ({
+				...prevState,
+				owner: true,
+			}));
+			try {
+				await dispatch(fetchFlatOwner(userId, flatId));
+			} catch (err) {
+				if (isMounted.current === flatId) {
+					setElementsErrors((prevState) => ({
+						...prevState,
+						owner: err.message,
+					}));
+				}
+			}
+			if (isMounted.current === flatId) {
+				setLoadingElements((prevState) => ({
+					...prevState,
+					owner: false,
+				}));
+			}
+		},
+		[dispatch]
+	);
 
-	// 	if (!flat.owner && !loadingElements.owner && !elementsErrors.owner) {
-	// 	const loadOwner = async () => {
-	// 		setLoadingElements((prevState) => ({
-	// 			...prevState,
-	// 			owner: true,
-	// 		}));
-	// 		try {
-	// 			console.log('about to dispatch, isMounted 1.0: ', isMounted);
-	// 			await dispatch(fetchFlatOwner(flat.ownerId, flat.id!));
-	// 			console.log('after dispatch, isMounted 1.1: ', isMounted);
-	// 		} catch (err) {
-	// 			console.log('isMounted 2.0: ', isMounted);
-	// 			if (isMounted) {
-	// 				setElementsErrors((prevState) => ({
-	// 					...prevState,
-	// 					owner: err.message,
-	// 				}));
-	// 			}
-	// 		}
-	// 		console.log('isMounted 3.0: ', isMounted);
-	// 		if (isMounted) {
-	// 			console.log('isMounted 3.1: ', isMounted);
-	// 			console.log('setting owner loading to false');
-	// 			setLoadingElements((prevState) => ({
-	// 				...prevState,
-	// 				owner: false,
-	// 			}));
-	// 		}
-	// 	};
-	// 	setTimeout(async () => {
-	// 		loadOwner();
-	// 	}, 2000);
-	// 	}
-	// 	return () => {
-	// 		console.log('cleaning');
-	// 		isMounted = false;
-	// 	};
-	// }, [dispatch, elementsErrors.owner, flat.id, flat.owner, flat.ownerId, loadingElements.owner]);
+	useEffect(() => {
+		if (!flat.owner && !loadingElements.owner && !elementsErrors.owner) {
+			loadOwner(flat.ownerId, flat.id);
+		}
+	}, [
+		elementsErrors.owner,
+		flat.id,
+		flat.owner,
+		flat.ownerId,
+		loadOwner,
+		loadingElements.owner,
+	]);
 
 	const loadMembers = useCallback(
 		async (flatId) => {
@@ -196,34 +192,47 @@ const FlatDetails: React.FC<Props> = (props) => {
 		loadingElements.members,
 	]);
 
-	// useEffect(() => {
-	// 	if (
-	// 		!flat.invitations &&
-	// 		!loadingElements.invitations &&
-	// 		!elementsErrors.invitations
-	// 	) {
-	// 		const loadInvitations = async () => {
-	// 			setLoadingElements((prevState) => ({
-	// 				...prevState,
-	// 				invitations: true,
-	// 			}));
-	// 			try {
-	// 				await dispatch(fetchFlatInvitations(flat.id!));
-	// 			} catch (err) {
-	// 				setElementsErrors((prevState) => ({
-	// 					...prevState,
-	// 					invitations: err.message,
-	// 				}));
-	// 			}
-	// 			setLoadingElements((prevState) => ({
-	// 				...prevState,
-	// 				invitations: false,
-	// 			}));
-	// 		};
+	const loadInvitations = useCallback(
+		async (flatId) => {
+			setLoadingElements((prevState) => ({
+				...prevState,
+				invitations: true,
+			}));
+			try {
+				await dispatch(fetchFlatInvitations(flatId));
+			} catch (err) {
+				if (isMounted.current === flatId) {
+					setElementsErrors((prevState) => ({
+						...prevState,
+						invitations: err.message,
+					}));
+				}
+			}
+			if (isMounted.current === flatId) {
+				setLoadingElements((prevState) => ({
+					...prevState,
+					invitations: false,
+				}));
+			}
+		},
+		[dispatch]
+	);
 
-	// 		loadInvitations();
-	// 	}
-	// }, [dispatch, elementsErrors.invitations, flat.id, flat.invitations, loadingElements.invitations]);
+	useEffect(() => {
+		if (
+			!flat.invitations &&
+			!loadingElements.invitations &&
+			!elementsErrors.invitations
+		) {
+			loadInvitations(id);
+		}
+	}, [
+		elementsErrors.invitations,
+		flat.invitations,
+		id,
+		loadInvitations,
+		loadingElements.invitations,
+	]);
 
 	const memberSelectHandler = (id: number) => {
 		props.history.push(`/profile/${id}`);
@@ -236,9 +245,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 		});
 		setDialogData((prevState) => ({ ...prevState, loading: true }));
 
-		setTimeout(async () => {
-			try {
-				await dispatch(updateFlat(_flat));
+		try {
+			await dispatch(updateFlat(_flat));
+			if (isMounted.current !== null) {
 				setSnackbarData({
 					open: true,
 					action: true,
@@ -247,7 +256,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 					content: 'Flat closed.',
 					onClose: closeSnackbarAlertHandler,
 				});
-			} catch (err) {
+			}
+		} catch (err) {
+			if (isMounted.current !== null) {
 				const httpError = new HttpErrorParser(err);
 				const msg = httpError.getMessage();
 				setSnackbarData({
@@ -259,9 +270,12 @@ const FlatDetails: React.FC<Props> = (props) => {
 					onClose: closeSnackbarAlertHandler,
 					title: 'Could not close flat.',
 				});
+				setDialogData((prevState) => ({
+					...prevState,
+					open: false,
+				}));
 			}
-			setDialogData((prevState) => ({ ...prevState, open: false }));
-		}, 400);
+		}
 	};
 
 	const closeDialogAlertHandler = () =>
@@ -391,19 +405,19 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<Typography variant="h5" component="h3">
 							Invited People
 						</Typography>
-						{/* <InvitationsTable
+						<InvitationsTable
 							error={elementsErrors.invitations}
 							loading={loadingElements.invitations}
 							invitations={flat.invitations}
 							flatOwner={loggedUser!.id === flat.ownerId}
 							flatId={id}
-						/> */}
+						/>
 					</Grid>
 					<Grid item className={classes.gridItem}>
 						<Typography variant="h5" component="h3">
 							Tasks
 						</Typography>
-						{/* <FlatTasks flatId={flat.id as number} /> */}
+						<FlatTasks flatId={flat.id as number} />
 					</Grid>
 				</Grid>
 			</Grid>

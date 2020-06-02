@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import {
 	makeStyles,
 	Theme,
@@ -66,9 +66,15 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
-
 	const theme = useTheme();
 	const matchesSMSize = useMediaQuery(theme.breakpoints.up('sm'));
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	const resizeHandler = useCallback(() => {
 		let updatedSize: 'small' | 'medium' = 'small';
@@ -78,13 +84,13 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 		setTextFieldSize(updatedSize);
 	}, []);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (flatId) {
 			history.replace(`/flats/${flatId}/invite-members?new=flat`);
 		}
 	}, [flatId, history]);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		window.addEventListener('resize', resizeHandler);
 
 		return () => {
@@ -151,18 +157,20 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 		try {
 			await dispatch(createFlat(newFlat, tmpFlatId));
 		} catch (err) {
-			const errorData = new HttpErrorParser(err);
-			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach((x) =>
-				formDispatch({
-					type: ActionType.SetError,
-					fieldId: x.param,
-					error: x.msg,
-				})
-			);
+			if (isMounted.current) {
+				const errorData = new HttpErrorParser(err);
+				const fieldsErrors = errorData.getFieldsErrors();
+				fieldsErrors.forEach((x) =>
+					formDispatch({
+						type: ActionType.SetError,
+						fieldId: x.param,
+						error: x.msg,
+					})
+				);
 
-			setError(errorData.getMessage());
-			setLoading(false);
+				setError(errorData.getMessage());
+				setLoading(false);
+			}
 		}
 	};
 

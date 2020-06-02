@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
 	Grid,
 	Typography,
@@ -31,6 +31,7 @@ import {
 import validateAuthFormField from '../../utils/authFormValidator';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { StateError } from '../../ReactTypes/customReactTypes';
+import HttpErrorParser from '../../utils/parseError';
 
 interface Props extends RouteComponentProps {}
 
@@ -60,6 +61,13 @@ const Profile: React.FC<Props> = (props) => {
 		setEditedFieldName,
 	] = useState<EditableFields | null>(null);
 	const [openEditModal, setOpenEditModal] = useState(false);
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!user && !loading && error === null) {
@@ -69,9 +77,13 @@ const Profile: React.FC<Props> = (props) => {
 				try {
 					await dispatch(fetchUser(id));
 				} catch (err) {
-					setError(err.message);
+					if (isMounted.current) {
+						const error = new HttpErrorParser(err);
+						const msg = error.getMessage();
+						setError(msg);
+					}
 				}
-				setLoading(false);
+				isMounted.current && setLoading(false);
 			};
 			loadUser(userId);
 		}
@@ -128,18 +140,20 @@ const Profile: React.FC<Props> = (props) => {
 
 		setEditLoading(true);
 		setEditError(null);
-		setTimeout(async () => {
-			const user: Partial<User> = {
-				[editedFieldName!]: value,
-			};
-			try {
-				await dispatch(updateUser(userId, user));
-				setOpenEditModal(false);
-			} catch (err) {
-				setEditError(err.message);
+		const userData: Partial<User> = {
+			[editedFieldName!]: value,
+		};
+		try {
+			await dispatch(updateUser(userId, userData));
+			setOpenEditModal(false);
+		} catch (err) {
+			if (isMounted.current) {
+				const error = new HttpErrorParser(err);
+				const msg = error.getMessage();
+				setEditError(msg);
 			}
-			setEditLoading(false);
-		}, 500);
+		}
+		isMounted.current && setEditLoading(false);
 	};
 
 	return (

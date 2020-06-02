@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
 	Grid,
 	List,
@@ -33,7 +33,6 @@ const Flats: React.FC<Props> = (props) => {
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
 	const flats = useSelector<RootState, FlatModel[]>(
 		(state) => state.flats.flats
 	);
@@ -41,6 +40,14 @@ const Flats: React.FC<Props> = (props) => {
 		(state) => state.flats.flatsLoadTime
 	);
 	const [selectedFlat, setSelectedFlat] = useState<number | null>(null);
+	
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	useEffect(() => {
 		if (flatsLoadTime < Date.now() - 1000 * 60 * 60 * 8) {
@@ -50,9 +57,13 @@ const Flats: React.FC<Props> = (props) => {
 				try {
 					await dispatch(fetchFlats());
 				} catch (err) {
-					setError(err.message);
+					if (isMounted.current) {
+						setError(err.message);
+					}
 				}
-				setLoading(false);
+				if (isMounted.current) {
+					setLoading(false);
+				}
 			};
 			loadFlats();
 		}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
 	Typography,
 	TextField,
@@ -60,6 +60,13 @@ const SignIn = () => {
 	const [textFieldSize, setTextFieldSize] = useState<TextFieldSize>(
 		getFieldSize(isSignIn)
 	);
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	useEffect(() => {
 		try {
@@ -164,18 +171,20 @@ const SignIn = () => {
 		try {
 			await dispatch(authorize(credentials, isSignIn));
 		} catch (err) {
-			const errorData = new HttpErrorParser(err);
-			const fieldsErrors = errorData.getFieldsErrors();
-			fieldsErrors.forEach((x) =>
-				formDispatch({
-					type: ActionType.SetError,
-					fieldId: x.param,
-					error: x.msg,
-				})
-			);
+			if (isMounted.current) {
+				const httpError = new HttpErrorParser(err);
+				const fieldsErrors = httpError.getFieldsErrors();
+				fieldsErrors.forEach((x) =>
+					formDispatch({
+						type: ActionType.SetError,
+						fieldId: x.param,
+						error: x.msg,
+					})
+				);
 
-			setError(errorData.getMessage());
-			setLoading(false);
+				setError(httpError.getMessage());
+				setLoading(false);
+			}
 		}
 	};
 
