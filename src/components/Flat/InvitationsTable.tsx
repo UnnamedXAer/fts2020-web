@@ -23,9 +23,6 @@ import Invitation, {
 import { StyledTableCell, StyledTableRow } from '../UI/Table';
 import { LoadingTableRows } from '../UI/LoadingTableRows';
 import { StateError } from '../../ReactTypes/customReactTypes';
-import HttpErrorParser from '../../utils/parseError';
-import { useDispatch } from 'react-redux';
-import { updateInvitation } from '../../store/actions/flats';
 import CustomMuiAlert from '../UI/CustomMuiAlert';
 
 interface Props {
@@ -33,26 +30,22 @@ interface Props {
 	loading: boolean;
 	error: StateError;
 	flatOwner: boolean;
-	flatId: number;
+	loadingInvs: { [key: number]: boolean };
+	onInvitationAction: (id: number, action: InvitationAction) => void;
 }
 
 const InvitationsTable: React.FC<Props> = ({
 	invitations,
+	loadingInvs,
 	loading,
 	error,
 	flatOwner,
-	flatId,
+	onInvitationAction,
 }) => {
 	const classes = useStyles();
-	const dispatch = useDispatch();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [selectedInId, setSelectedInId] = useState<number | null>(null);
-	const [loadingInvs, setLoadingInvs] = useState<{ [key: number]: boolean }>(
-		{}
-	);
-	const [invsErrors, setInvsErrors] = useState<{ [key: number]: StateError }>(
-		{}
-	);
+
 	const isMounted = useRef(true);
 	useEffect(() => {
 		isMounted.current = true;
@@ -72,21 +65,6 @@ const InvitationsTable: React.FC<Props> = ({
 	const closeMenuHandler = () => {
 		setAnchorEl(null);
 		setSelectedInId(null);
-	};
-
-	const menuActionHandler = async (id: number, action: InvitationAction) => {
-		setLoadingInvs((prevState) => ({ ...prevState, [id]: true }));
-		try {
-			await dispatch(updateInvitation(id, flatId, action));
-		} catch (err) {
-			if (isMounted.current) {
-				const error = new HttpErrorParser(err);
-				const msg = error.getMessage();
-				setInvsErrors((prevState) => ({ ...prevState, [id]: msg }));
-			}
-		}
-		isMounted.current &&
-			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
 	};
 
 	return (
@@ -141,21 +119,22 @@ const InvitationsTable: React.FC<Props> = ({
 									</StyledTableCell>
 									{flatOwner && (
 										<StyledTableCell align="right">
-											{loadingInvs[inv.id] ? (
-												<CircularProgress />
-											) : (
-												<IconButton
-													title="Invitation menu"
-													onClick={(ev) =>
-														openMenuHandler(
-															ev,
-															inv.id!
-														)
-													}
-												>
+											<IconButton
+												title="Invitation menu"
+												onClick={(ev) =>
+													openMenuHandler(ev, inv.id!)
+												}
+												disabled={loadingInvs[inv.id]}
+											>
+												{loadingInvs[inv.id] ? (
+													<CircularProgress
+														color="primary"
+														size={24}
+													/>
+												) : (
 													<MoreVertRoundedIcon />
-												</IconButton>
-											)}
+												)}
+											</IconButton>
 										</StyledTableCell>
 									)}
 								</StyledTableRow>
@@ -189,12 +168,13 @@ const InvitationsTable: React.FC<Props> = ({
 						invitations!.find((x) => x.id === selectedInId!)!.status
 					) && (
 						<MenuItem
-							onClick={() =>
-								menuActionHandler(
+							onClick={() => {
+								closeMenuHandler();
+								onInvitationAction(
 									selectedInId!,
 									InvitationAction.CANCEL
-								)
-							}
+								);
+							}}
 						>
 							Cancel
 						</MenuItem>
@@ -208,12 +188,13 @@ const InvitationsTable: React.FC<Props> = ({
 						invitations!.find((x) => x.id === selectedInId!)!.status
 					) && (
 						<MenuItem
-							onClick={() =>
-								menuActionHandler(
+							onClick={() => {
+								closeMenuHandler();
+								onInvitationAction(
 									selectedInId!,
 									InvitationAction.RESEND
-								)
-							}
+								);
+							}}
 						>
 							Resend
 						</MenuItem>

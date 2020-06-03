@@ -39,6 +39,7 @@ import QueuePlayNextRoundedIcon from '@material-ui/icons/QueuePlayNextRounded';
 import HttpErrorParser from '../../utils/parseError';
 import { FlatData } from '../../models/flat';
 import InvitationsTable from '../../components/Flat/InvitationsTable';
+import { InvitationAction } from '../../models/invitation';
 
 interface Props extends RouteComponentProps {}
 
@@ -73,13 +74,11 @@ const FlatDetails: React.FC<Props> = (props) => {
 		state.flats.flats.find((x) => x.id === id)
 	)!;
 	const loggedUser = useSelector((state: RootState) => state.auth.user);
-
 	const [loadingElements, setLoadingElements] = useState({
 		owner: false,
 		members: false,
 		invitations: false,
 	});
-
 	const [elementsErrors, setElementsErrors] = useState<{
 		owner: StateError;
 		members: StateError;
@@ -89,6 +88,10 @@ const FlatDetails: React.FC<Props> = (props) => {
 		members: null,
 		invitations: null,
 	});
+	const [loadingInvs, setLoadingInvs] = useState<{ [key: number]: boolean }>(
+		{}
+	);
+
 	const [snackbarData, setSnackbarData] = useState<AlertSnackbarData>({
 		content: '',
 		onClose: () => {},
@@ -328,6 +331,40 @@ const FlatDetails: React.FC<Props> = (props) => {
 		setSpeedDialOpen(false);
 	};
 
+	const invitationActionHandler = async (id: number, action: InvitationAction) => {
+		setLoadingInvs((prevState) => ({ ...prevState, [id]: true }));
+		try {
+			// await dispatch(updateInvitation(id, flat.id!, action));
+			isMounted.current &&
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'success',
+					timeout: 3000,
+					content: 'Invitation action completed.',
+					onClose: closeSnackbarAlertHandler,
+				});
+		} catch (err) {
+			if (isMounted.current) {
+				const error = new HttpErrorParser(err);
+				const msg = error.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not complete the action.',
+				});
+			}
+		}
+		setTimeout(() => {
+		isMounted.current &&
+			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
+		}, 5000);
+	}
+
 	return (
 		<>
 			<Grid container spacing={2} direction="column">
@@ -410,7 +447,8 @@ const FlatDetails: React.FC<Props> = (props) => {
 							loading={loadingElements.invitations}
 							invitations={flat.invitations}
 							flatOwner={loggedUser!.id === flat.ownerId}
-							flatId={id}
+							loadingInvs={loadingInvs}
+							onInvitationAction={invitationActionHandler}
 						/>
 					</Grid>
 					<Grid item className={classes.gridItem}>
