@@ -59,13 +59,13 @@ export enum InvitationStatus {
 }
 
 export const InvitationStatusInfo = {
-	[InvitationStatus.ACCEPTED]: 'Accepted',
+	[InvitationStatus.ACCEPTED]: 'Accepted.',
 	[InvitationStatus.CANCELED]: 'Cancelled by sender.',
-	[InvitationStatus.EXPIRED]: 'Expired',
+	[InvitationStatus.EXPIRED]: 'Expired.',
 	[InvitationStatus.NOT_SENT]: 'Not sent yet.',
 	[InvitationStatus.PENDING]: 'Waiting for accept.',
 	[InvitationStatus.REJECTED]: 'Rejected by person.',
-	[InvitationStatus.SEND_ERROR]: 'Accepted',
+	[InvitationStatus.SEND_ERROR]: 'Not sent - error.',
 };
 
 export default Invitation;
