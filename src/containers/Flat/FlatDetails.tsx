@@ -21,6 +21,7 @@ import {
 	fetchFlatMembers,
 	updateFlat,
 	fetchFlatInvitations,
+	updateInvitation,
 } from '../../store/actions/flats';
 import {
 	StateError,
@@ -331,17 +332,20 @@ const FlatDetails: React.FC<Props> = (props) => {
 		setSpeedDialOpen(false);
 	};
 
-	const invitationActionHandler = async (id: number, action: InvitationAction) => {
+	const invitationActionHandler = async (
+		id: number,
+		action: InvitationAction
+	) => {
 		setLoadingInvs((prevState) => ({ ...prevState, [id]: true }));
 		try {
-			// await dispatch(updateInvitation(id, flat.id!, action));
+			await dispatch(updateInvitation(id, flat.id!, action));
 			isMounted.current &&
 				setSnackbarData({
 					open: true,
 					action: true,
-					severity: 'success',
+					severity: 'info',
 					timeout: 3000,
-					content: 'Invitation action completed.',
+					content: 'Invitation action executed.',
 					onClose: closeSnackbarAlertHandler,
 				});
 		} catch (err) {
@@ -359,11 +363,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 				});
 			}
 		}
-		setTimeout(() => {
 		isMounted.current &&
 			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
-		}, 5000);
-	}
+	};
 
 	return (
 		<>
