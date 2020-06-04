@@ -24,6 +24,11 @@ type FetchTaskAction = {
 	payload: Task;
 };
 
+type SetTaskMembersAction = {
+	type: TasksActionTypes.SetMembers;
+	payload: { members: User[]; taskId: number };
+};
+
 type APITask = {
 	id?: number;
 	title: string;
@@ -190,15 +195,7 @@ export const fetchUserTasks = (): ThunkAction<
 
 export const fetchTaskMembers = (
 	taskId: number
-): ThunkAction<
-	Promise<void>,
-	RootState,
-	any,
-	StoreAction<
-		{ taskId: number; members: User[] },
-		TasksActionTypes.SetMembers
-	>
-> => {
+): ThunkAction<Promise<void>, RootState, any, SetTaskMembersAction> => {
 	return async (dispatch) => {
 		const url = `/tasks/${taskId}/members`;
 		try {
@@ -299,6 +296,36 @@ export const updateTask = (
 			dispatch({
 				type: TasksActionTypes.SetTask,
 				payload: updatedTask,
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const updatedTaskMembers = (
+	taskId: number,
+	members: number[]
+): ThunkAction<Promise<void>, RootState, any, SetTaskMembersAction> => {
+	return async (dispatch) => {
+		const url = `/tasks/${taskId}/members`;
+		try {
+			const { data } = await axios.put<APIUser[]>(url, { members });
+			const taskMembers = data.map(
+				(user) =>
+					new User(
+						user.id,
+						user.emailAddress,
+						user.userName,
+						user.provider,
+						new Date(user.joinDate),
+						user.avatarUrl,
+						user.active
+					)
+			);
+			dispatch({
+				type: TasksActionTypes.SetMembers,
+				payload: { taskId, members: taskMembers },
 			});
 		} catch (err) {
 			throw err;

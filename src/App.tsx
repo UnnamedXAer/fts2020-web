@@ -31,6 +31,7 @@ import Profile from './containers/Auth/Profile';
 import ChangePassword from './containers/Auth/ChangePassword';
 import AppDrawer from './containers/Navigation/AppDrawer';
 import FlatInviteMembers from './containers/Flat/FlatInviteMembers';
+import UpdateTaskMembers from './containers/Task/UpdateTaskMembers';
 
 const drawerWidth = 240;
 
@@ -70,6 +71,10 @@ const StyledApp = () => {
 						/>
 						<Route path="/flats/:id" component={FlatDetails} />
 						<Route path="/flats" component={Flats} />
+						<Route
+							path="/tasks/:id/update-members"
+							component={UpdateTaskMembers}
+						/>
 						<Route path="/tasks/:id" component={TaskDetails} />
 						<Route path="/my-tasks" component={UserTasks} />
 						<Route path="/profile/:id" component={Profile} />

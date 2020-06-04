@@ -51,8 +51,8 @@ type RouterParams = {
 
 const actions: SpeedDialAction<TaskSpeedActions>[] = [
 	{
-		key: TaskSpeedActions.AddMember,
-		name: 'Add Member',
+		key: TaskSpeedActions.UpdateMembers,
+		name: 'Update Members',
 		icon: <PersonAddRoundedIcon />,
 	},
 	{
@@ -362,11 +362,13 @@ const TaskDetails: React.FC<Props> = (props) => {
 			open: prevState.loading,
 		}));
 
+
 	const speedDialOptionClickHandler = async (
 		optionName: TaskSpeedActions
 	) => {
 		switch (optionName) {
-			case TaskSpeedActions.AddMember:
+			case TaskSpeedActions.UpdateMembers:
+				props.history.push(`${props.match.url}/update-members`);
 				break;
 			case TaskSpeedActions.CloseTask:
 				setDialogData({

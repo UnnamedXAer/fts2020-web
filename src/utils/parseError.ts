@@ -27,24 +27,30 @@ export default class HttpErrorParser {
 	getMessage() {
 		this.checkError();
 		const code = this.getCode();
-		if(code === 404) {
-			return 'Recourses not found. Most likely the request address is incorrect.'
+		if (code === 404) {
+			return 'Recourses not found. Most likely the request address is incorrect.';
 		}
 		if (code === 422) {
 			return 'Please correct wrong entries.';
 		}
 		if (code === 401) {
-			return 'Authorized access.';
+			return this.error!.response?.data.message || 'Authorized access.';
 		}
 		if (code === 500) {
-			if (process.env.NODE_ENV === 'development' && this.error!.message) {
-				return this.error!.message;
+			if (process.env.NODE_ENV === 'development') {
+				return (
+					this.error?.response?.data.message || this.error!.message
+				);
 			} else {
 				return 'Sorry, something went wrong. Please try again later.';
 			}
 		}
 		// 406, 409, ...
-		return this.error!.message || 'Sorry, something went wrong. Please try again later.';
+		return (
+			this.error!.response?.data.message ||
+			this.error!.message ||
+			'Sorry, something went wrong. Please try again later.'
+		);
 	}
 
 	getCode() {

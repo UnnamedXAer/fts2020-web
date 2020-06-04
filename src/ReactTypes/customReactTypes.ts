@@ -1,6 +1,6 @@
 export type StateError = string | null;
 export enum TaskSpeedActions {
-	AddMember,
+	UpdateMembers,
 	CloseTask,
 	ResetPeriods,
 }
