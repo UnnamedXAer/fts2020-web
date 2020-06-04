@@ -85,8 +85,8 @@ const elementsInitState = {
 	},
 };
 
-type ElementsName = keyof ElementsState['loading'];
 type ElementsState = typeof elementsInitState;
+type ElementsName = keyof ElementsState['loading'];
 type ElementsAction = {
 	type: 'loading' | 'not-loading' | 'error' | 'not-error';
 	name: ElementsName;

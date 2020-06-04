@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useReducer } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RouteComponentProps, Link as RouterLink } from 'react-router-dom';
 import {
@@ -67,6 +67,43 @@ const actions: SpeedDialAction<TaskSpeedActions>[] = [
 	},
 ];
 
+const elementsInitState = {
+	loading: {
+		owner: false,
+		members: false,
+		schedule: false,
+	},
+	error: {
+		owner: null,
+		members: null,
+		schedule: null,
+	},
+};
+
+type ElementsState = typeof elementsInitState;
+type ElementsName = keyof ElementsState['loading'];
+type ElementsAction = {
+	type: 'loading' | 'not-loading' | 'error' | 'not-error';
+	name: ElementsName;
+	payload?: StateError;
+};
+
+type ElementsReducer = (
+	state: ElementsState,
+	action: ElementsAction
+) => ElementsState;
+
+const elementsReducer: ElementsReducer = (state, action) => {
+	if (action.type === 'loading' || action.type === 'not-loading')
+		return { ...state, [action.name]: action.type === 'loading' };
+	else {
+		return {
+			...state,
+			error: { ...state.error, [action.name]: action.payload },
+		};
+	}
+};
+
 const TaskDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
@@ -90,20 +127,10 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const periods = useSelector((state: RootState) =>
 		task ? state.periods.taskPeriods[task.id!] : void 0
 	);
-	const [loadingElements, setLoadingElements] = useState({
-		members: false,
-		owner: false,
-		schedule: false,
-	});
-	const [elementsErrors, setElementsErrors] = useState<{
-		owner: StateError;
-		members: StateError;
-		schedule: StateError;
-	}>({
-		owner: null,
-		members: null,
-		schedule: null,
-	});
+	const [elements, elementsDispatch] = useReducer(
+		elementsReducer,
+		elementsInitState
+	);
 	const [periodsLoading, setPeriodsLoading] = useState<{
 		[id: number]: boolean;
 	}>({});
@@ -150,38 +177,34 @@ const TaskDetails: React.FC<Props> = (props) => {
 		if (
 			task &&
 			!periods &&
-			!loadingElements.schedule &&
-			!elementsErrors.schedule
+			!elements.loading.schedule &&
+			!elements.error.schedule
 		) {
 			const loadSchedule = async (id: number) => {
-				setLoadingElements((prevState) => ({
-					...prevState,
-					schedule: true,
-				}));
+				elementsDispatch({ name: 'schedule', type: 'loading' });
+
 				try {
 					await dispatch(fetchTaskPeriods(id));
 				} catch (err) {
 					if (isMounted.current) {
-						const error = new HttpErrorParser(err);
-						const msg = error.getMessage();
-						setElementsErrors((prevState) => ({
-							...prevState,
-							schedule: msg,
-						}));
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'schedule',
+							type: 'error',
+							payload: msg,
+						});
 					}
 				}
 				isMounted.current &&
-					setLoadingElements((prevState) => ({
-						...prevState,
-						schedule: false,
-					}));
+					elementsDispatch({ name: 'schedule', type: 'not-loading' });
 			};
 			loadSchedule(task.id!);
 		}
 	}, [
 		dispatch,
-		elementsErrors.schedule,
-		loadingElements.schedule,
+		elements.error.schedule,
+		elements.loading.schedule,
 		periods,
 		task,
 	]);
@@ -190,31 +213,27 @@ const TaskDetails: React.FC<Props> = (props) => {
 		if (
 			task &&
 			!task.owner &&
-			!loadingElements.owner &&
-			!elementsErrors.owner
+			!elements.loading.owner &&
+			!elements.error.owner
 		) {
 			const loadOwner = async () => {
-				setLoadingElements((prevState) => ({
-					...prevState,
-					owner: true,
-				}));
+				elementsDispatch({ name: 'owner', type: 'loading' });
 				try {
 					await dispatch(fetchTaskOwner(task.createBy!, task.id!));
 				} catch (err) {
 					if (isMounted.current) {
-						const error = new HttpErrorParser(err);
-						const msg = error.getMessage();
-						setElementsErrors((prevState) => ({
-							...prevState,
-							owner: msg,
-						}));
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'owner',
+							type: 'error',
+							payload: msg,
+						});
 					}
 				}
-				isMounted.current &&
-					setLoadingElements((prevState) => ({
-						...prevState,
-						owner: false,
-					}));
+				if (isMounted.current) {
+					elementsDispatch({ name: 'owner', type: 'not-loading' });
+				}
 			};
 
 			loadOwner();
@@ -223,31 +242,27 @@ const TaskDetails: React.FC<Props> = (props) => {
 		if (
 			task &&
 			!task.members &&
-			!loadingElements.members &&
-			!elementsErrors.members
+			!elements.loading.members &&
+			!elements.error.members
 		) {
 			const loadMembers = async () => {
-				setLoadingElements((prevState) => ({
-					...prevState,
-					members: true,
-				}));
+				elementsDispatch({ name: 'members', type: 'loading' });
+
 				try {
 					await dispatch(fetchTaskMembers(task.id!));
 				} catch (err) {
 					if (isMounted.current) {
-						const error = new HttpErrorParser(err);
-						const msg = error.getMessage();
-						setElementsErrors((prevState) => ({
-							...prevState,
-							members: msg,
-						}));
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'members',
+							type: 'error',
+							payload: msg,
+						});
 					}
 				}
 				isMounted.current &&
-					setLoadingElements((prevState) => ({
-						...prevState,
-						members: false,
-					}));
+					elementsDispatch({ name: 'members', type: 'not-loading' });
 			};
 
 			loadMembers();
@@ -255,10 +270,10 @@ const TaskDetails: React.FC<Props> = (props) => {
 	}, [
 		task,
 		dispatch,
-		loadingElements.members,
-		loadingElements.owner,
-		elementsErrors.owner,
-		elementsErrors.members,
+		elements.loading.members,
+		elements.loading.owner,
+		elements.error.owner,
+		elements.error.members,
 	]);
 
 	const memberSelectHandler = (id: number) => {
@@ -518,9 +533,9 @@ const TaskDetails: React.FC<Props> = (props) => {
 							Members
 						</Typography>
 						<MembersList
-							error={elementsErrors.members}
+							error={elements.error.members}
 							onMemberSelect={memberSelectHandler}
-							loading={loadingElements.members}
+							loading={elements.loading.members}
 							members={task?.members}
 						/>
 					</Grid>
@@ -532,11 +547,11 @@ const TaskDetails: React.FC<Props> = (props) => {
 							data={periods}
 							disabled={!task?.active}
 							loading={
-								(loadingElements.schedule || !periods) &&
-								!elementsErrors.schedule
+								(elements.loading.schedule || !periods) &&
+								!elements.error.schedule
 							}
 							periodsLoading={periodsLoading}
-							error={elementsErrors.schedule}
+							error={elements.error.schedule}
 							loggedUserEmailAddress={loggedUser!.emailAddress}
 							onCompletePeriod={completePeriodHandler}
 						/>
