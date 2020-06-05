@@ -173,7 +173,7 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, location, history }) => {
 									id: user.id,
 									labelPrimary: user.emailAddress,
 									labelSecondary: user.userName,
-									initialChecked: true,
+									initialChecked: members.findIndex(x => x.id === user.id) !== -1,
 								};
 							})}
 							onChanged={membersChangeHandler}
