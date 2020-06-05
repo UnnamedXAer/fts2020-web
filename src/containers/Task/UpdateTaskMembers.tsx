@@ -149,8 +149,8 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, location, history }) => {
 				</Grid>
 				<Grid item>
 					<Typography variant="h5">
-						A change in the task members list will cause reset of the
-						task schedule.
+						A change in the task members list will cause reset of
+						the task schedule.
 					</Typography>
 				</Grid>
 				<Grid item>
@@ -198,19 +198,35 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, location, history }) => {
 						{loading ? (
 							<CircularProgress size={36} />
 						) : (
-							<Button
-								style={{
-									paddingLeft: 40,
-									paddingRight: 40,
-								}}
-								disabled={loading}
-								onClick={submitHandler}
-								variant="contained"
-								color="primary"
-								type="submit"
-							>
-								Create
-							</Button>
+							<>
+								<Button
+									style={{
+										paddingLeft: 40,
+										paddingRight: 40,
+									}}
+									disabled={loading}
+									onClick={() =>
+										history.replace(`/tasks/${taskId}`)
+									}
+									color="primary"
+									type="button"
+								>
+									Cancel
+								</Button>
+								<Button
+									style={{
+										paddingLeft: 40,
+										paddingRight: 40,
+									}}
+									disabled={loading}
+									onClick={submitHandler}
+									variant="contained"
+									color="primary"
+									type="submit"
+								>
+									Update
+								</Button>
+							</>
 						)}
 					</Box>
 				</Grid>
@@ -235,7 +251,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 		marginBlockStart: '0.2em',
 	},
 	submitWrapper: {
-		justifyContent: 'center',
+		justifyContent: 'space-around',
 		alignItems: 'center',
 		display: 'flex',
 	},
