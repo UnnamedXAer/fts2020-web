@@ -14,9 +14,9 @@ import {
 import { AllInclusiveRounded as AllInclusiveRoundedIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
-import PersonAddRoundedIcon from '@material-ui/icons/PersonAddRounded';
 import CancelPresentationRoundedIcon from '@material-ui/icons/CancelPresentationRounded';
 import QueuePlayNextRoundedIcon from '@material-ui/icons/QueuePlayNextRounded';
+import GroupAddRoundedIcon from '@material-ui/icons/GroupAddRounded';
 import MembersList from '../../components/Flat/MembersList';
 import RootState from '../../store/storeTypes';
 import {
@@ -53,7 +53,7 @@ const actions: SpeedDialAction<TaskSpeedActions>[] = [
 	{
 		key: TaskSpeedActions.UpdateMembers,
 		name: 'Update Members',
-		icon: <PersonAddRoundedIcon />,
+		icon: <GroupAddRoundedIcon />,
 	},
 	{
 		key: TaskSpeedActions.CloseTask,
@@ -62,7 +62,7 @@ const actions: SpeedDialAction<TaskSpeedActions>[] = [
 	},
 	{
 		key: TaskSpeedActions.ResetPeriods,
-		name: 'Reset Periods',
+		name: 'Reset Future Periods',
 		icon: <QueuePlayNextRoundedIcon />,
 	},
 ];
