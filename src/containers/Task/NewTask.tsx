@@ -260,6 +260,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 								>
 									<Grid item>
 										<TextField
+											inputProps={{ tabIndex: 1 }}
 											size={textFieldSize}
 											name="name"
 											placeholder="weekly cleaning"
@@ -285,6 +286,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 
 									<Grid item>
 										<TextField
+											inputProps={{ tabIndex: 1 }}
 											size={textFieldSize}
 											name="description"
 											fullWidth
@@ -335,6 +337,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 									Period duration Unit
 								</InputLabel>
 								<Select
+									inputProps={{ tabIndex: 1 }}
 									style={{ width: '185px' }}
 									id="timePeriodUnit-id"
 									name="timePeriodUnit"
@@ -367,6 +370,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 								inputProps={{
 									max: 30,
 									min: 1,
+									tabIndex: 1,
 								}}
 								disabled={loading}
 								value={formState.values.timePeriodValue}
@@ -393,6 +397,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 						>
 							<Grid item>
 								<DatePicker
+									inputProps={{ tabIndex: 1 }}
 									error={!!formState.errors.dates}
 									label="Start Date"
 									inputVariant="outlined"
@@ -406,6 +411,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 							</Grid>
 							<Grid item>
 								<DatePicker
+									inputProps={{ tabIndex: 1 }}
 									error={!!formState.errors.dates}
 									label="End Date"
 									inputVariant="outlined"
@@ -461,6 +467,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 								<CircularProgress size={36} />
 							) : (
 								<Button
+									tabIndex={1}
 									style={{
 										paddingLeft: 40,
 										paddingRight: 40,

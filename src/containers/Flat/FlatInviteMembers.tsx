@@ -263,6 +263,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 						paddingTop="10px"
 					>
 						<TextField
+							inputProps={{ tabIndex: 1 }}
 							inputRef={inputRef}
 							onChange={(ev) => {
 								setInputValue(ev.target.value);
@@ -287,6 +288,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 							placeholder="Type email address and press enter to add."
 						/>
 						<IconButton
+							tabIndex={2}
 							type="submit"
 							aria-label="search"
 							disabled={loading}
@@ -326,6 +328,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 						) : (
 							<>
 								<Button
+									tabIndex={4}
 									style={{
 										paddingLeft: 40,
 										paddingRight: 40,
@@ -344,6 +347,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 									{isNewFlat ? 'Later' : 'Back'}
 								</Button>
 								<Button
+									tabIndex={3}
 									style={{
 										paddingLeft: 40,
 										paddingRight: 40,
