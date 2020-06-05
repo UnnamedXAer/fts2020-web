@@ -5,7 +5,7 @@ import { UsersActionTypes } from './actionTypes';
 import User, { Provider } from '../../models/user';
 import { AxiosResponse } from 'axios';
 
-type FetchUserAction = {
+export type FetchUserAction = {
 	type: UsersActionTypes.SetUser;
 	payload: User;
 };
@@ -26,22 +26,16 @@ export const fetchUser = (
 	return async (dispatch) => {
 		const url = `/users/${userId}`;
 		try {
-			const { data } = await axios.get<APIUser>(url);
-
-			const user = new User(
-				data.id,
-				data.emailAddress,
-				data.userName,
-				data.provider,
-				data.joinDate,
-				data.avatarUrl,
-				data.active
-			);
-
-			dispatch({
-				type: UsersActionTypes.SetUser,
-				payload: user,
-			});
+			const { data, status } = await axios.get<APIUser>(url);
+			if (status === 200) {
+				const user = mapApiUserDataToModel(data);
+				dispatch({
+					type: UsersActionTypes.SetUser,
+					payload: user,
+				});
+			} else {
+				throw new Error('User not found!');
+			}
 		} catch (err) {
 			throw err;
 		}
@@ -60,15 +54,7 @@ export const updateUser = (
 				AxiosResponse<APIUser>
 			>(url, user);
 
-			const updatedUser = new User(
-				data.id,
-				data.emailAddress,
-				data.userName,
-				data.provider,
-				data.joinDate,
-				data.avatarUrl,
-				data.active
-			);
+			const updatedUser = mapApiUserDataToModel(data);
 
 			dispatch({
 				type: UsersActionTypes.SetUser,
@@ -79,3 +65,14 @@ export const updateUser = (
 		}
 	};
 };
+
+export const mapApiUserDataToModel = (data: APIUser): User =>
+	new User(
+		data.id,
+		data.emailAddress,
+		data.userName,
+		data.provider,
+		data.joinDate,
+		data.avatarUrl,
+		data.active
+	);

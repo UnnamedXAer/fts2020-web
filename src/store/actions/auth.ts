@@ -7,9 +7,11 @@ import {
 	TasksActionTypes,
 	FlatsActionTypes,
 	AuthActionTypes,
+	UsersActionTypes,
 } from './actionTypes';
-import RootState, { StoreAction } from '../storeTypes';
+import RootState from '../storeTypes';
 import User from '../../models/user';
+import { mapApiUserDataToModel, FetchUserAction } from './users';
 
 type AuthorizeActionPayload = {
 	user: User;
@@ -24,21 +26,18 @@ type AuthorizeAction = {
 export const authorize = (
 	credentials: Credentials,
 	isLogIn: boolean
-): ThunkAction<Promise<void>, RootState, any, AuthorizeAction> => {
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	AuthorizeAction | FetchUserAction
+> => {
 	return async (dispatch, _getState) => {
 		const url = `/auth/${isLogIn ? 'login' : 'register'}`;
 		try {
 			const { data } = await axios.post(url, credentials);
 
-			const user = new User(
-				data.user.id,
-				data.user.emailAddress,
-				data.user.userName,
-				data.user.provider,
-				new Date(data.user.joinDate),
-				data.user.avatarUrl,
-				data.user.active
-			);
+			const user = mapApiUserDataToModel(data.user);
 
 			const expirationTime = Date.now() + data.expiresIn;
 
@@ -48,6 +47,10 @@ export const authorize = (
 					user,
 					expirationTime,
 				},
+			});
+			dispatch({
+				type: UsersActionTypes.SetUser,
+				payload: user,
 			});
 
 			setTimeout(() => {
@@ -62,24 +65,44 @@ export const authorize = (
 	};
 };
 
-export const tryAuthorize = (): StoreAction<AuthorizeActionPayload> => {
-	const savedUser = localStorage.getItem('loggedUser');
-	const expirationTime = localStorage.getItem('expirationTime');
-	if (
-		savedUser &&
-		expirationTime &&
-		new Date(+expirationTime).getTime() > Date.now()
-	) {
-		return {
-			type: AUTHORIZE,
-			payload: {
-				user: JSON.parse(savedUser),
-				expirationTime: +expirationTime,
-			},
-		};
-	} else {
-		throw new Error('Auto-authorization was not possible.');
-	}
+export const tryAuthorize = (): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	AuthorizeAction | FetchUserAction
+> => {
+	return async (dispatch) => {
+		const savedUser = localStorage.getItem('loggedUser');
+		const savedExpirationTime = localStorage.getItem('expirationTime');
+		const expirationTime = savedExpirationTime ? +savedExpirationTime : 0;
+
+		if (
+			savedUser &&
+			expirationTime &&
+			new Date(expirationTime).getTime() > Date.now()
+		) {
+			const userObj = JSON.parse(savedUser) as User;
+
+			dispatch({
+				type: AUTHORIZE,
+				payload: {
+					user: userObj,
+					expirationTime,
+				},
+			});
+
+			dispatch({
+				type: UsersActionTypes.SetUser,
+				payload: userObj,
+			});
+
+			setTimeout(() => {
+				dispatch(logOut());
+			}, Date.now() - expirationTime);
+		} else {
+			throw new Error('Auto-authorization was not possible.');
+		}
+	};
 };
 
 export const logOut = (): ThunkAction<

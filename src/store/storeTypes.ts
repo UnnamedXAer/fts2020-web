@@ -18,7 +18,7 @@ export type AuthState = {
 };
 
 export type UsersState = {
-	users: { [id: number]: User };
+	users: User[];
 };
 
 export type FlatsState = {

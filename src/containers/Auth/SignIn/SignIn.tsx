@@ -69,9 +69,11 @@ const SignIn = () => {
 	}, []);
 
 	useEffect(() => {
-		try {
-			dispatch(tryAuthorize());
-		} catch (err) {}
+		(async () => {
+			try {
+				await dispatch(tryAuthorize());
+			} catch (err) {}
+		})();
 	}, [dispatch]);
 
 	const updateTextFieldSize = useCallback(() => {

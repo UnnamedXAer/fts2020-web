@@ -3,14 +3,11 @@ import { UsersActionTypes } from '../actions/actionTypes';
 import User from '../../models/user';
 
 const initialState: UsersState = {
-	users: {},
+	users: [],
 };
 
 const setUser: SimpleReducer<UsersState, User> = (state, action) => {
-	const updatedUsers = {
-		...state.users,
-		[action.payload.id]: action.payload,
-	};
+	const updatedUsers = state.users.concat(action.payload);
 
 	return {
 		users: updatedUsers,
