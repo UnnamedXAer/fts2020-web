@@ -14,7 +14,8 @@ export type SpeedDialAction<T = number> = {
 interface Props {
 	open: boolean;
 	hidden?: boolean;
-	toggleOpen: () => void;
+	onClick: () => void;
+	onClose: () => void;
 	onOptionClick: (optionName: SpeedDialAction['key']) => void;
 	disabled?: boolean;
 	actions: SpeedDialAction[];
@@ -38,8 +39,13 @@ const CustomSpeedDial: React.FC<Props> = (props) => {
 			className={classes.speedDial}
 			hidden={props.hidden}
 			icon={<SpeedDialIcon style={{ color: 'white' }} />}
-			onClose={props.toggleOpen}
-			onOpen={props.toggleOpen}
+			onClose={(_, reason) => {
+				if (reason !== 'toggle') {
+					props.onClose();
+				}
+			}}
+			// onOpen={props.openHandler}
+			onClick={props.onClick}
 			open={props.open}
 			color="background"
 			FabProps={fabProps}

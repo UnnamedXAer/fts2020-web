@@ -362,7 +362,6 @@ const TaskDetails: React.FC<Props> = (props) => {
 			open: prevState.loading,
 		}));
 
-
 	const speedDialOptionClickHandler = async (
 		optionName: TaskSpeedActions
 	) => {
@@ -564,15 +563,17 @@ const TaskDetails: React.FC<Props> = (props) => {
 
 			<CustomSpeedDial
 				actions={actions}
-				disabled={
+				hidden={
 					!task ||
-					!loggedUser ||
-					!task.active ||
 					!task.owner ||
+					!task.active ||
+					!task.members ||
+					!loggedUser ||
 					loggedUser.id !== task.owner.id
 				}
 				open={speedDialOpen}
-				toggleOpen={() => setSpeedDialOpen((prevState) => !prevState)}
+				onClose={() => setSpeedDialOpen(false)}
+				onClick={() => setSpeedDialOpen((prevState) => !prevState)}
 				onOptionClick={speedDialOptionClickHandler}
 			/>
 			<AlertDialog data={dialogData} />

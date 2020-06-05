@@ -393,7 +393,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 		isMounted.current &&
 			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
 	};
-
+	console.log(speedDialOpen);
 	return (
 		<>
 			<Grid container spacing={2} direction="column">
@@ -491,14 +491,17 @@ const FlatDetails: React.FC<Props> = (props) => {
 			<AlertSnackbar data={snackbarData} />
 			<CustomSpeedDial
 				actions={actions}
-				disabled={
+				hidden={
 					!flat ||
 					!loggedUser ||
 					!flat.owner ||
-					loggedUser.id !== flat.owner.id
+					loggedUser.id !== flat.owner.id ||
+					!flat.members ||
+					!flat.invitations
 				}
 				open={speedDialOpen}
-				toggleOpen={() => setSpeedDialOpen((prevState) => !prevState)}
+				onClose={() => setSpeedDialOpen(false)}
+				onClick={() => setSpeedDialOpen((prevState) => !prevState)}
 				onOptionClick={speedDialOptionClickHandler}
 			/>
 			<AlertDialog data={dialogData} />
