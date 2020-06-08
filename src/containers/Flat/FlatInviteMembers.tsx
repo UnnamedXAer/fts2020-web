@@ -103,7 +103,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 			setMembers((prevSate) =>
 				prevSate.concat({ emailAddress: email } as Partial<User>)
 			);
-			getUserByEmail(email);
+			verifyIfEmailRegistered(email);
 		}
 	};
 
@@ -147,9 +147,8 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 			if (!user) {
 				const url = `/users?emailAddress=${email}`;
 				try {
-					console.log('about to make a call');
 					const { data, status } = await axios.get<APIUser>(url);
-					if (status !== 200) {
+					if (status === 200) {
 						user = mapApiUserDataToModel(data);
 						dispatch({
 							type: UsersActionTypes.SetUser,
@@ -157,14 +156,18 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 						});
 					}
 				} catch (err) {
-					if (inputRef.current) {
-						setMembersStatus((prevState) => ({
-							...prevState,
-							[email]: MembersStatus.error,
-						}));
-					}
+					throw err;
 				}
-			} else {
+			}
+			return user;
+		},
+		[dispatch, users]
+	);
+
+	const verifyIfEmailRegistered = useCallback(
+		async (email: NewFlatMember['emailAddress']) => {
+			try {
+				const user = await getUserByEmail(email);
 				if (inputRef.current) {
 					if (user) {
 						addUserToMembers(user, MembersStatus.ok);
@@ -175,9 +178,16 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 						}));
 					}
 				}
+			} catch (err) {
+				if (inputRef.current) {
+					setMembersStatus((prevState) => ({
+						...prevState,
+						[email]: MembersStatus.error,
+					}));
+				}
 			}
 		},
-		[dispatch, users]
+		[getUserByEmail]
 	);
 
 	const removeMemberHandler = (email: NewFlatMember['emailAddress']) => {
