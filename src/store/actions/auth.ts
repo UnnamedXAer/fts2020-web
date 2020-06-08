@@ -36,9 +36,7 @@ export const authorize = (
 		const url = `/auth/${isLogIn ? 'login' : 'register'}`;
 		try {
 			const { data } = await axios.post(url, credentials);
-
 			const user = mapApiUserDataToModel(data.user);
-
 			const expirationTime = Date.now() + data.expiresIn;
 
 			dispatch({
@@ -76,11 +74,8 @@ export const tryAuthorize = (): ThunkAction<
 		const savedExpirationTime = localStorage.getItem('expirationTime');
 		const expirationTime = savedExpirationTime ? +savedExpirationTime : 0;
 
-		if (
-			savedUser &&
-			expirationTime &&
-			new Date(expirationTime).getTime() > Date.now()
-		) {
+		const expiresIn = expirationTime - Date.now();
+		if (savedUser && expirationTime && expiresIn > 1000 * 60 * 30) {
 			const userObj = JSON.parse(savedUser) as User;
 
 			dispatch({
@@ -98,7 +93,7 @@ export const tryAuthorize = (): ThunkAction<
 
 			setTimeout(() => {
 				dispatch(logOut());
-			}, Date.now() - expirationTime);
+			}, expiresIn);
 		} else {
 			throw new Error('Auto-authorization was not possible.');
 		}
