@@ -1,3 +1,5 @@
+import { APIUser } from '../store/actions/users';
+
 export type Provider = 'local' | 'google';
 
 export default class User {
@@ -24,5 +26,26 @@ export default class User {
 		this.joinDate = joinDate;
 		this.avatarUrl = avatarUrl;
 		this.active = active;
+	}
+
+	static fromData(params: APIUser = {} as APIUser): User {
+		const {
+			id,
+			emailAddress,
+			userName,
+			provider,
+			joinDate,
+			avatarUrl,
+			active,
+		} = params;
+		return new User(
+			id,
+			emailAddress,
+			userName,
+			provider,
+			typeof joinDate === 'string' ? new Date(joinDate) : joinDate,
+			avatarUrl,
+			active
+		);
 	}
 }

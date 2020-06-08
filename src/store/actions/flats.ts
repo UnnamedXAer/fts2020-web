@@ -8,17 +8,18 @@ import Invitation, {
 	InvitationStatus,
 	InvitationAction,
 } from '../../models/invitation';
+import { mapApiUserDataToModel } from './users';
 
-type APIFlat = {
+export type APIFlat = {
 	id: number;
 	name: string;
 	description: string;
 	members?: number[];
 	createBy: number;
-	createAt: Date;
+	createAt: string;
 };
 
-type APIInvitation = {
+export type APIInvitation = {
 	id: number;
 	flatId: number;
 	createBy: number;
@@ -53,13 +54,7 @@ export const createFlat = (
 		const url = '/flats';
 		try {
 			const { data } = await axios.post<APIFlat>(url, flat);
-			const createdFlat = new Flat({
-				id: data.id,
-				name: data.name,
-				description: data.description,
-				createAt: data.createAt,
-				ownerId: data.createBy,
-			});
+			const createdFlat = mapAPIFlatDataToModel(data);
 
 			dispatch({
 				type: FlatsActionTypes.Add,
@@ -85,16 +80,7 @@ export const fetchFlats = (): ThunkAction<
 		const url = `/flats?userId=${loggedUser!.id}`;
 		try {
 			const { data } = await axios.get<APIFlat[]>(url);
-			const flats = data.map(
-				(x) =>
-					new Flat({
-						id: x.id,
-						name: x.name,
-						description: x.description,
-						ownerId: x.createBy,
-						createAt: x.createAt,
-					})
-			);
+			const flats = data.map(mapAPIFlatDataToModel);
 			dispatch({
 				type: FlatsActionTypes.Set,
 				payload: flats,
@@ -119,15 +105,7 @@ export const fetchFlatOwner = (
 		try {
 			const { data } = await axios.get(url);
 
-			const user = new User(
-				data.id,
-				data.emailAddress,
-				data.userName,
-				data.provider,
-				new Date(data.joinDate),
-				data.avatarUrl,
-				data.active
-			);
+			const user = mapApiUserDataToModel(data);
 
 			dispatch({
 				type: FlatsActionTypes.SetOwner,
@@ -158,18 +136,7 @@ export const fetchFlatMembers = (
 		try {
 			const { data } = await axios.get(url);
 
-			const members = data.map(
-				(user: any) =>
-					new User(
-						user.id,
-						user.emailAddress,
-						user.userName,
-						user.provider,
-						new Date(user.joinDate),
-						user.avatarUrl,
-						user.active
-					)
-			);
+			const members = data.map(mapApiUserDataToModel);
 			dispatch({
 				type: FlatsActionTypes.SetMembers,
 				payload: {
@@ -200,13 +167,7 @@ export const updateFlat = (
 				// active: flat.active,
 			};
 			const { data } = await axios.patch<APIFlat>(url, requestPayload);
-			const updatedTask = new Flat({
-				id: data.id,
-				name: data.name,
-				description: data.description,
-				createAt: new Date(data.createAt!),
-				ownerId: data.createBy,
-			});
+			const updatedTask = mapAPIFlatDataToModel(data);
 			dispatch({
 				type: FlatsActionTypes.Set,
 				payload: updatedTask,
@@ -233,18 +194,7 @@ export const fetchFlatInvitations = (
 		try {
 			const { data } = await axios.get<APIInvitation[]>(url);
 
-			const invitations = data.map(
-				(inv) =>
-					new Invitation({
-						id: inv.id,
-						createBy: inv.createBy,
-						createAt: inv.createAt,
-						emailAddress: inv.emailAddress,
-						actionDate: inv.actionDate,
-						sendDate: inv.sendDate,
-						status: inv.status,
-					})
-			);
+			const invitations = data.map(mapAPIInvitationDataToModel);
 			dispatch({
 				type: FlatsActionTypes.SetInvitations,
 				payload: {
@@ -272,15 +222,7 @@ export const updateInvitation = (
 		const url = `/invitations/${id}`;
 		try {
 			const { data } = await axios.patch<APIInvitation>(url, { action });
-			const updatedInvitation = new Invitation({
-				id: data.id,
-				createAt: data.createAt,
-				actionDate: data.actionDate,
-				emailAddress: data.emailAddress,
-				createBy: data.createBy,
-				sendDate: data.sendDate,
-				status: data.status,
-			});
+			const updatedInvitation = mapAPIInvitationDataToModel(data);
 
 			dispatch({
 				type: FlatsActionTypes.SetInvitation,
@@ -291,3 +233,26 @@ export const updateInvitation = (
 		}
 	};
 };
+
+export const mapAPIFlatDataToModel = (data: APIFlat) =>
+	new Flat({
+		id: data.id,
+		description: data.description,
+		name: data.name,
+		ownerId: data.createBy,
+		createAt:
+			typeof data.createAt === 'string'
+				? new Date(data.createAt)
+				: data.createAt,
+	});
+
+export const mapAPIInvitationDataToModel = (data: APIInvitation) =>
+	new Invitation({
+		id: data.id,
+		createAt: data.createAt,
+		actionDate: data.actionDate,
+		emailAddress: data.emailAddress,
+		createBy: data.createBy,
+		sendDate: data.sendDate,
+		status: data.status,
+	});

@@ -15,7 +15,7 @@ export type APIUser = {
 	emailAddress: string;
 	userName: string;
 	provider: Provider;
-	joinDate: Date;
+	joinDate: string;
 	avatarUrl: string | undefined;
 	active: boolean;
 };
@@ -72,7 +72,9 @@ export const mapApiUserDataToModel = (data: APIUser): User =>
 		data.emailAddress,
 		data.userName,
 		data.provider,
-		data.joinDate,
+		typeof data.joinDate === 'string'
+			? new Date(data.joinDate)
+			: data.joinDate,
 		data.avatarUrl,
 		data.active
 	);

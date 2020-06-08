@@ -1,4 +1,4 @@
-import React from 'react'; // , { useRef }
+import React, { useState } from 'react'; // , { useRef }
 import 'typeface-roboto';
 import {
 	ThemeProvider,
@@ -32,6 +32,7 @@ import ChangePassword from './containers/Auth/ChangePassword';
 import AppDrawer from './containers/Navigation/AppDrawer';
 import FlatInviteMembers from './containers/Flat/FlatInviteMembers';
 import UpdateTaskMembers from './containers/Task/UpdateTaskMembers';
+import InvitationResponse from './containers/InvitationResponse/InvitationResponse';
 
 const drawerWidth = 240;
 
@@ -48,7 +49,11 @@ const theme = createMuiTheme({
 const StyledApp = () => {
 	const classes = useStyles();
 	const user = useSelector((state: RootState) => state.auth.user);
+	// const [openUrl, setOpenUrl] = useState(window.location.href);
 
+	// const invitationResponse = (
+	// 	<Route path="invitation/:id" component={InvitationResponse} />
+	// );
 	let layout = (
 		<>
 			<CssBaseline />
@@ -58,6 +63,10 @@ const StyledApp = () => {
 				<div className={classes.toolbar} />
 				<Container maxWidth="md" className={classes.container}>
 					<Switch>
+						<Route
+							path="/invitation/:id"
+							component={InvitationResponse}
+						/>
 						<Route path="/flats/add" exact component={NewFlat} />
 						<Route
 							path="/flats/:id/invite-members"
@@ -92,8 +101,8 @@ const StyledApp = () => {
 	if (user === null) {
 		layout = (
 			<Switch>
-				<Route path="/" exact component={SignIn} />
-				<Redirect to="/" />
+				<Route path="/" component={SignIn} />
+				{/* <Redirect to="/" /> */}
 			</Switch>
 		);
 	}
