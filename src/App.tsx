@@ -15,6 +15,7 @@ import {
 	Switch,
 	Route,
 	Redirect,
+	RouteComponentProps,
 	// useHistory,
 } from 'react-router-dom';
 import store from './store/store';
@@ -46,14 +47,12 @@ const theme = createMuiTheme({
 	},
 });
 
-const StyledApp = () => {
+interface Props {}
+
+const StyledApp: React.FC<Props> = () => {
 	const classes = useStyles();
 	const user = useSelector((state: RootState) => state.auth.user);
-	// const [openUrl, setOpenUrl] = useState(window.location.href);
 
-	// const invitationResponse = (
-	// 	<Route path="invitation/:id" component={InvitationResponse} />
-	// );
 	let layout = (
 		<>
 			<CssBaseline />
@@ -63,10 +62,6 @@ const StyledApp = () => {
 				<div className={classes.toolbar} />
 				<Container maxWidth="md" className={classes.container}>
 					<Switch>
-						<Route
-							path="/invitation/:id"
-							component={InvitationResponse}
-						/>
 						<Route path="/flats/add" exact component={NewFlat} />
 						<Route
 							path="/flats/:id/invite-members"
@@ -91,6 +86,10 @@ const StyledApp = () => {
 							path="/change-password"
 							component={ChangePassword}
 						/>
+						<Route
+							path="/invitation/:token"
+							component={InvitationResponse}
+						/>
 						<Route path="/" component={Flats} />
 					</Switch>
 				</Container>
@@ -101,6 +100,7 @@ const StyledApp = () => {
 	if (user === null) {
 		layout = (
 			<Switch>
+				<Route path="/invitation/:token" component={SignIn} />
 				<Route path="/" component={SignIn} />
 				{/* <Redirect to="/" /> */}
 			</Switch>

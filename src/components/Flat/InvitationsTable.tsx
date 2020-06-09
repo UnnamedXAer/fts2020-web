@@ -162,7 +162,7 @@ const InvitationsTable: React.FC<Props> = ({
 					selectedInId &&
 					[
 						InvitationStatus.PENDING,
-						InvitationStatus.NOT_SENT,
+						InvitationStatus.CREATED,
 						InvitationStatus.SEND_ERROR,
 					].includes(
 						invitations!.find((x) => x.id === selectedInId!)!.status

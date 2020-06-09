@@ -1,3 +1,8 @@
+import { APIUser, mapApiUserDataToModel } from '../store/actions/users';
+import { APIFlat, mapAPIFlatDataToModel } from '../store/actions/flats';
+import User from './user';
+import Flat from './flat';
+
 interface InvitationParams {
 	id: number;
 	createBy: number;
@@ -49,7 +54,7 @@ export enum InvitationAction {
 }
 
 export enum InvitationStatus {
-	'NOT_SENT' = 'NOT_SENT',
+	'CREATED' = 'CREATED',
 	'SEND_ERROR' = 'SEND_ERROR',
 	'PENDING' = 'PENDING',
 	'ACCEPTED' = 'ACCEPTED',
@@ -62,10 +67,59 @@ export const InvitationStatusInfo = {
 	[InvitationStatus.ACCEPTED]: 'Accepted.',
 	[InvitationStatus.CANCELED]: 'Cancelled by sender.',
 	[InvitationStatus.EXPIRED]: 'Expired.',
-	[InvitationStatus.NOT_SENT]: 'Not sent yet.',
+	[InvitationStatus.CREATED]: 'Not sent yet.',
 	[InvitationStatus.PENDING]: 'Waiting for accept.',
 	[InvitationStatus.REJECTED]: 'Rejected by person.',
 	[InvitationStatus.SEND_ERROR]: 'Not sent - error.',
 };
+
+ export type APIInvitationPresentation = {
+	id: number;
+	status: InvitationStatus;
+	sendDate: string;
+	actionDate: string | null;
+	createAt: string;
+	sender: APIUser;
+	invitedPerson: APIUser | string;
+	flat: APIFlat;
+	flatOwner: APIUser;
+};
+
+export class InvitationPresentation {
+	public id: number;
+	public invitedPerson: string | User;
+	public sendDate: Date;
+	public status: InvitationStatus;
+	public actionDate: Date | null;
+	public createAt: Date;
+	public sender: User;
+	public flat: Flat;
+	constructor(data: APIInvitationPresentation) {
+		this.id = data.id;
+		this.invitedPerson =
+			typeof data.invitedPerson === 'string'
+				? data.invitedPerson
+				: mapApiUserDataToModel(data.invitedPerson);
+		this.status = data.status;
+		this.sendDate =
+			typeof data.sendDate === 'string'
+				? new Date(data.sendDate)
+				: data.sendDate;
+		this.actionDate = data.actionDate
+			? typeof data.actionDate === 'string'
+				? new Date(data.actionDate)
+				: data.actionDate
+			: null;
+		this.createAt =
+			typeof data.createAt === 'string'
+				? new Date(data.createAt)
+				: data.createAt;
+		this.sender = User.fromData({
+			...data.sender,
+		});
+		this.flat = mapAPIFlatDataToModel(data.flat);
+		this.flat.owner = mapApiUserDataToModel(data.flatOwner);
+	}
+}
 
 export default Invitation;

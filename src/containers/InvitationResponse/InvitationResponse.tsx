@@ -11,77 +11,26 @@ import {
 	CircularProgress,
 	Box,
 	Container,
+	Divider,
 } from '@material-ui/core';
 import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
 import { RouteComponentProps } from 'react-router-dom';
-import { InvitationStatus } from '../../models/invitation';
 import HttpErrorParser from '../../utils/parseError';
 import { StateError } from '../../ReactTypes/customReactTypes';
 import axios from '../../axios/axios';
 import moment from 'moment';
 import Skeleton from '@material-ui/lab/Skeleton/Skeleton';
-import User from '../../models/user';
-import { APIUser, mapApiUserDataToModel } from '../../store/actions/users';
-import { APIFlat, mapAPIFlatDataToModel } from '../../store/actions/flats';
-import Flat from '../../models/flat';
-
-type APIInvitationPresentation = {
-	id: number;
-	status: InvitationStatus;
-	sendDate: string;
-	actionDate: string | null;
-	createAt: string;
-	sender: APIUser;
-	invitedPerson: APIUser | string;
-	flat: APIFlat;
-};
-
-class InvitationPresentation {
-	public id: number;
-	public invitedPerson: string | User;
-	public sendDate: Date;
-	public status: InvitationStatus;
-	public actionDate: Date | null;
-	public createAt: Date;
-	public sender: User;
-	public flat: Flat;
-	constructor(data: APIInvitationPresentation) {
-		this.id = data.id;
-		this.invitedPerson =
-			typeof data.invitedPerson === 'string'
-				? data.invitedPerson
-				: mapApiUserDataToModel(data.invitedPerson);
-		this.status = data.status;
-		this.sendDate =
-			typeof data.sendDate === 'string'
-				? new Date(data.sendDate)
-				: data.sendDate;
-		this.actionDate = data.actionDate
-			? typeof data.actionDate === 'string'
-				? new Date(data.actionDate)
-				: data.actionDate
-			: null;
-		this.createAt =
-			typeof data.createAt === 'string'
-				? new Date(data.createAt)
-				: data.createAt;
-		this.sender = User.fromData({
-			...data.sender,
-		});
-		this.flat = mapAPIFlatDataToModel(data.flat);
-	}
-}
+import { InvitationPresentation, APIInvitationPresentation } from '../../models/invitation';
 
 type RouterParams = {
-	id: string;
+	token: string;
 };
 
 interface Props extends RouteComponentProps<RouterParams> {}
 
 const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 	const classes = useStyles();
-	const id = +match.params.id;
-
+	const token = match.params.token;
 	const [rejected, setRejected] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
@@ -102,7 +51,7 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 			return;
 		}
 		const loadInvitation = async () => {
-			const url = `/invitations/${id}`;
+			const url = `/invitations/${token}`;
 			try {
 				const { data, status } = await axios.get<
 					APIInvitationPresentation
@@ -126,7 +75,25 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 		};
 		setLoading(true);
 		setTimeout(loadInvitation, 3000);
-	}, [error, id, invitation, loading]);
+	}, [error, token, invitation, loading]);
+
+	const rejectHandler = async () => {
+		setLoading(true);
+		const url = `/invitations/reject/${token}`;
+		try {
+			await axios.get(url);
+			if (isMounted.current) {
+				history.replace(`/`);
+			}
+		} catch (err) {
+			if (isMounted.current) {
+				const httpError = new HttpErrorParser(err);
+				const msg = httpError.getMessage();
+				setError(msg);
+				setRejected(true);
+			}
+		}
+	};
 
 	if (rejected) {
 		return (
@@ -171,53 +138,72 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 					</Paper>
 				</Grid>
 				<Grid item>
-					<Grid
-						container
-						direction="row"
-						spacing={4}
-						alignItems="center"
-					>
-						<Grid item>
-							<Avatar
-								className={classes.avatar}
-								alt="flat avatar"
-								src=""
-							>
-								<HomeIcon color="primary" />
-							</Avatar>
-						</Grid>
-						<Grid item >
-							{invitation ? (
-								<>
-									<Typography variant="h5" component="h2">
-										{invitation.flat.name}
-									</Typography>
-									<Typography>
-										{moment(invitation.flat.createAt).format('LLLL')}
-									</Typography>
-								</>
-							) : (
-								<>
-									<Skeleton height={16} style={{flex: 1}} />
-									<Skeleton height={16} />
-								</>
-							)}
-						</Grid>
-					</Grid>
-				</Grid>
-				<Grid item>
-					<Typography variant="subtitle2">Description</Typography>
 					<Paper
 						variant="outlined"
 						className={classes.descriptionPaper}
 					>
-						{invitation ? (
-							<Typography>
-								{invitation.flat.description}
-							</Typography>
-						) : (
-							<Skeleton height={24} />
-						)}
+						<Grid
+							container
+							direction="row"
+							spacing={4}
+							alignItems="center"
+						>
+							<Grid item>
+								<Avatar
+									className={classes.avatar}
+									alt="flat avatar"
+									src=""
+								>
+									<HomeIcon color="primary" />
+								</Avatar>
+							</Grid>
+							<Grid item>
+								{invitation ? (
+									<>
+										<Typography variant="h5" component="h2">
+											{invitation.flat.name}
+										</Typography>
+										<Typography>
+											{moment(
+												invitation.flat.createAt
+											).format('LLLL')}
+										</Typography>
+										<Typography>
+											{
+												invitation.flat.owner!
+													.emailAddress
+											}{' '}
+											({invitation.flat.owner!.userName})
+										</Typography>
+									</>
+								) : (
+									<>
+										<Skeleton
+											height={16}
+											style={{ flex: 1 }}
+										/>
+										<Skeleton height={16} />
+									</>
+								)}
+							</Grid>
+						</Grid>
+						<Divider style={{ margin: '24px 0' }} />
+						<Grid container spacing={0} direction="column">
+							<Grid item>
+								<Typography variant="subtitle2">
+									Description
+								</Typography>
+							</Grid>
+							<Grid item>
+								{invitation ? (
+									<Typography>
+										{invitation.flat.description}
+									</Typography>
+								) : (
+									<Skeleton height={24} />
+								)}
+							</Grid>
+						</Grid>
 					</Paper>
 				</Grid>
 				<Grid item>
@@ -232,7 +218,7 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 										paddingLeft: 40,
 										paddingRight: 40,
 									}}
-									onClick={() => setRejected(true)}
+									onClick={rejectHandler}
 									variant="text"
 									color="primary"
 									type="button"
