@@ -1,5 +1,9 @@
 import { APIUser, mapApiUserDataToModel } from '../store/actions/users';
-import { APIFlat, mapAPIFlatDataToModel } from '../store/actions/flats';
+import {
+	APIFlat,
+	mapAPIFlatDataToModel,
+	APIInvitation,
+} from '../store/actions/flats';
 import User from './user';
 import Flat from './flat';
 
@@ -73,12 +77,12 @@ export const InvitationStatusInfo = {
 	[InvitationStatus.SEND_ERROR]: 'Not sent - error.',
 };
 
- export type APIInvitationPresentation = {
-	id: number;
-	status: InvitationStatus;
-	sendDate: string;
-	actionDate: string | null;
-	createAt: string;
+export type APIInvitationPresentation = {
+	id: APIInvitation['id'];
+	status: APIInvitation['status'];
+	sendDate: APIInvitation['sendDate'];
+	actionDate: APIInvitation['actionDate'];
+	createAt: APIInvitation['createAt'];
 	sender: APIUser;
 	invitedPerson: APIUser | string;
 	flat: APIFlat;
@@ -88,7 +92,7 @@ export const InvitationStatusInfo = {
 export class InvitationPresentation {
 	public id: number;
 	public invitedPerson: string | User;
-	public sendDate: Date;
+	public sendDate: Date | null;
 	public status: InvitationStatus;
 	public actionDate: Date | null;
 	public createAt: Date;

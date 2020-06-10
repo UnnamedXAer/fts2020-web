@@ -13,14 +13,23 @@ import {
 	Container,
 	Divider,
 } from '@material-ui/core';
-import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
+import ContactMailRoundedIcon from '@material-ui/icons/ContactMailRounded';
+import HomeIcon from '@material-ui/icons/HomeWorkOutlined';
 import { RouteComponentProps } from 'react-router-dom';
 import HttpErrorParser from '../../utils/parseError';
 import { StateError } from '../../ReactTypes/customReactTypes';
 import axios from '../../axios/axios';
 import moment from 'moment';
 import Skeleton from '@material-ui/lab/Skeleton/Skeleton';
-import { InvitationPresentation, APIInvitationPresentation } from '../../models/invitation';
+import {
+	InvitationPresentation,
+	APIInvitationPresentation,
+	InvitationStatusInfo,
+	InvitationStatus,
+	InvitationAction,
+} from '../../models/invitation';
+import { APIInvitation } from '../../store/actions/flats';
+import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 
 type RouterParams = {
 	token: string;
@@ -31,7 +40,6 @@ interface Props extends RouteComponentProps<RouterParams> {}
 const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 	const classes = useStyles();
 	const token = match.params.token;
-	const [rejected, setRejected] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
 	const [invitation, setInvitation] = useState<InvitationPresentation | null>(
@@ -59,11 +67,18 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 				if (isMounted.current) {
 					if (status === 200) {
 						const invitation = new InvitationPresentation(data);
-						console.log(invitation);
-
-						setInvitation(invitation);
+						const notActionable = [
+							InvitationStatus.ACCEPTED,
+							InvitationStatus.CANCELED,
+							InvitationStatus.EXPIRED,
+							InvitationStatus.REJECTED,
+						].includes(invitation.status);
+						if (notActionable) {
+							history.replace(`/invitation/${token}/summary`);
+						}else {
+							setInvitation(invitation);
+						}
 					}
-					setLoading(false);
 				}
 			} catch (err) {
 				if (isMounted.current) {
@@ -73,39 +88,36 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 				}
 			}
 		};
-		setLoading(true);
 		setTimeout(loadInvitation, 3000);
-	}, [error, token, invitation, loading]);
+	}, [error, history, invitation, loading, token]);
 
-	const rejectHandler = async () => {
+	const actionHandler = async (
+		action: InvitationAction.ACCEPT | InvitationAction.REJECT
+	) => {
 		setLoading(true);
-		const url = `/invitations/reject/${token}`;
+		const url = `/invitations/${invitation!.id}`;
 		try {
-			await axios.get(url);
+			const { data } = await axios.patch<APIInvitation>(url, {
+				action: action,
+			});
 			if (isMounted.current) {
-				history.replace(`/`);
+				history.replace(
+					`/invitation/${token}/summary${location.search}&status=${data.status}&action=${action}`
+				);
 			}
 		} catch (err) {
 			if (isMounted.current) {
 				const httpError = new HttpErrorParser(err);
 				const msg = httpError.getMessage();
 				setError(msg);
-				setRejected(true);
 			}
+		}
+		if (isMounted.current) {
+			setLoading(false);
 		}
 	};
 
-	if (rejected) {
-		return (
-			<Grid container alignItems="center" justify="center">
-				<Grid item>
-					<Typography>
-						Thank You for action. You may close this window.
-					</Typography>
-				</Grid>
-			</Grid>
-		);
-	}
+	const actionsDisabled = !invitation || loading;
 
 	return (
 		<Container maxWidth="sm">
@@ -121,15 +133,12 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 					</Typography>
 				</Grid>
 				<Grid item>
-					<Paper
-						variant="outlined"
-						className={classes.descriptionPaper}
-					>
+					<Paper variant="outlined" className={classes.paper}>
 						{invitation ? (
 							<Typography>
 								You were invited by{' '}
 								{invitation.sender.emailAddress}{' '}
-								{`(${invitation.sender.userName})`} to join to
+								{`(${invitation.sender.userName})`} to join to a
 								flat.
 							</Typography>
 						) : (
@@ -137,11 +146,21 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 						)}
 					</Paper>
 				</Grid>
+				{/* invitation info */}
 				<Grid item>
 					<Paper
 						variant="outlined"
-						className={classes.descriptionPaper}
+						className={[classes.paper, classes.paperWithLabel].join(
+							' '
+						)}
 					>
+						<Typography
+							className={classes.paperLabel}
+							color="textSecondary"
+							variant="caption"
+						>
+							Invitation Informations
+						</Typography>
 						<Grid
 							container
 							direction="row"
@@ -154,10 +173,95 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 									alt="flat avatar"
 									src=""
 								>
-									<HomeIcon color="primary" />
+									<ContactMailRoundedIcon
+										fontSize="large"
+										color="primary"
+									/>
 								</Avatar>
 							</Grid>
+							<Grid item style={{ flex: 1 }}>
+								{invitation ? (
+									<>
+										<Typography variant="h5" component="h2">
+											{typeof invitation.invitedPerson ===
+											'string'
+												? invitation.invitedPerson
+												: invitation.invitedPerson
+														.emailAddress}
+										</Typography>
+										<Typography>
+											<span className={classes.infoLabel}>
+												{invitation.sendDate
+													? 'Send'
+													: 'Created'}{' '}
+												at{' '}
+											</span>
+											{moment(
+												invitation.sendDate
+													? invitation.sendDate
+													: invitation.createAt
+											).format('LLLL')}
+										</Typography>
+										<Typography>
+											<span>Invited by </span>
+											{invitation.sender!.emailAddress} (
+											{invitation.sender!.userName})
+										</Typography>
+										<Typography>
+											<span>Status: </span>
+											{
+												InvitationStatusInfo[
+													invitation.status
+												]
+											}
+										</Typography>
+									</>
+								) : (
+									<>
+										<Skeleton height={40} width="75%" />
+										<Skeleton height={24} width="66%" />
+										<Skeleton height={24} width="90%" />
+										<Skeleton height={24} width="70%" />
+									</>
+								)}
+							</Grid>
+						</Grid>
+					</Paper>
+				</Grid>
+				{/* flat info */}
+				<Grid item>
+					<Paper
+						variant="outlined"
+						className={[classes.paper, classes.paperWithLabel].join(
+							' '
+						)}
+					>
+						<Typography
+							className={classes.paperLabel}
+							color="textSecondary"
+							variant="caption"
+						>
+							Flat Informations
+						</Typography>
+						<Grid
+							container
+							direction="row"
+							spacing={4}
+							alignItems="center"
+						>
 							<Grid item>
+								<Avatar
+									className={classes.avatar}
+									alt="flat avatar"
+									src=""
+								>
+									<HomeIcon
+										fontSize="large"
+										color="primary"
+									/>
+								</Avatar>
+							</Grid>
+							<Grid item style={{ flex: 1 }}>
 								{invitation ? (
 									<>
 										<Typography variant="h5" component="h2">
@@ -178,11 +282,9 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 									</>
 								) : (
 									<>
-										<Skeleton
-											height={16}
-											style={{ flex: 1 }}
-										/>
-										<Skeleton height={16} />
+										<Skeleton height={40} width="75%" />
+										<Skeleton height={24} width="66%" />
+										<Skeleton height={24} width="90%" />
 									</>
 								)}
 							</Grid>
@@ -200,12 +302,23 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 										{invitation.flat.description}
 									</Typography>
 								) : (
-									<Skeleton height={24} />
+									<>
+										<Skeleton height={24} />
+										<Skeleton height={24} />
+										<Skeleton height={24} width="68%" />
+									</>
 								)}
 							</Grid>
 						</Grid>
 					</Paper>
 				</Grid>
+				{error && (
+					<Grid item>
+						<CustomMuiAlert severity="error">
+							{error}
+						</CustomMuiAlert>
+					</Grid>
+				)}
 				<Grid item>
 					<Box className={classes.actions}>
 						{loading ? (
@@ -218,10 +331,13 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 										paddingLeft: 40,
 										paddingRight: 40,
 									}}
-									onClick={rejectHandler}
+									onClick={() =>
+										actionHandler(InvitationAction.REJECT)
+									}
 									variant="text"
 									color="primary"
 									type="button"
+									disabled={actionsDisabled}
 								>
 									Reject
 								</Button>
@@ -232,13 +348,12 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 										paddingRight: 40,
 									}}
 									onClick={() =>
-										history.replace(
-											`/flats/${invitation!.flat.id}`
-										)
+										actionHandler(InvitationAction.ACCEPT)
 									}
 									variant="contained"
 									color="primary"
 									type="submit"
+									disabled={actionsDisabled}
 								>
 									Accept
 								</Button>
@@ -253,9 +368,26 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
-		descriptionPaper: {
+		paper: {
 			padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
 			flex: 1,
+		},
+		paperWithLabel: {
+			paddingTop: 32,
+			position: 'relative',
+		},
+		paperLabel: {
+			position: 'absolute',
+			top: -17,
+			left: 16,
+			backgroundColor: 'white',
+			fontSize: 19,
+			paddingRight: 8,
+			paddingLeft: 8,
+			fontVariant: 'all-small-caps',
+		},
+		infoLabel: {
+			color: theme.palette.grey[600],
 		},
 		avatar: {
 			width: theme.spacing(10),

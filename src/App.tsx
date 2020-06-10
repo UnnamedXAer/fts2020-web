@@ -34,6 +34,7 @@ import AppDrawer from './containers/Navigation/AppDrawer';
 import FlatInviteMembers from './containers/Flat/FlatInviteMembers';
 import UpdateTaskMembers from './containers/Task/UpdateTaskMembers';
 import InvitationResponse from './containers/InvitationResponse/InvitationResponse';
+import InvitationResponseSummary from './containers/InvitationResponse/InitaionResponseSummary';
 
 const drawerWidth = 240;
 
@@ -85,6 +86,10 @@ const StyledApp: React.FC<Props> = () => {
 						<Route
 							path="/change-password"
 							component={ChangePassword}
+						/>
+						<Route
+							path="/invitation/:token/summary"
+							component={InvitationResponseSummary}
 						/>
 						<Route
 							path="/invitation/:token"
