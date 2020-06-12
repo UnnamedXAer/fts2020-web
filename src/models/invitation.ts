@@ -15,6 +15,7 @@ interface InvitationParams {
 	actionDate: Date | string | null;
 	sendDate: Date | string | null;
 	status: InvitationStatus;
+	token: string;
 }
 
 class Invitation {
@@ -25,6 +26,7 @@ class Invitation {
 	actionDate: Date | null;
 	sendDate: Date | null;
 	status: InvitationStatus;
+	token: string;
 
 	constructor(params: InvitationParams = {} as InvitationParams) {
 		const {
@@ -35,6 +37,7 @@ class Invitation {
 			actionDate,
 			sendDate,
 			status,
+			token,
 		} = params;
 
 		this.id = id;
@@ -47,6 +50,7 @@ class Invitation {
 		this.sendDate =
 			typeof sendDate === 'string' ? new Date(sendDate) : sendDate;
 		this.status = status;
+		this.token = token;
 	}
 }
 
@@ -77,8 +81,16 @@ export const InvitationStatusInfo = {
 	[InvitationStatus.SEND_ERROR]: 'Not sent - error.',
 };
 
+export const invitationInactiveStatuses = [
+	InvitationStatus.ACCEPTED,
+	InvitationStatus.CANCELED,
+	InvitationStatus.EXPIRED,
+	InvitationStatus.REJECTED,
+];
+
 export type APIInvitationPresentation = {
 	id: APIInvitation['id'];
+	token: APIInvitation['token'];
 	status: APIInvitation['status'];
 	sendDate: APIInvitation['sendDate'];
 	actionDate: APIInvitation['actionDate'];
@@ -87,10 +99,12 @@ export type APIInvitationPresentation = {
 	invitedPerson: APIUser | string;
 	flat: APIFlat;
 	flatOwner: APIUser;
+	actionBy: APIUser | null;
 };
 
 export class InvitationPresentation {
 	public id: number;
+	token: string;
 	public invitedPerson: string | User;
 	public sendDate: Date | null;
 	public status: InvitationStatus;
@@ -98,8 +112,10 @@ export class InvitationPresentation {
 	public createAt: Date;
 	public sender: User;
 	public flat: Flat;
+	public actionBy: User | null;
 	constructor(data: APIInvitationPresentation) {
 		this.id = data.id;
+		this.token = data.token;
 		this.invitedPerson =
 			typeof data.invitedPerson === 'string'
 				? data.invitedPerson
@@ -123,6 +139,9 @@ export class InvitationPresentation {
 		});
 		this.flat = mapAPIFlatDataToModel(data.flat);
 		this.flat.owner = mapApiUserDataToModel(data.flatOwner);
+		this.actionBy = data.actionBy
+			? mapApiUserDataToModel(data.actionBy)
+			: null;
 	}
 }
 

@@ -10,8 +10,11 @@ import {
 	Theme,
 	createStyles,
 } from '@material-ui/core';
-import { HomeWorkOutlined as HomeIcon,
-	ListAltRounded as TasksIcon } from '@material-ui/icons';
+import {
+	HomeWorkOutlined as HomeIcon,
+	ListAltRounded as TasksIcon,
+	ContactMailRounded as InvitationsIcon,
+} from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles<Theme, { drawerWidth: number }>((theme: Theme) =>
@@ -34,7 +37,6 @@ interface Props {
 const AppDrawer: React.FC<Props> = (props) => {
 	const classes = useStyles({ drawerWidth: props.drawerWidth });
 	const history = useHistory();
-
 
 	return (
 		<Drawer
@@ -59,6 +61,15 @@ const AppDrawer: React.FC<Props> = (props) => {
 						<TasksIcon color="primary" />
 					</ListItemIcon>
 					<ListItemText primary="Tasks" />
+				</ListItem>
+				<ListItem
+					button
+					onClick={() => history.push('/my-invitations')}
+				>
+					<ListItemIcon>
+						<InvitationsIcon color="primary" />
+					</ListItemIcon>
+					<ListItemText primary="Invitations" />
 				</ListItem>
 			</List>
 		</Drawer>

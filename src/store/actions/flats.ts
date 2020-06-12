@@ -21,6 +21,7 @@ export type APIFlat = {
 
 export type APIInvitation = {
 	id: number;
+	token: string;
 	flatId: number;
 	createBy: number;
 	createAt: string;
@@ -28,6 +29,7 @@ export type APIInvitation = {
 	actionDate: string | null;
 	sendDate: string | null;
 	status: InvitationStatus;
+	actionBy: number | null;
 };
 
 export type AddFlatActionPayload = { flat: Flat; tmpId: string };
@@ -249,6 +251,7 @@ export const mapAPIFlatDataToModel = (data: APIFlat) =>
 export const mapAPIInvitationDataToModel = (data: APIInvitation) =>
 	new Invitation({
 		id: data.id,
+		token: data.token,
 		createAt: data.createAt,
 		actionDate: data.actionDate,
 		emailAddress: data.emailAddress,

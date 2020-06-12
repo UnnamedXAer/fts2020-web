@@ -25,6 +25,11 @@ export enum TasksActionTypes {
 	ClearState = 'TASK_CLEAR_STATE',
 }
 
+export enum InvitationsActionTypes {
+	SetUserInvitations = 'INVITATION_SET_USER_INVITATIONS',
+	ClearState = 'TASK_CLEAR_STATE',
+}
+
 export enum TaskPeriodsTypes {
 	SetTaskPeriods = 'PERIOD_SET_TASK_PERIODS',
 	CompletePeriod = 'PERIOD_COMPLETE',
