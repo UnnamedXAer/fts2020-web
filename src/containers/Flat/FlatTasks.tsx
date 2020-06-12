@@ -11,7 +11,7 @@ import CustomModal from '../../components/UI/CustomModal';
 import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props {
-	flatId: number;
+	flatId: number | undefined;
 }
 
 const FlatTasks: React.FC<Props> = ({ flatId }) => {
@@ -20,7 +20,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
 	const flatTasksLoadTime = useSelector<RootState, number | undefined>(
-		(state) => state.tasks.flatTasksLoadTime[flatId]
+		(state) => flatId ? state.tasks.flatTasksLoadTime[flatId] : void 0
 	);
 	const tasks = useSelector<RootState, Task[]>((state) =>
 		state.tasks.tasks.filter((x) => x.flatId === flatId)
@@ -42,7 +42,7 @@ const FlatTasks: React.FC<Props> = ({ flatId }) => {
 	}, []);
 
 	useEffect(() => {
-		if (!flatTasksLoadTime && !loading && !error) {
+		if (flatId && !flatTasksLoadTime && !loading && !error) {
 			setLoading(true);
 			setError(null);
 			const loadTasks = async () => {

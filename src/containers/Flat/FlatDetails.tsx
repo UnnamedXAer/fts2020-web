@@ -28,6 +28,7 @@ import {
 	updateFlat,
 	fetchFlatInvitations,
 	updateInvitation,
+	fetchFlats,
 } from '../../store/actions/flats';
 import {
 	StateError,
@@ -47,6 +48,7 @@ import HttpErrorParser from '../../utils/parseError';
 import { FlatData } from '../../models/flat';
 import InvitationsTable from '../../components/Flat/InvitationsTable';
 import { InvitationAction } from '../../models/invitation';
+import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 
 interface Props extends RouteComponentProps {}
 
@@ -83,6 +85,11 @@ const elementsInitState = {
 		members: null,
 		invitations: null,
 	},
+	loadTime: {
+		owner: false,
+		members: false,
+		invitations: false,
+	},
 };
 
 type ElementsState = typeof elementsInitState;
@@ -99,9 +106,19 @@ type ElementsReducer = (
 ) => ElementsState;
 
 const elementsReducer: ElementsReducer = (state, action) => {
-	if (action.type === 'loading' || action.type === 'not-loading')
-		return { ...state, [action.name]: action.type === 'loading' };
-	else {
+	if (action.type === 'loading' || action.type === 'not-loading') {
+		return {
+			...state,
+			loading: {
+				...state.loading,
+				[action.name]: action.type === 'loading',
+			},
+			loadTime: {
+				...state.loadTime,
+				[action.name]: true,
+			},
+		};
+	} else {
 		return {
 			...state,
 			error: { ...state.error, [action.name]: action.payload },
@@ -113,16 +130,22 @@ const FlatDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
 
+	const [error, setError] = useState<StateError>(null);
 	const id = +(props.match.params as RouterParams).id;
-	const flat = useSelector((state: RootState) =>
-		state.flats.flats.find((x) => x.id === id)
-	)!;
+	const { flat, flatsLoadTime } = useSelector((state: RootState) => ({
+		flat: state.flats.flats.find((x) => x.id === id),
+		flatsLoadTime: state.flats.flatsLoadTime,
+	}));
 	const loggedUser = useSelector((state: RootState) => state.auth.user);
 
-	const [elements, elementsDispatch] = useReducer(
-		elementsReducer,
-		elementsInitState
-	);
+	const [elements, elementsDispatch] = useReducer(elementsReducer, {
+		...elementsInitState,
+		loadTime: {
+			owner: !!flat?.owner,
+			members: !!flat?.members,
+			invitations: !!flat?.invitations,
+		},
+	} as ElementsState);
 
 	const [loadingInvs, setLoadingInvs] = useState<{ [key: number]: boolean }>(
 		{}
@@ -150,120 +173,105 @@ const FlatDetails: React.FC<Props> = (props) => {
 		};
 	}, [id]);
 
-	const loadOwner = useCallback(
-		async (userId, flatId) => {
-			elementsDispatch({ name: 'owner', type: 'loading' });
-			try {
-				await dispatch(fetchFlatOwner(userId, flatId));
-			} catch (err) {
-				if (isMounted.current === flatId) {
-					const httpError = new HttpErrorParser(err);
-					const msg = httpError.getMessage();
-					elementsDispatch({
-						name: 'owner',
-						type: 'error',
-						payload: msg,
-					});
+	useEffect(() => {
+		if (flatsLoadTime === 0) {
+			const loadFlats = async () => {
+				try {
+					await dispatch(fetchFlats());
+				} catch (err) {
+					if (isMounted.current !== null) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						setError(msg);
+					}
 				}
-			}
-			if (isMounted.current === flatId) {
-				elementsDispatch({ name: 'owner', type: 'not-loading' });
-			}
-		},
-		[dispatch]
-	);
+			};
+
+			loadFlats();
+		}
+	}, [dispatch, flatsLoadTime]);
 
 	useEffect(() => {
-		if (!flat.owner && !elements.error.owner && !elements.loading.owner) {
-			loadOwner(flat.ownerId, flat.id);
-		}
-	}, [
-		elements.error.owner,
-		elements.loading.owner,
-		flat.id,
-		flat.owner,
-		flat.ownerId,
-		loadOwner,
-	]);
-
-	const loadMembers = useCallback(
-		async (flatId) => {
-			elementsDispatch({ name: 'members', type: 'loading' });
-
-			try {
-				await dispatch(fetchFlatMembers(flatId));
-			} catch (err) {
-				if (isMounted.current === flatId) {
-					const httpError = new HttpErrorParser(err);
-					const msg = httpError.getMessage();
-					elementsDispatch({
-						name: 'members',
-						type: 'error',
-						payload: msg,
-					});
+		if (flat && !elements.loadTime.owner) {
+			const loadOwner = async (userId: number, flatId: number) => {
+				elementsDispatch({ name: 'owner', type: 'loading' });
+				try {
+					await dispatch(fetchFlatOwner(userId, flatId));
+				} catch (err) {
+					if (isMounted.current === flatId) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'owner',
+							type: 'error',
+							payload: msg,
+						});
+					}
 				}
-			}
-			if (isMounted.current === flatId) {
-				elementsDispatch({ name: 'members', type: 'not-loading' });
-			}
-		},
-		[dispatch]
-	);
+				if (isMounted.current === flatId) {
+					elementsDispatch({ name: 'owner', type: 'not-loading' });
+				}
+			};
+
+			loadOwner(flat.ownerId, flat.id!);
+		}
+	}, [dispatch, elements.loadTime.owner, flat]);
 
 	useEffect(() => {
-		if (
-			!flat.members &&
-			!elements.loading.members &&
-			!elements.error.members
-		) {
-			loadMembers(id);
-		}
-	}, [
-		elements.error.members,
-		elements.loading.members,
-		flat.members,
-		id,
-		loadMembers,
-	]);
+		if (flat && !elements.loadTime.members) {
+			const loadMembers = async () => {
+				elementsDispatch({ name: 'members', type: 'loading' });
 
-	const loadInvitations = useCallback(
-		async (flatId) => {
-			elementsDispatch({ name: 'invitations', type: 'loading' });
-			try {
-				await dispatch(fetchFlatInvitations(flatId));
-			} catch (err) {
-				if (isMounted.current === flatId) {
-					const httpError = new HttpErrorParser(err);
-					const msg = httpError.getMessage();
+				try {
+					await dispatch(fetchFlatMembers(flat.id!));
+				} catch (err) {
+					if (isMounted.current === flat.id) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'members',
+							type: 'error',
+							payload: msg,
+						});
+					}
+				}
+				if (isMounted.current === flat.id) {
+					elementsDispatch({ name: 'members', type: 'not-loading' });
+				}
+			};
+
+			loadMembers();
+		}
+	}, [dispatch, elements.loadTime.members, flat]);
+
+	useEffect(() => {
+		if (flat && !elements.loadTime.invitations) {
+			const loadInvitations = async () => {
+				elementsDispatch({ name: 'invitations', type: 'loading' });
+				try {
+					await dispatch(fetchFlatInvitations(flat.id!));
+				} catch (err) {
+					if (isMounted.current === flat.id) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'invitations',
+							type: 'error',
+							payload: msg,
+						});
+					}
+				}
+				if (isMounted.current === flat.id) {
 					elementsDispatch({
 						name: 'invitations',
-						type: 'error',
-						payload: msg,
+						type: 'not-loading',
 					});
 				}
-			}
-			if (isMounted.current === flatId) {
-				elementsDispatch({ name: 'invitations', type: 'not-loading' });
-			}
-		},
-		[dispatch]
-	);
+			};
 
-	useEffect(() => {
-		if (
-			!flat.invitations &&
-			!elements.loading.invitations &&
-			!elements.error.invitations
-		) {
-			loadInvitations(id);
+			loadInvitations();
 		}
-	}, [
-		elements.error.invitations,
-		elements.loading.invitations,
-		flat.invitations,
-		id,
-		loadInvitations,
-	]);
+	}, [dispatch, elements.loadTime.invitations, flat]);
 
 	const memberSelectHandler = (id: number) => {
 		props.history.push(`/profile/${id}`);
@@ -326,7 +334,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 	) => {
 		switch (optionName) {
 			case FlatSpeedActions.InviteMember:
-				props.history.push(`/flats/${flat.id}/invite-members`);
+				props.history.push(`/flats/${flat!.id}/invite-members`);
 				break;
 			case FlatSpeedActions.CloseFlat:
 				setDialogData({
@@ -351,7 +359,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 
 				break;
 			case FlatSpeedActions.AddTask:
-				props.history.push(`/flats/${flat.id}/tasks/add`);
+				props.history.push(`/flats/${flat!.id}/tasks/add`);
 				break;
 			default:
 				break;
@@ -365,7 +373,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 	) => {
 		setLoadingInvs((prevState) => ({ ...prevState, [id]: true }));
 		try {
-			await dispatch(updateInvitation(id, flat.id!, action));
+			await dispatch(updateInvitation(id, flat!.id!, action));
 			isMounted.current &&
 				setSnackbarData({
 					open: true,
@@ -402,6 +410,13 @@ const FlatDetails: React.FC<Props> = (props) => {
 						View Flat
 					</Typography>
 				</Grid>
+				{error && (
+					<Grid item>
+						<CustomMuiAlert severity="error">
+							{error}
+						</CustomMuiAlert>
+					</Grid>
+				)}
 				<Grid item>
 					<Grid
 						container
@@ -420,10 +435,14 @@ const FlatDetails: React.FC<Props> = (props) => {
 							</Avatar>
 						</Grid>
 						<Grid item>
-							<Typography variant="h5" component="h2">
-								{flat.name}
-							</Typography>
-							{flat.owner ? (
+							{flat ? (
+								<Typography variant="h5" component="h2">
+									{flat.name}
+								</Typography>
+							) : (
+								<Skeleton height={48} animation="wave" />
+							)}
+							{flat?.owner ? (
 								<Typography
 									variant="subtitle1"
 									color="textSecondary"
@@ -433,12 +452,16 @@ const FlatDetails: React.FC<Props> = (props) => {
 							) : (
 								<Skeleton animation="wave" />
 							)}
-							<Typography
-								variant="subtitle1"
-								color="textSecondary"
-							>
-								{moment(flat.createAt).format('llll')}
-							</Typography>
+							{flat ? (
+								<Typography
+									variant="subtitle1"
+									color="textSecondary"
+								>
+									{moment(flat.createAt).format('llll')}
+								</Typography>
+							) : (
+								<Skeleton animation="wave" />
+							)}
 						</Grid>
 					</Grid>
 					<Grid item className={classes.gridItem}>
@@ -447,7 +470,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 						</Typography>
 						<TextField
 							className={classes.description}
-							value={flat.description}
+							value={flat? flat.description : ''}
 							placeholder="no description"
 							multiline
 							rowsMax={4}
@@ -464,7 +487,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 							error={elements.error.members}
 							onMemberSelect={memberSelectHandler}
 							loading={elements.loading.members}
-							members={flat.members}
+							members={flat?.members}
 						/>
 					</Grid>
 					<Grid item className={classes.gridItem}>
@@ -474,8 +497,8 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<InvitationsTable
 							error={elements.error.invitations}
 							loading={elements.loading.invitations}
-							invitations={flat.invitations}
-							flatOwner={loggedUser!.id === flat.ownerId}
+							invitations={flat?.invitations}
+							flatOwner={loggedUser!.id === flat?.ownerId}
 							loadingInvs={loadingInvs}
 							onInvitationAction={invitationActionHandler}
 						/>
@@ -484,7 +507,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<Typography variant="h5" component="h3">
 							Tasks
 						</Typography>
-						<FlatTasks flatId={flat.id as number} />
+						<FlatTasks flatId={flat?.id!} />
 					</Grid>
 				</Grid>
 			</Grid>
