@@ -1,28 +1,18 @@
 import React, { useState, useRef, FC, useEffect } from 'react';
 import {
-	makeStyles,
-	Theme,
 	Grid,
 	Typography,
 	Button,
-	createStyles,
-	Avatar,
-	Paper,
 	CircularProgress,
-	Box,
 	Container,
 } from '@material-ui/core';
-import ContactMailRoundedIcon from '@material-ui/icons/ContactMailRounded';
 import { RouteComponentProps } from 'react-router-dom';
 import HttpErrorParser from '../../utils/parseError';
 import { StateError } from '../../ReactTypes/customReactTypes';
 import axios from '../../axios/axios';
-import moment from 'moment';
-import Skeleton from '@material-ui/lab/Skeleton/Skeleton';
 import {
 	InvitationPresentation,
 	APIInvitationPresentation,
-	InvitationStatusInfo,
 	InvitationStatus,
 	InvitationAction,
 } from '../../models/invitation';
@@ -35,7 +25,6 @@ type RouterParams = {
 interface Props extends RouteComponentProps<RouterParams> {}
 
 const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
-	const classes = useStyles();
 	const token = match.params.token;
 	const searchParams = new URLSearchParams(location.search);
 	const status = searchParams.get('status');
@@ -80,194 +69,103 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 		setTimeout(loadInvitation, 1000);
 	}, [error, invitation, token]);
 
-	const button = invitation ? (
-		<Button
-			tabIndex={4}
-			style={{
-				paddingLeft: 40,
-				paddingRight: 40,
-			}}
-			onClick={() =>
-				history.replace(
-					action === InvitationAction.ACCEPT
-						? `/flats/${invitation.flat.id}`
-						: `/`
+	const screenAction = (
+		<>
+			{error ? (
+				<>
+					<Grid item>
+						<CustomMuiAlert severity="warning">
+							Could not load some data. Don't wait, you can leave
+							this page.
+						</CustomMuiAlert>
+					</Grid>
+				</>
+			) : (
+				!invitation && (
+					<Grid item>
+						<CircularProgress />
+					</Grid>
 				)
-			}
-			variant="text"
-			color="primary"
-			type="button"
-		>
-			Ok
-		</Button>
-	) : (
-		<CircularProgress />
+			)}
+
+			<Grid item>
+				<Button
+					tabIndex={4}
+					style={{
+						paddingLeft: 40,
+						paddingRight: 40,
+					}}
+					onClick={() =>
+						history.replace(
+							action === InvitationAction.ACCEPT && invitation
+								? `/flats/${invitation.flat.id}`
+								: `/`
+						)
+					}
+					variant="contained"
+					color="primary"
+					type="button"
+				>
+					Ok
+				</Button>
+			</Grid>
+		</>
 	);
 
-	if (status && action) {
+	let content: React.ReactNode = null;
+
+	if (action === 'autoredirect') {
+		content = (
+			<Grid item>
+				<Typography>
+					The invitation is no longer available.{' '}
+					{status || invitation
+						? `Current status is: "${invitation?.status || status}"`
+						: ''}
+				</Typography>
+			</Grid>
+		);
+	} else if (status && action) {
 		if (
 			(status === InvitationStatus.ACCEPTED &&
 				action === InvitationAction.ACCEPT) ||
 			(status === InvitationStatus.REJECTED &&
 				action === InvitationAction.REJECT)
 		) {
-			return (
-				<Grid container alignItems="center" justify="center">
-					<Grid item>
-						<Typography>Thank You for action.</Typography>
-						{action === InvitationAction.ACCEPT && button}
-					</Grid>
+			content = (
+				<Grid item>
+					<Typography>Thank You for action.</Typography>
 				</Grid>
 			);
 		}
 	} else {
-		return (
-			<Grid container alignItems="center" justify="center">
-				<Grid item>
-					{invitation ? (
-						<Typography>
-							The invitation status is already set as :{' '}
-							{invitation.status}
-						</Typography>
-					) : (
-						button
-					)}
-				</Grid>
+		content = (
+			<Grid item>
+				{invitation ? (
+					<Typography>
+						The invitation status is already set as :{' '}
+						{invitation.status}
+					</Typography>
+				) : (
+					<Typography>Thank You for action.</Typography>
+				)}
 			</Grid>
 		);
 	}
-
 	return (
 		<Container maxWidth="sm">
-			<Grid container spacing={2} direction="column">
-				<Grid item>
-					<Paper
-						variant="outlined"
-						className={[classes.paper, classes.paperWithLabel].join(
-							' '
-						)}
-					>
-						<Typography
-							className={classes.paperLabel}
-							color="textSecondary"
-							variant="caption"
-						>
-							Invitation Informations
-						</Typography>
-						<Grid
-							container
-							direction="row"
-							spacing={4}
-							alignItems="center"
-						>
-							<Grid item>
-								<Avatar
-									className={classes.avatar}
-									alt="flat avatar"
-									src=""
-								>
-									<ContactMailRoundedIcon
-										fontSize="large"
-										color="primary"
-									/>
-								</Avatar>
-							</Grid>
-							<Grid item style={{ flex: 1 }}>
-								{invitation ? (
-									<>
-										<Typography variant="h5" component="h2">
-											{typeof invitation.invitedPerson ===
-											'string'
-												? invitation.invitedPerson
-												: invitation.invitedPerson
-														.emailAddress}
-										</Typography>
-										<Typography>
-											<span className={classes.infoLabel}>
-												{invitation.sendDate
-													? 'Send'
-													: 'Created'}{' '}
-												at{' '}
-											</span>
-											{moment(
-												invitation.sendDate
-													? invitation.sendDate
-													: invitation.createAt
-											).format('LLLL')}
-										</Typography>
-										<Typography>
-											<span>Invited by </span>
-											{invitation.sender!.emailAddress} (
-											{invitation.sender!.userName})
-										</Typography>
-										<Typography>
-											<span>Status: </span>
-											{
-												InvitationStatusInfo[
-													invitation.status
-												]
-											}
-										</Typography>
-									</>
-								) : (
-									<>
-										<Skeleton height={40} width="75%" />
-										<Skeleton height={24} width="66%" />
-										<Skeleton height={24} width="90%" />
-										<Skeleton height={24} width="70%" />
-									</>
-								)}
-							</Grid>
-						</Grid>
-					</Paper>
-				</Grid>
-
-				{error && (
-					<Grid item>
-						<CustomMuiAlert severity="error">
-							{error}
-						</CustomMuiAlert>
-					</Grid>
-				)}
+			<Grid
+				spacing={2}
+				container
+				alignItems="center"
+				justify="center"
+				direction="column"
+			>
+				{content}
+				{screenAction}
 			</Grid>
 		</Container>
 	);
 };
-
-const useStyles = makeStyles((theme: Theme) =>
-	createStyles({
-		paper: {
-			padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-			flex: 1,
-		},
-		paperWithLabel: {
-			paddingTop: 32,
-			position: 'relative',
-		},
-		paperLabel: {
-			position: 'absolute',
-			top: -17,
-			left: 16,
-			backgroundColor: 'white',
-			fontSize: 19,
-			paddingRight: 8,
-			paddingLeft: 8,
-			fontVariant: 'all-small-caps',
-		},
-		infoLabel: {
-			color: theme.palette.grey[600],
-		},
-		avatar: {
-			width: theme.spacing(10),
-			height: theme.spacing(10),
-		},
-		actions: {
-			marginTop: theme.spacing(3),
-			justifyContent: 'space-around',
-			alignItems: 'center',
-			display: 'flex',
-		},
-	})
-);
 
 export default InvitationResponseSummary;

@@ -25,8 +25,8 @@ import {
 	InvitationPresentation,
 	APIInvitationPresentation,
 	InvitationStatusInfo,
-	InvitationStatus,
 	InvitationAction,
+	invitationInactiveStatuses,
 } from '../../models/invitation';
 import { APIInvitation } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
@@ -67,12 +67,9 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 				if (isMounted.current) {
 					if (status === 200) {
 						const invitation = new InvitationPresentation(data);
-						const notActionable = [
-							InvitationStatus.ACCEPTED,
-							InvitationStatus.CANCELED,
-							InvitationStatus.EXPIRED,
-							InvitationStatus.REJECTED,
-						].includes(invitation.status);
+						const notActionable = invitationInactiveStatuses.includes(
+							invitation.status
+						);
 						if (notActionable) {
 							history.replace(
 								`/invitation/${token}/summary?status=${invitation.status}&action=autoredirect`
