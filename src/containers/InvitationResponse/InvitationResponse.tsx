@@ -74,8 +74,10 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 							InvitationStatus.REJECTED,
 						].includes(invitation.status);
 						if (notActionable) {
-							history.replace(`/invitation/${token}/summary`);
-						}else {
+							history.replace(
+								`/invitation/${token}/summary?status=${invitation.status}&action=autoredirect`
+							);
+						} else {
 							setInvitation(invitation);
 						}
 					}
