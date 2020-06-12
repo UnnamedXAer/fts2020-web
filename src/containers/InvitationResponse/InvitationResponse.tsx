@@ -102,7 +102,7 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 			});
 			if (isMounted.current) {
 				history.replace(
-					`/invitation/${token}/summary${location.search}&status=${data.status}&action=${action}`
+					`/invitation/${token}/summary?${location.search}&status=${data.status}&action=${action}`
 				);
 			}
 		} catch (err) {
