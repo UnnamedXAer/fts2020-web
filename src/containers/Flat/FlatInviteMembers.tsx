@@ -108,6 +108,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 	};
 
 	const addUserToMembers = (user: User, status: MembersStatus) => {
+		user.emailAddress = user.emailAddress.toLowerCase();
 		setMembersStatus((prevState) => ({
 			...prevState,
 			[user.emailAddress]: MembersStatus.accepted,
