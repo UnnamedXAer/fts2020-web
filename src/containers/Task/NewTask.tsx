@@ -53,6 +53,9 @@ type RouterParams = {
 	flatId: string;
 };
 
+const defaultStartDay = moment().startOf('day');
+const defaultEndDay = moment(defaultStartDay).add('months', 6);
+
 const NewTask: FC<Props> = ({ history, match }) => {
 	const classes = useStyles();
 	const flat = useSelector((state: RootState) =>
@@ -67,8 +70,8 @@ const NewTask: FC<Props> = ({ history, match }) => {
 			description: '',
 			timePeriodUnit: TaskPeriodUnit.WEEK,
 			timePeriodValue: '1',
-			startDate: moment(),
-			endDate: moment().add(6, 'months'),
+			startDate: defaultStartDay,
+			endDate: defaultEndDay,
 		},
 		errors: {
 			name: null,

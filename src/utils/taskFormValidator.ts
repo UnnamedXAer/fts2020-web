@@ -4,7 +4,7 @@ import moment from 'moment';
 
 export default function validateTaskFormField(
 	fieldId: string,
-	formValues: TaskFormValues, 
+	formValues: TaskFormValues,
 	currentValue?: unknown
 ): string | null {
 	let error = null;
@@ -30,7 +30,13 @@ export default function validateTaskFormField(
 			break;
 		case 'startDate':
 		case 'endDate':
-			error = validateTaskDate(fieldId, formValues, (currentValue ? currentValue : formValues[fieldId]) as MaterialUiPickersDate);
+			error = validateTaskDate(
+				fieldId,
+				formValues,
+				(currentValue
+					? currentValue
+					: formValues[fieldId]) as MaterialUiPickersDate
+			);
 			break;
 		default:
 			break;
@@ -48,11 +54,17 @@ export const validateTaskDate = (
 	if (date) {
 		if (date.isAfter(moment().subtract(1, 'day'))) {
 			if (fieldName === 'startDate') {
-				if (formValues.endDate && date.isBefore(formValues.endDate)) {
+				if (
+					formValues.endDate &&
+					date.isSameOrAfter(formValues.endDate, 'day')
+				) {
 					error = 'Start Date must be lesser than End Date.';
 				}
 			} else {
-				if (formValues.startDate && date.isBefore(formValues.startDate)) {
+				if (
+					formValues.startDate &&
+					date.isSameOrBefore(formValues.startDate, 'day')
+				) {
 					error = 'End Date must be greater than Start Date.';
 				}
 			}
