@@ -87,7 +87,7 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 				}
 			}
 		};
-		setTimeout(loadInvitation, 3000);
+		loadInvitation();
 	}, [error, history, invitation, loading, token]);
 
 	const actionHandler = async (

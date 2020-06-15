@@ -17,6 +17,8 @@ import {
 	InvitationAction,
 } from '../../models/invitation';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
+import { useDispatch } from 'react-redux';
+import { resetFlatsLoadTime } from '../../store/actions/flats';
 
 type RouterParams = {
 	token: string;
@@ -25,6 +27,7 @@ type RouterParams = {
 interface Props extends RouteComponentProps<RouterParams> {}
 
 const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
+	const dispatch = useDispatch();
 	const token = match.params.token;
 	const searchParams = new URLSearchParams(location.search);
 	const status = searchParams.get('status');
@@ -66,8 +69,17 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 				}
 			}
 		};
-		setTimeout(loadInvitation, 1000);
+		loadInvitation();
 	}, [error, invitation, token]);
+
+	const submitHandler = () => {
+		dispatch(resetFlatsLoadTime());
+		history.replace(
+			action === InvitationAction.ACCEPT && invitation
+				? `/flats/${invitation.flat.id}`
+				: `/`
+		);
+	};
 
 	const screenAction = (
 		<>
@@ -95,13 +107,7 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 						paddingLeft: 40,
 						paddingRight: 40,
 					}}
-					onClick={() =>
-						history.replace(
-							action === InvitationAction.ACCEPT && invitation
-								? `/flats/${invitation.flat.id}`
-								: `/`
-						)
-					}
+					onClick={submitHandler}
 					variant="contained"
 					color="primary"
 					type="button"

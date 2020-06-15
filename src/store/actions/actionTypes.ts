@@ -2,40 +2,41 @@ export const AUTHORIZE = 'AUTHORIZE';
 export const LOGOUT = 'LOGOUT';
 
 export enum AuthActionTypes {
-	UpdatePassword = 'USER_UPDATE_PASSWORD',
+	UpdatePassword = 'AUTH_UPDATE_PASSWORD',
 }
 
 export enum FlatsActionTypes {
-	Set = 'FLAT_SET',
-	Add = 'FLAT_ADD',
-	SetOwner = 'FLAT_SET_OWNER',
-	SetMembers = 'FLAT_SET_MEMBERS',
-	SetInvitations = 'FLAT_SET_INVITATIONS',
-	SetInvitation = 'FLAT_SET_INVITATION',
-	ClearState = 'FLAT_CLEAR_STATE',
+	Set = 'FLATS_SET_FLATS',
+	Add = 'FLATS_ADD_FLAT',
+	SetOwner = 'FLATS_SET_FLAT_OWNER',
+	SetMembers = 'FLATS_SET_FLAT_MEMBERS',
+	SetInvitations = 'FLATS_SET_FLAT_INVITATIONS',
+	SetInvitation = 'FLATS_SET_FLAT_INVITATION',
+	ClearState = 'FLATS_CLEAR_STATE',
+	ResetFlatsLoadTime = 'FLATS_RESET_FLATS_LOAD_TIME',
 }
 
 export enum TasksActionTypes {
-	Add = 'TASK_ADD',
-	SetTask = 'TASK_SET',
-	SetOwner = 'TASK_SET_OWNER',
-	SetFlatTasks = 'TASK_SET_FLAT_TASKS',
-	SetUserTasks = 'TASK_SET_USER_TASKS',
-	SetMembers = 'TASK_SET_MEMBERS',
-	ClearState = 'TASK_CLEAR_STATE',
+	Add = 'TASKS_ADD_TASK',
+	SetTask = 'TASKS_SET_TASK',
+	SetFlatTasks = 'TASKS_SET_FLAT_TASKS',
+	SetUserTasks = 'TASKS_SET_USER_TASKS',
+	SetOwner = 'TASKS_SET_OWNER',
+	SetMembers = 'TASKS_SET_MEMBERS',
+	ClearState = 'TASKS_CLEAR_STATE',
 }
 
 export enum InvitationsActionTypes {
-	SetUserInvitations = 'INVITATION_SET_USER_INVITATIONS',
-	ClearState = 'TASK_CLEAR_STATE',
+	SetUserInvitations = 'INVITATIONS_SET_USER_INVITATIONS',
+	ClearState = 'INVITATIONS_CLEAR_STATE',
 }
 
 export enum TaskPeriodsTypes {
-	SetTaskPeriods = 'PERIOD_SET_TASK_PERIODS',
-	CompletePeriod = 'PERIOD_COMPLETE',
+	SetTaskPeriods = 'PERIODS_SET_TASK_PERIODS',
+	CompletePeriod = 'PERIODS_COMPLETE',
 }
 
 export enum UsersActionTypes {
-	SetUser = 'USER_SET',
-	UpdateUser = 'USER_UPDATE',
+	SetUser = 'USERS_SET',
+	UpdateUser = 'USERS_UPDATE',
 }

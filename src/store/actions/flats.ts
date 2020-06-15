@@ -236,6 +236,11 @@ export const updateInvitation = (
 	};
 };
 
+export const resetFlatsLoadTime = (): StoreAction<
+	undefined,
+	FlatsActionTypes.ResetFlatsLoadTime
+> => ({ type: FlatsActionTypes.ResetFlatsLoadTime, payload: void 0 });
+
 export const mapAPIFlatDataToModel = (data: APIFlat) =>
 	new Flat({
 		id: data.id,
