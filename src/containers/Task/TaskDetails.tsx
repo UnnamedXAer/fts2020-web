@@ -28,6 +28,7 @@ import {
 	fetchTask,
 	fetchTaskOwner,
 	updateTask,
+	fetchUserTasks,
 } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
@@ -108,8 +109,12 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
 	const [error, setError] = useState<StateError>(null);
+	const [userTasksError, setUserTasksError] = useState<StateError>(null);
 	const id = +(props.match.params as RouterParams).id;
 	const loggedUser = useSelector((state: RootState) => state.auth.user);
+	const userTasksLoadTime = useSelector(
+		(state: RootState) => state.tasks.userTasksLoadTime
+	);
 	const flatName = useSelector<RootState, string>((state) => {
 		let flatName: string;
 		const flat = state.flats.flats.find((x) => x.id === id);
@@ -117,7 +122,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 			flatName = flat.name;
 		} else {
 			const userTask = state.tasks.userTasks.find((x) => x.id === id);
-			flatName = userTask!.flatName!;
+			flatName = userTask?.flatName!;
 		}
 		return flatName;
 	});
@@ -154,6 +159,27 @@ const TaskDetails: React.FC<Props> = (props) => {
 			isMounted.current = false;
 		};
 	}, []);
+
+	useEffect(() => {
+		if (userTasksLoadTime === 0) {
+			const loadUserTasks = async () => {
+				setUserTasksError(null);
+				try {
+					await dispatch(fetchUserTasks());
+				} catch (err) {
+					if (isMounted.current) {
+						if (isMounted.current) {
+							const error = new HttpErrorParser(err);
+							const msg = error.getMessage();
+							setUserTasksError(msg);
+						}
+					}
+				}
+			};
+
+			loadUserTasks();
+		}
+	}, [dispatch, userTasksLoadTime]);
 
 	useEffect(() => {
 		if (!task) {
@@ -407,10 +433,12 @@ const TaskDetails: React.FC<Props> = (props) => {
 						View Task
 					</Typography>
 				</Grid>
-				{error && (
+				{(error || userTasksError) && (
 					<Grid item>
 						<CustomMuiAlert severity="error">
 							{error}
+							{userTasksError && error && <br />}
+							{userTasksError}
 						</CustomMuiAlert>
 					</Grid>
 				)}
