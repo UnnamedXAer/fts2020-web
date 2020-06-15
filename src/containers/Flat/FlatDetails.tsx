@@ -1,10 +1,4 @@
-import React, {
-	useEffect,
-	useState,
-	useCallback,
-	useRef,
-	useReducer,
-} from 'react';
+import React, { useEffect, useState, useRef, useReducer } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import {
@@ -132,10 +126,13 @@ const FlatDetails: React.FC<Props> = (props) => {
 
 	const [error, setError] = useState<StateError>(null);
 	const id = +(props.match.params as RouterParams).id;
-	const { flat, flatsLoadTime } = useSelector((state: RootState) => ({
-		flat: state.flats.flats.find((x) => x.id === id),
-		flatsLoadTime: state.flats.flatsLoadTime,
-	}));
+	const flat = useSelector((state: RootState) =>
+		state.flats.flats.find((x) => x.id === id)
+	);
+	const flatsLoadTime = useSelector(
+		(state: RootState) => state.flats.flatsLoadTime
+	);
+
 	const loggedUser = useSelector((state: RootState) => state.auth.user);
 
 	const [elements, elementsDispatch] = useReducer(elementsReducer, {
@@ -172,6 +169,14 @@ const FlatDetails: React.FC<Props> = (props) => {
 			isMounted.current = null;
 		};
 	}, [id]);
+
+	useEffect(() => {
+		if (flatsLoadTime !== 0 && !flat) {
+			setError(
+				'Unauthorized access - You do not have permissions to view this flat.'
+			);
+		}
+	}, [flat, flatsLoadTime]);
 
 	useEffect(() => {
 		if (flatsLoadTime === 0) {
@@ -401,7 +406,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 		isMounted.current &&
 			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
 	};
-	console.log(speedDialOpen);
+
 	return (
 		<>
 			<Grid container spacing={2} direction="column">
@@ -470,7 +475,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 						</Typography>
 						<TextField
 							className={classes.description}
-							value={flat? flat.description : ''}
+							value={flat ? flat.description : ''}
 							placeholder="no description"
 							multiline
 							rowsMax={4}
