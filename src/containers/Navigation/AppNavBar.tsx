@@ -45,7 +45,10 @@ const AppNavBar: React.FC<Props> = (props) => {
 
 	const logoutHandler = async () => {
 		await dispatch(logOut());
-		isMounted.current && setAnchorEl(null);
+		if (isMounted.current) {
+			setAnchorEl(null);
+			history.push('/');
+		}
 	};
 
 	const openProfileHandler = () => {
