@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
@@ -8,17 +8,18 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
+import Skeleton from '@material-ui/lab/Skeleton';
 
 function not(a: number[], b: number[]) {
-	return a.filter(value => b.indexOf(value) === -1);
+	return a.filter((value) => b.indexOf(value) === -1);
 }
 
 function intersection(a: number[], b: number[]) {
-	return a.filter(value => b.indexOf(value) !== -1);
+	return a.filter((value) => b.indexOf(value) !== -1);
 }
 
 interface Props {
-	data: {
+	data?: {
 		id: number;
 		labelPrimary: string;
 		labelSecondary?: string;
@@ -26,7 +27,7 @@ interface Props {
 	}[];
 	onChanged: (rightData: number[]) => void;
 	listStyle?: React.CSSProperties;
-	disabled?: boolean
+	disabled?: boolean;
 }
 
 const TransferList: React.FC<Props> = ({
@@ -38,11 +39,12 @@ const TransferList: React.FC<Props> = ({
 	const classes = useStyles();
 	const [checked, setChecked] = React.useState<number[]>([]);
 	const [left, setLeft] = React.useState(
-		data.filter((x) => !x.initialChecked).map((x) => x.id)
+		data ? data.filter((x) => !x.initialChecked).map((x) => x.id) : []
 	);
 	const [right, setRight] = React.useState(
-		data.filter((x) => x.initialChecked).map((x) => x.id)
+		data ? data.filter((x) => x.initialChecked).map((x) => x.id) : []
 	);
+	const [dataSet, setDataSet] = useState(!!data);
 
 	const leftChecked = intersection(checked, left);
 	const rightChecked = intersection(checked, right);
@@ -50,6 +52,14 @@ const TransferList: React.FC<Props> = ({
 	useEffect(() => {
 		onChanged(right);
 	}, [right, onChanged]);
+
+	useEffect(() => {
+		if (data && !dataSet) {
+			setRight(data.filter((x) => x.initialChecked).map((x) => x.id));
+			setLeft(data.filter((x) => !x.initialChecked).map((x) => x.id));
+			setDataSet(true);
+		}
+	}, [data, dataSet]);
 
 	const handleToggle = (value: number) => () => {
 		const currentIndex = checked.indexOf(value);
@@ -88,35 +98,44 @@ const TransferList: React.FC<Props> = ({
 
 	const customList = (items: number[]) => (
 		<Paper className={classes.paper} style={listStyle}>
-			<List dense component="div" role="list">
-				{items.map((itemId: number) => {
-					const labelId = `transfer-list-item-${itemId}-label`;
-					const item = data.find((x) => x.id === itemId)!;
-					return (
-						<ListItem
-							key={itemId}
-							role="listitem"
-							button
-							onClick={handleToggle(itemId)}
-						>
-							<ListItemIcon>
-								<Checkbox
-									checked={checked.indexOf(itemId) !== -1}
-									tabIndex={-1}
-									disableRipple
-									inputProps={{ 'aria-labelledby': labelId }}
+			{data ? (
+				<List dense component="div" role="list">
+					{items.map((itemId: number) => {
+						const labelId = `transfer-list-item-${itemId}-label`;
+						const item = data!.find((x) => x.id === itemId)!;
+						return (
+							<ListItem
+								key={itemId}
+								role="listitem"
+								button
+								onClick={handleToggle(itemId)}
+							>
+								<ListItemIcon>
+									<Checkbox
+										checked={checked.indexOf(itemId) !== -1}
+										tabIndex={-1}
+										disableRipple
+										inputProps={{
+											'aria-labelledby': labelId,
+										}}
+									/>
+								</ListItemIcon>
+								<ListItemText
+									id={labelId}
+									primary={item.labelPrimary}
+									secondary={item.labelSecondary}
 								/>
-							</ListItemIcon>
-							<ListItemText
-								id={labelId}
-								primary={item.labelPrimary}
-								secondary={item.labelSecondary}
-							/>
-						</ListItem>
-					);
-				})}
-				<ListItem />
-			</List>
+							</ListItem>
+						);
+					})}
+					<ListItem />
+				</List>
+			) : (
+				<>
+					<Skeleton />
+					<Skeleton />
+				</>
+			)}
 		</Paper>
 	);
 
@@ -181,16 +200,16 @@ const TransferList: React.FC<Props> = ({
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
 		root: {
-			margin: 'auto'
+			margin: 'auto',
 		},
 		paper: {
 			width: 200,
 			height: 230,
-			overflow: 'auto'
+			overflow: 'auto',
 		},
 		button: {
-			margin: theme.spacing(0.5, 0)
-		}
+			margin: theme.spacing(0.5, 0),
+		},
 	})
 );
 

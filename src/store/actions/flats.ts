@@ -93,6 +93,24 @@ export const fetchFlats = (): ThunkAction<
 	};
 };
 
+export const fetchFlat = (
+	id: number
+): ThunkAction<Promise<void>, RootState, any, StoreAction<Flat, string>> => {
+	return async (dispatch) => {
+		const url = `/flats/${id}`;
+		try {
+			const { data } = await axios.get<APIFlat>(url);
+			const flat = mapAPIFlatDataToModel(data);
+			dispatch({
+				type: FlatsActionTypes.SetFlat,
+				payload: flat,
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
 export const fetchFlatOwner = (
 	userId: number,
 	flatId: number

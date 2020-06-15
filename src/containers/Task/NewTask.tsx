@@ -8,6 +8,7 @@ import React, {
 	FocusEventHandler,
 	FormEventHandler,
 	ChangeEvent,
+	useReducer,
 } from 'react';
 import {
 	makeStyles,
@@ -47,10 +48,61 @@ import Task, { TaskPeriodUnit } from '../../models/task';
 import { TaskFormValues } from '../../utils/taskFormValidator';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { createTask } from '../../store/actions/tasks';
+import { fetchFlat, fetchFlatMembers } from '../../store/actions/flats';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props extends RouteComponentProps {}
 type RouterParams = {
 	flatId: string;
+};
+
+const elementsInitState = {
+	loading: {
+		members: false,
+		flat: false,
+	},
+	error: {
+		members: null,
+		flat: null,
+	},
+	loaded: {
+		members: false,
+		flat: false,
+	},
+};
+
+type ElementsState = typeof elementsInitState;
+type ElementsName = keyof ElementsState['loading'];
+type ElementsAction = {
+	type: 'loading' | 'not-loading' | 'error' | 'not-error';
+	name: ElementsName;
+	payload?: StateError;
+};
+
+type ElementsReducer = (
+	state: ElementsState,
+	action: ElementsAction
+) => ElementsState;
+
+const elementsReducer: ElementsReducer = (state, action) => {
+	if (action.type === 'loading' || action.type === 'not-loading') {
+		return {
+			...state,
+			loading: {
+				...state.loading,
+				[action.name]: action.type === 'loading',
+			},
+			loaded: {
+				...state.loaded,
+				[action.name]: true,
+			},
+		};
+	} else {
+		return {
+			...state,
+			error: { ...state.error, [action.name]: action.payload },
+		};
+	}
 };
 
 const defaultStartDay = moment().startOf('day');
@@ -58,10 +110,9 @@ const defaultEndDay = moment(defaultStartDay).add('months', 6);
 
 const NewTask: FC<Props> = ({ history, match }) => {
 	const classes = useStyles();
+	const flatId = +(match.params as RouterParams).flatId;
 	const flat = useSelector((state: RootState) =>
-		state.flats.flats.find(
-			(x) => x.id === +(match.params as RouterParams).flatId
-		)
+		state.flats.flats.find((x) => x.id === flatId)
 	);
 	const initialFormStateRef = useRef<FormState<TaskFormValues>>({
 		formValidity: false,
@@ -86,9 +137,20 @@ const NewTask: FC<Props> = ({ history, match }) => {
 	const [formState, formDispatch] = useForm<TaskFormValues>(
 		initialFormStateRef.current
 	);
-	const [members, setMembers] = useState<User[]>(flat!.members!);
+	const [members, setMembers] = useState<User[]>(
+		flat?.members ? flat.members : []
+	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	const [elements, elementsDispatch] = useReducer(elementsReducer, {
+		...elementsInitState,
+		loaded: {
+			flat: !!flat,
+			members: !!flat?.members,
+		},
+	} as ElementsState);
+
 	const [textFieldSize, setTextFieldSize] = useState<'small' | 'medium'>(
 		window.innerHeight > 700 ? 'medium' : 'small'
 	);
@@ -117,6 +179,58 @@ const NewTask: FC<Props> = ({ history, match }) => {
 			window.removeEventListener('resize', resizeHandler);
 		};
 	});
+
+	useEffect(() => {
+		if (!elements.loaded.flat) {
+			const loadFlat = async () => {
+				elementsDispatch({ name: 'flat', type: 'loading' });
+				try {
+					await dispatch(fetchFlat(flatId));
+				} catch (err) {
+					if (isMounted.current) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'flat',
+							type: 'error',
+							payload: msg,
+						});
+					}
+				}
+				if (isMounted.current) {
+					elementsDispatch({ name: 'flat', type: 'not-loading' });
+				}
+			};
+
+			loadFlat();
+		}
+	}, [dispatch, elements.loaded.flat, flatId]);
+
+	useEffect(() => {
+		if (flat && !elements.loaded.members) {
+			const loadFlat = async () => {
+				elementsDispatch({ name: 'members', type: 'loading' });
+				try {
+					await dispatch(fetchFlatMembers(flat.id!));
+				} catch (err) {
+					if (isMounted.current) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						elementsDispatch({
+							name: 'members',
+							type: 'error',
+							payload: msg,
+						});
+					}
+				}
+				if (isMounted.current) {
+					elementsDispatch({ name: 'members', type: 'not-loading' });
+				}
+			};
+
+			loadFlat();
+		}
+	}, [dispatch, elements.loaded.members, flat]);
 
 	const fieldChangeHandler: ChangeEventHandler<HTMLInputElement> = (ev) => {
 		const { name, value } = ev.target;
@@ -440,7 +554,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 							listStyle={{
 								minWidth: '225px',
 							}}
-							data={flat?.members!.map((user) => {
+							data={flat?.members?.map((user) => {
 								return {
 									id: user.id,
 									labelPrimary: user.emailAddress,

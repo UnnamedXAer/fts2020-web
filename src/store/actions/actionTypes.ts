@@ -6,8 +6,9 @@ export enum AuthActionTypes {
 }
 
 export enum FlatsActionTypes {
-	Set = 'FLATS_SET_FLATS',
 	Add = 'FLATS_ADD_FLAT',
+	Set = 'FLATS_SET_FLATS',
+	SetFlat = 'FLATS_SET_FLAT',
 	SetOwner = 'FLATS_SET_FLAT_OWNER',
 	SetMembers = 'FLATS_SET_FLAT_MEMBERS',
 	SetInvitations = 'FLATS_SET_FLAT_INVITATIONS',
