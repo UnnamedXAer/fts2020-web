@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // , { useRef }
+import React, { useState, useEffect } from 'react'; // , { useRef }
 import 'typeface-roboto';
 import {
 	ThemeProvider,
@@ -9,7 +9,7 @@ import {
 	CssBaseline,
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import {
 	BrowserRouter as Router,
 	Switch,
@@ -36,6 +36,8 @@ import UpdateTaskMembers from './containers/Task/UpdateTaskMembers';
 import InvitationResponse from './containers/InvitationResponse/InvitationResponse';
 import InvitationResponseSummary from './containers/InvitationResponse/InitaionResponseSummary';
 import Invitations from './containers/InvitationResponse/Invitations';
+import axios from './axios/axios';
+import { logOut } from './store/actions/auth';
 
 const drawerWidth = 240;
 
@@ -54,6 +56,27 @@ interface Props {}
 const StyledApp: React.FC<Props> = () => {
 	const classes = useStyles();
 	const user = useSelector((state: RootState) => state.auth.user);
+	const dispatch = useDispatch();
+
+	useEffect(() => {
+		const interceptorAuth = axios.interceptors.response.use(
+			(response) => {
+				return response;
+			},
+			(error) => {
+				if (
+					error.response?.data.status === 401 &&
+					error.response.data.no_user_logged
+				) {
+					dispatch(logOut());
+				}
+				return Promise.reject(error);
+			}
+		);
+		return () => {
+			axios.interceptors.response.eject(interceptorAuth);
+		};
+	}, [dispatch]);
 
 	let layout = (
 		<>
