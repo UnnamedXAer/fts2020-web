@@ -1,6 +1,6 @@
 import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
-import { TaskPeriodsTypes } from './actionTypes';
+import { TaskPeriodsActionTypes } from './actionTypes';
 import axios from '../../axios/axios';
 import { Period, PeriodUser } from '../../models/period';
 
@@ -30,7 +30,7 @@ export const fetchTaskPeriods = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<SetTaskPeriodsActionPayload, TaskPeriodsTypes.SetTaskPeriods>
+	StoreAction<SetTaskPeriodsActionPayload, TaskPeriodsActionTypes.SetTaskPeriods>
 > => {
 	return async (dispatch) => {
 		const url = `/tasks/${taskId}/periods`;
@@ -50,7 +50,7 @@ export const fetchTaskPeriods = (
 					})
 			);
 			dispatch({
-				type: TaskPeriodsTypes.SetTaskPeriods,
+				type: TaskPeriodsActionTypes.SetTaskPeriods,
 				payload: {
 					periods,
 					taskId,
@@ -69,7 +69,7 @@ export const completePeriod = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<CompletePeriodActionPayload, TaskPeriodsTypes.CompletePeriod>
+	StoreAction<CompletePeriodActionPayload, TaskPeriodsActionTypes.CompletePeriod>
 > => {
 	return async (dispatch) => {
 		const url = `/tasks/${taskId}/periods/${id}/complete`;
@@ -86,7 +86,7 @@ export const completePeriod = (
 						completedBy: data.completedBy,
 					})
 			dispatch({
-				type: TaskPeriodsTypes.CompletePeriod,
+				type: TaskPeriodsActionTypes.CompletePeriod,
 				payload: {
 					period,
 					taskId,

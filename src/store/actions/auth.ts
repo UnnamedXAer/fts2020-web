@@ -8,6 +8,8 @@ import {
 	FlatsActionTypes,
 	AuthActionTypes,
 	UsersActionTypes,
+	InvitationsActionTypes,
+	TaskPeriodsActionTypes,
 } from './actionTypes';
 import RootState from '../storeTypes';
 import User from '../../models/user';
@@ -111,19 +113,22 @@ export const logOut = (): ThunkAction<
 			dispatch({
 				type: LOGOUT,
 			});
-			dispatch({
-				type: TasksActionTypes.ClearState,
-			});
-			dispatch({
-				type: FlatsActionTypes.ClearState,
+			[
+				TasksActionTypes,
+				FlatsActionTypes,
+				InvitationsActionTypes,
+				TaskPeriodsActionTypes,
+				UsersActionTypes,
+			].forEach((ActionTypes) => {
+				dispatch({
+					type: ActionTypes.ClearState,
+				});
 			});
 		};
 
 		try {
 			await axios.post('/auth/logout');
-			setTimeout(() => {
-				clearState();
-			}, 0);
+			clearState();
 		} catch (err) {
 			if (localStorage.getItem('loggedUser')) {
 				setTimeout(() => {
