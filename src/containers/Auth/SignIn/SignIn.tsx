@@ -195,7 +195,7 @@ const SignIn = () => {
 			<Paper className={classes.paper} elevation={5}>
 				<Box className={classes.header}>
 					<Typography variant="h3" align="center" color="primary">
-						Sign Up
+						{isSignIn ? 'Sign In' : 'Sign Up'}
 					</Typography>
 				</Box>
 				<form noValidate onSubmit={(ev) => ev.preventDefault()}>
@@ -373,7 +373,7 @@ const SignIn = () => {
 										color="primary"
 										type="submit"
 									>
-										{SignIn ? 'Sign In' : 'Sign Up'}
+										{isSignIn ? 'Sign In' : 'Sign Up'}
 									</Button>
 								)}
 							</Box>
