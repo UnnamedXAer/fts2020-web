@@ -48,8 +48,8 @@ const Profile: React.FC<Props> = (props) => {
 	const loggedUserId = useSelector<RootState, number>(
 		(state) => state.auth.user!.id!
 	);
-	const user = useSelector<RootState, User | undefined>(
-		(state) => state.users.users[userId]
+	const user = useSelector<RootState, User | undefined>((state) =>
+		state.users.users.find((x) => (x.id === userId))
 	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
