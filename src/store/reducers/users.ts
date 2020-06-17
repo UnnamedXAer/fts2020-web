@@ -8,7 +8,7 @@ const initialState: UsersState = {
 
 const setUser: SimpleReducer<UsersState, User> = (state, action) => {
 	const user = action.payload;
-	const updatedUsers = { ...state.users };
+	const updatedUsers = [...state.users];
 
 	const idx = updatedUsers.findIndex((x) => x.id === user.id);
 	if (idx === -1) {
