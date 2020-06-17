@@ -106,40 +106,18 @@ export const logOut = (): ThunkAction<
 	Promise<void>,
 	RootState,
 	any,
-	AuthorizeAction
+	{ type: typeof LOGOUT }
 > => {
 	return async (dispatch) => {
-		const clearState = () => {
-			dispatch({
-				type: LOGOUT,
-			});
-			[
-				TasksActionTypes,
-				FlatsActionTypes,
-				InvitationsActionTypes,
-				TaskPeriodsActionTypes,
-				UsersActionTypes,
-			].forEach((ActionTypes) => {
-				dispatch({
-					type: ActionTypes.ClearState,
-				});
-			});
-		};
-
-		try {
-			await axios.post('/auth/logout');
-			clearState();
-		} catch (err) {
-			if (localStorage.getItem('loggedUser')) {
-				setTimeout(() => {
-					dispatch(logOut());
-				}, 500);
-			} else {
-				clearState();
-			}
-		}
+		dispatch({
+			type: LOGOUT,
+		});
 		localStorage.removeItem('loggedUser');
 		localStorage.removeItem('expirationTime');
+		try {
+			await axios.post('/auth/logout');
+		} catch (err) {}
+		clearStore();
 	};
 };
 
@@ -169,5 +147,26 @@ export const updatePassword = (
 		} catch (err) {
 			throw err;
 		}
+	};
+};
+
+export const clearStore = (): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	AuthorizeAction
+> => {
+	return async (dispatch) => {
+		[
+			TasksActionTypes,
+			FlatsActionTypes,
+			InvitationsActionTypes,
+			TaskPeriodsActionTypes,
+			UsersActionTypes,
+		].forEach((ActionTypes) => {
+			dispatch({
+				type: ActionTypes.ClearState,
+			});
+		});
 	};
 };
