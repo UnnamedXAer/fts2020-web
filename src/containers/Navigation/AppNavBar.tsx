@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logOut } from '../../store/actions/auth';
 import RootState from '../../store/storeTypes';
 import { useHistory } from 'react-router-dom';
+import { Avatar } from '@material-ui/core';
 
 interface Props {
 	children?: React.ReactNode;
@@ -22,9 +23,7 @@ const AppNavBar: React.FC<Props> = (props) => {
 	const classes = useStyles({ drawerWidth: props.drawerWidth });
 	const history = useHistory();
 	const dispatch = useDispatch();
-	const loggedUserId = useSelector<RootState, number | undefined>(
-		(state) => state.auth.user?.id
-	);
+	const loggedUser = useSelector((state: RootState) => state.auth.user);
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 	const isMounted = useRef(true);
@@ -52,7 +51,7 @@ const AppNavBar: React.FC<Props> = (props) => {
 	};
 
 	const openProfileHandler = () => {
-		history.push(`/profile/${loggedUserId!}`);
+		history.push(`/profile/${loggedUser!.id!}`);
 		setAnchorEl(null);
 	};
 
@@ -72,7 +71,7 @@ const AppNavBar: React.FC<Props> = (props) => {
 						{props.title}
 					</Typography>
 					<div>
-						{loggedUserId && (
+						{loggedUser && (
 							<IconButton
 								aria-label="account of current user"
 								aria-controls="menu-appbar"
@@ -80,7 +79,14 @@ const AppNavBar: React.FC<Props> = (props) => {
 								onClick={handleMenu}
 								color="inherit"
 							>
-								<AccountCircle />
+								{loggedUser.avatarUrl ? (
+									<Avatar
+										alt="You avatar"
+										src={loggedUser.avatarUrl}
+									/>
+								) : (
+									<AccountCircle />
+								)}
 							</IconButton>
 						)}
 						<Menu
