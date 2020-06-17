@@ -44,9 +44,9 @@ const AppNavBar: React.FC<Props> = (props) => {
 
 	const logoutHandler = async () => {
 		await dispatch(logOut());
+		history.push('/');
 		if (isMounted.current) {
 			setAnchorEl(null);
-			history.push('/');
 		}
 	};
 
