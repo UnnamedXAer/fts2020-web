@@ -56,12 +56,12 @@ const StyledApp: React.FC<Props> = () => {
 			(response) => {
 				return response;
 			},
-			(error) => {
+			async (error) => {
 				if (
 					error.response?.data.status === 401 &&
 					error.response.data.no_user_logged
 				) {
-					dispatch(logOut());
+					await dispatch(logOut());
 				}
 				return Promise.reject(error);
 			}
