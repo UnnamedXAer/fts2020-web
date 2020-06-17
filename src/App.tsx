@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // , { useRef }
+import React, { useEffect } from 'react';
 import 'typeface-roboto';
 import {
 	ThemeProvider,
@@ -10,14 +10,7 @@ import {
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
 import { Provider, useSelector, useDispatch } from 'react-redux';
-import {
-	BrowserRouter as Router,
-	Switch,
-	Route,
-	Redirect,
-	RouteComponentProps,
-	// useHistory,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
 import NewFlat from './containers/Flat/NewFlat';

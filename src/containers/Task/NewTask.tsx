@@ -106,7 +106,7 @@ const elementsReducer: ElementsReducer = (state, action) => {
 };
 
 const defaultStartDay = moment().startOf('day');
-const defaultEndDay = moment(defaultStartDay).add('months', 6);
+const defaultEndDay = moment(defaultStartDay).add(6, 'months');
 
 const NewTask: FC<Props> = ({ history, match }) => {
 	const classes = useStyles();
