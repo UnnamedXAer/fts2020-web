@@ -34,7 +34,11 @@ import HttpErrorParser from '../../utils/parseError';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TaskInfoTable from '../../components/Task/TaskInfoTable';
 import TaskSchedule from '../../components/Task/TaskSchedule';
-import { fetchTaskPeriods, completePeriod } from '../../store/actions/periods';
+import {
+	fetchTaskPeriods,
+	completePeriod,
+	resetTaskPeriods,
+} from '../../store/actions/periods';
 import CustomSpeedDial, {
 	SpeedDialAction,
 } from '../../components/UI/CustomSpeedDial';
@@ -382,6 +386,40 @@ const TaskDetails: React.FC<Props> = (props) => {
 			setDialogData((prevState) => ({ ...prevState, open: false }));
 	};
 
+	const resetPeriodsHandler = async () => {
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
+
+		try {
+			await dispatch(resetTaskPeriods(id));
+			isMounted.current &&
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'success',
+					timeout: 3000,
+					content:
+						'Periods reset successfully.',
+					onClose: closeSnackbarAlertHandler,
+				});
+		} catch (err) {
+			if (isMounted.current) {
+				const httpError = new HttpErrorParser(err);
+				const msg = httpError.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not reset periods.\nPlease try again later.',
+				});
+			}
+		}
+		isMounted.current &&
+			setDialogData((prevState) => ({ ...prevState, open: false }));
+	};
+
 	const closeDialogAlertHandler = () =>
 		setDialogData((prevState) => ({
 			...prevState,
@@ -418,6 +456,25 @@ const TaskDetails: React.FC<Props> = (props) => {
 
 				break;
 			case TaskSpeedActions.ResetPeriods:
+				setDialogData({
+					open: true,
+					content: 'Do you want reset future periods?',
+					title: 'Reset Task Periods - Confirmation',
+					onClose: closeDialogAlertHandler,
+					loading: false,
+					actions: [
+						{
+							label: 'Yes',
+							onClick: resetPeriodsHandler,
+							color: 'primary',
+						},
+						{
+							color: 'secondary',
+							label: 'Cancel',
+							onClick: closeDialogAlertHandler,
+						},
+					],
+				});
 				break;
 			default:
 				break;

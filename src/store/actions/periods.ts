@@ -30,25 +30,16 @@ export const fetchTaskPeriods = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<SetTaskPeriodsActionPayload, TaskPeriodsActionTypes.SetTaskPeriods>
+	StoreAction<
+		SetTaskPeriodsActionPayload,
+		TaskPeriodsActionTypes.SetTaskPeriods
+	>
 > => {
 	return async (dispatch) => {
 		const url = `/tasks/${taskId}/periods`;
 		try {
 			const { data } = await axios.get<APITaskPeriod[]>(url);
-			const periods = data.map(
-				(period) =>
-					new Period({
-						id: period.id,
-						startDate: new Date(period.startDate),
-						endDate: new Date(period.endDate),
-						assignedTo: period.assignedTo,
-						completedAt: period.completedAt
-							? new Date(period.completedAt)
-							: null,
-						completedBy: period.completedBy,
-					})
-			);
+			const periods = data.map(mapApiPeriodDataToModel);
 			dispatch({
 				type: TaskPeriodsActionTypes.SetTaskPeriods,
 				payload: {
@@ -69,22 +60,16 @@ export const completePeriod = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<CompletePeriodActionPayload, TaskPeriodsActionTypes.CompletePeriod>
+	StoreAction<
+		CompletePeriodActionPayload,
+		TaskPeriodsActionTypes.CompletePeriod
+	>
 > => {
 	return async (dispatch) => {
 		const url = `/tasks/${taskId}/periods/${id}/complete`;
 		try {
 			const { data } = await axios.patch<APITaskPeriod>(url);
-			const period = new Period({
-						id: data.id,
-						startDate: new Date(data.startDate),
-						endDate: new Date(data.endDate),
-						assignedTo: data.assignedTo,
-						completedAt: data.completedAt
-							? new Date(data.completedAt)
-							: null,
-						completedBy: data.completedBy,
-					})
+			const period = mapApiPeriodDataToModel(data);
 			dispatch({
 				type: TaskPeriodsActionTypes.CompletePeriod,
 				payload: {
@@ -97,3 +82,41 @@ export const completePeriod = (
 		}
 	};
 };
+
+export const resetTaskPeriods = (
+	taskId: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<
+		SetTaskPeriodsActionPayload,
+		TaskPeriodsActionTypes.SetTaskPeriods
+	>
+> => {
+	return async (dispatch) => {
+		const url = `/tasks/${taskId}/periods`;
+		try {
+			const { data } = await axios.put<APITaskPeriod[]>(url);
+
+			const periods = data.map(mapApiPeriodDataToModel);
+
+			dispatch({
+				type: TaskPeriodsActionTypes.SetTaskPeriods,
+				payload: { taskId, periods },
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+const mapApiPeriodDataToModel = (period: APITaskPeriod) =>
+	new Period({
+		id: period.id,
+		startDate: new Date(period.startDate),
+		endDate: new Date(period.endDate),
+		assignedTo: period.assignedTo,
+		completedAt: period.completedAt ? new Date(period.completedAt) : null,
+		completedBy: period.completedBy,
+	});

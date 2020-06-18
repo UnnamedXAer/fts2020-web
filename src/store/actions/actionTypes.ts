@@ -34,7 +34,7 @@ export enum InvitationsActionTypes {
 
 export enum TaskPeriodsActionTypes {
 	SetTaskPeriods = 'PERIODS_SET_TASK_PERIODS',
-	CompletePeriod = 'PERIODS_COMPLETE',
+	CompletePeriod = 'PERIODS_COMPLETE_PERIOD',
 	ClearState = 'PERIODS_CLEAR_STATE',
 }
 
