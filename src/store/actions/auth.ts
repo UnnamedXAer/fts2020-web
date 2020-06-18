@@ -117,7 +117,7 @@ export const logOut = (): ThunkAction<
 		try {
 			await axios.post('/auth/logout');
 		} catch (err) {}
-		clearStore();
+		dispatch(clearStore());
 	};
 };
 
