@@ -16,7 +16,7 @@ import {
 	CircularProgress,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { ErrorOutline, PhotoCamera } from '@material-ui/icons';
+import { PhotoCamera } from '@material-ui/icons';
 import useForm, {
 	FormState,
 	FormAction,
@@ -26,18 +26,19 @@ import validateAuthFormField from '../../../utils/authFormValidator';
 import { authorize, tryAuthorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
+import CustomMuiAlert from '../../../components/UI/CustomMuiAlert';
 
 const initialState: FormState = {
 	formValidity: false,
 	values: {
-		name: '',
+		userName: '',
 		emailAddress: '',
 		password: '',
 		confirmPassword: '',
 		avatarUrl: '',
 	},
 	errors: {
-		name: null,
+		userName: null,
 		emailAddress: null,
 		password: null,
 		confirmPassword: null,
@@ -142,13 +143,14 @@ const SignIn = () => {
 		setError(null);
 		setLoading(true);
 
+		let isFormValid = true;
 		for (const name in formState.values) {
 			let error = await validateAuthFormField(
 				name,
 				formState.values,
 				isSignIn
 			);
-
+			isFormValid = isFormValid && error === null;
 			const action: FormAction = {
 				type: ActionType.SetError,
 				fieldId: name,
@@ -158,17 +160,19 @@ const SignIn = () => {
 			formDispatch(action);
 		}
 
-		if (!formState.formValidity) {
+		if (!isFormValid) {
 			setError('Please correct marked fields.');
 			setLoading(false);
 			return;
 		}
 
 		const credentials = new Credentials({
-			userName: formState.values.userName,
+			userName: isSignIn ? void 0 : formState.values.userName,
 			emailAddress: formState.values.emailAddress,
 			password: formState.values.password,
-			confirmPassword: formState.values.confirmPassword,
+			confirmPassword: isSignIn
+				? void 0
+				: formState.values.confirmPassword,
 		});
 		try {
 			await dispatch(authorize(credentials, isSignIn));
@@ -183,8 +187,10 @@ const SignIn = () => {
 						error: x.msg,
 					})
 				);
-
-				setError(httpError.getMessage());
+				const msg = isSignIn
+					? 'Invalid credentials.'
+					: httpError.getMessage();
+				setError(msg);
 				setLoading(false);
 			}
 		}
@@ -343,19 +349,12 @@ const SignIn = () => {
 						</Grid>
 						<Grid item>
 							{error && (
-								<Box
-									display="flex"
-									flexDirection="row"
-									alignItems="center"
+								<CustomMuiAlert
+									severity="error"
+									onClick={() => setError(null)}
 								>
-									<ErrorOutline
-										style={{ marginInlineEnd: 20 }}
-										color="error"
-									/>
-									<p className={classes.formErrorText}>
-										{error}
-									</p>
-								</Box>
+									{error}
+								</CustomMuiAlert>
 							)}
 						</Grid>
 						<Grid item>

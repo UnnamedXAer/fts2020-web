@@ -35,6 +35,7 @@ export default async function validateAuthFormField(
 			if (!formValues[fieldId]) {
 				error = 'Please enter Password.';
 			} else if (
+				!isSignIn &&
 				!new RegExp(/^(?=\S*[a-z])(?=\S*\d)\S{6,}$/).test(
 					formValues[fieldId]
 				)
