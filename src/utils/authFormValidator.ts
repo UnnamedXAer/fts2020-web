@@ -1,8 +1,10 @@
+import { StateError } from '../ReactTypes/customReactTypes';
+
 export default async function validateAuthFormField(
-	fieldId: string,
-	formValues: { [key: string]: string },
+	fieldId: keyof AuthFormValues | keyof ChangePasswordFormValues,
+	formValues: Partial<AuthFormValues> | ChangePasswordFormValues,
 	isSignIn: boolean
-): Promise<string | null> {
+): Promise<StateError> {
 	let error = null;
 	switch (fieldId) {
 		case 'userName':
@@ -14,7 +16,10 @@ export default async function validateAuthFormField(
 				'undefined',
 				'mod',
 			];
-			if (!isSignIn && formValues[fieldId].length < 2) {
+			if (
+				!isSignIn &&
+				(formValues as AuthFormValues)[fieldId].length < 2
+			) {
 				error = 'The Name must be minimum 2 characters long.';
 			} else if (
 				!isSignIn &&
@@ -25,9 +30,13 @@ export default async function validateAuthFormField(
 			break;
 		case 'emailAddress':
 			// const emailAddressRegExp = /^[A-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-			if (!formValues[fieldId]) {
+			if (!(formValues as AuthFormValues)[fieldId]) {
 				error = 'Please enter Email Address.';
-			} else if (!emailAddressRegExp.test(formValues[fieldId])) {
+			} else if (
+				!emailAddressRegExp.test(
+					(formValues as AuthFormValues)[fieldId]
+				)
+			) {
 				error = 'Please enter a valid Email Address.';
 			}
 			break;
@@ -37,7 +46,7 @@ export default async function validateAuthFormField(
 			} else if (
 				!isSignIn &&
 				!new RegExp(/^(?=\S*[a-z])(?=\S*\d)\S{6,}$/).test(
-					formValues[fieldId]
+					formValues[fieldId]!
 				)
 			) {
 				error =
@@ -58,14 +67,14 @@ export default async function validateAuthFormField(
 			//   if (
 			// 		!formValues[fieldId] ||
 			// 		formValues[fieldId].length >= 2083 ||
-			// 		/[\s<>]/.test(formValues[fieldId]) ||
+			// 		/[\s<>]/.test((formValues as AuthFormValues)[fieldId]) ||
 			// 		formValues[fieldId].indexOf('mailto:') === 0
 			// 	) {
 			// 		error = 'Please enter correct avatar url.';
 			// 	}
-			if (!isSignIn && formValues[fieldId] !== '') {
+			if (!isSignIn && (formValues as AuthFormValues)[fieldId] !== '') {
 				try {
-					await testImage(formValues[fieldId]);
+					await testImage((formValues as AuthFormValues)[fieldId]);
 				} catch (err) {
 					error = 'That is not correct image url.';
 				}
@@ -89,3 +98,17 @@ function testImage(URL: string) {
 		tester.src = URL;
 	});
 }
+
+export type AuthFormValues = {
+	userName: string;
+	emailAddress: string;
+	password: string;
+	confirmPassword: string;
+	avatarUrl: string;
+};
+
+export type ChangePasswordFormValues = {
+	oldPassword: string;
+	password: string;
+	confirmPassword: string;
+};

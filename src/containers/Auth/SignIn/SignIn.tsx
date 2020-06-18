@@ -14,21 +14,27 @@ import {
 	IconButton,
 	Slide,
 	CircularProgress,
+	Modal,
+	Fade,
+	Backdrop,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { PhotoCamera } from '@material-ui/icons';
+import EditRoundedIcon from '@material-ui/icons/EditRounded';
+import CloseRoundedIcon from '@material-ui/icons/CloseRounded';
 import useForm, {
 	FormState,
 	FormAction,
 	ActionType,
 } from '../../../hooks/useForm';
-import validateAuthFormField from '../../../utils/authFormValidator';
+import validateAuthFormField, {
+	AuthFormValues,
+} from '../../../utils/authFormValidator';
 import { authorize, tryAuthorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
 import CustomMuiAlert from '../../../components/UI/CustomMuiAlert';
 
-const initialState: FormState = {
+const initialState: FormState<AuthFormValues> = {
 	formValidity: false,
 	values: {
 		userName: '',
@@ -54,10 +60,11 @@ const getFieldSize = (isLogIn: boolean): TextFieldSize =>
 const SignIn = () => {
 	const classes = useStyle();
 	const dispatch = useDispatch();
-	const [formState, formDispatch] = useForm(initialState);
+	const [formState, formDispatch] = useForm<AuthFormValues>(initialState);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isSignIn, setIsSignIn] = useState(true);
+	const [openEditModal, setOpenEditModal] = useState(false);
 	const [textFieldSize, setTextFieldSize] = useState<TextFieldSize>(
 		getFieldSize(isSignIn)
 	);
@@ -108,7 +115,7 @@ const SignIn = () => {
 	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = async (
 		ev
 	) => {
-		const { name } = ev.target;
+		const name = ev.target.name as keyof AuthFormValues;
 		let error = await validateAuthFormField(
 			name,
 			formState.values,
@@ -146,7 +153,7 @@ const SignIn = () => {
 		let isFormValid = true;
 		for (const name in formState.values) {
 			let error = await validateAuthFormField(
-				name,
+				name as keyof AuthFormValues,
 				formState.values,
 				isSignIn
 			);
@@ -173,6 +180,7 @@ const SignIn = () => {
 			confirmPassword: isSignIn
 				? void 0
 				: formState.values.confirmPassword,
+			avatarUrl: isSignIn ? void 0 : formState.values.avatarUrl,
 		});
 		try {
 			await dispatch(authorize(credentials, isSignIn));
@@ -197,190 +205,271 @@ const SignIn = () => {
 	};
 
 	return (
-		<Container maxWidth="sm" className={classes.container}>
-			<Paper className={classes.paper} elevation={5}>
-				<Box className={classes.header}>
-					<Typography variant="h3" align="center" color="primary">
-						{isSignIn ? 'Sign In' : 'Sign Up'}
-					</Typography>
-				</Box>
-				<form noValidate onSubmit={(ev) => ev.preventDefault()}>
-					<Grid
-						container
-						direction="column"
-						alignItems="stretch"
-						justify="center"
-						spacing={2}
-					>
-						<Box justifyContent="center" display="flex">
+		<>
+			<Container maxWidth="sm" className={classes.container}>
+				<Paper className={classes.paper} elevation={5}>
+					<Box className={classes.header}>
+						<Typography variant="h3" align="center" color="primary">
+							{isSignIn ? 'Sign In' : 'Sign Up'}
+						</Typography>
+					</Box>
+					<form noValidate onSubmit={(ev) => ev.preventDefault()}>
+						<Grid
+							container
+							direction="column"
+							alignItems="stretch"
+							justify="center"
+							spacing={2}
+						>
 							<Box
-								className={classes.avatarBox}
-								display="flex"
-								alignItems="center"
 								justifyContent="center"
+								alignItems="center"
+								display="flex"
+								flexDirection="column"
 							>
-								<Avatar
-									alt="user avatar"
-									src={
-										isSignIn
-											? formState.values.avatarUrl
-											: ''
-									}
-									className={classes.avatar}
-								/>
-								{!isSignIn && (
-									<IconButton
-										className={classes.avatarCamera}
-										color="primary"
-										aria-label="upload picture"
-										component="span"
-									>
-										<PhotoCamera />
-									</IconButton>
+								<Box
+									className={classes.avatarBox}
+									display="flex"
+									alignItems="center"
+									justifyContent="center"
+								>
+									<Avatar
+										alt="user avatar"
+										src={
+											isSignIn ||
+											formState.errors.avatarUrl
+												? ''
+												: formState.values.avatarUrl
+										}
+										className={classes.avatar}
+									/>
+									{!isSignIn && (
+										<IconButton
+											className={classes.avatarCamera}
+											color="primary"
+											aria-label="upload picture"
+											component="span"
+											onClick={() =>
+												setOpenEditModal(true)
+											}
+										>
+											<EditRoundedIcon />
+										</IconButton>
+									)}
+								</Box>
+								{!isSignIn && formState.errors.avatarUrl && (
+									<p className={classes.fieldError}>
+										Avatar Url is not correct.
+									</p>
 								)}
 							</Box>
-						</Box>
-						<Slide
-							direction="left"
-							in={!isSignIn}
-							mountOnEnter
-							unmountOnExit
-						>
+							<Slide
+								direction="left"
+								in={!isSignIn}
+								mountOnEnter
+								unmountOnExit
+							>
+								<Grid item>
+									<TextField
+										size={textFieldSize}
+										name="userName"
+										fullWidth
+										variant="outlined"
+										label="Name"
+										required
+										value={formState.values.userName}
+										error={!!formState.errors.userName}
+										onChange={fieldChangeHandler}
+										onBlur={fieldBlurHandler}
+									/>
+									{formState.errors.userName && (
+										<p className={classes.fieldError}>
+											{formState.errors.userName}
+										</p>
+									)}
+								</Grid>
+							</Slide>
 							<Grid item>
 								<TextField
 									size={textFieldSize}
-									name="userName"
+									name="emailAddress"
 									fullWidth
 									variant="outlined"
-									label="Name"
+									label="Email Address"
+									type="email"
 									required
-									value={formState.values.userName}
-									error={!!formState.errors.userName}
+									value={formState.values.emailAddress}
+									error={!!formState.errors.emailAddress}
 									onChange={fieldChangeHandler}
 									onBlur={fieldBlurHandler}
 								/>
-								{formState.errors.userName && (
+								{formState.errors.emailAddress && (
 									<p className={classes.fieldError}>
-										{formState.errors.userName}
+										{formState.errors.emailAddress}
 									</p>
 								)}
 							</Grid>
-						</Slide>
-						<Grid item>
-							<TextField
-								size={textFieldSize}
-								name="emailAddress"
-								fullWidth
-								variant="outlined"
-								label="Email Address"
-								type="email"
-								required
-								value={formState.values.emailAddress}
-								error={!!formState.errors.emailAddress}
-								onChange={fieldChangeHandler}
-								onBlur={fieldBlurHandler}
-							/>
-							{formState.errors.emailAddress && (
-								<p className={classes.fieldError}>
-									{formState.errors.emailAddress}
-								</p>
-							)}
-						</Grid>
-						<Grid item>
-							<TextField
-								size={textFieldSize}
-								name="password"
-								fullWidth
-								variant="outlined"
-								label="Password"
-								required
-								type="password"
-								value={formState.values.password}
-								error={!!formState.errors.password}
-								onChange={fieldChangeHandler}
-								onBlur={fieldBlurHandler}
-							/>
-							{formState.errors.password && (
-								<p className={classes.fieldError}>
-									{formState.errors.password}
-								</p>
-							)}
-						</Grid>
-						<Slide
-							direction="left"
-							in={!isSignIn}
-							mountOnEnter
-							unmountOnExit
-						>
 							<Grid item>
 								<TextField
 									size={textFieldSize}
-									name="confirmPassword"
-									variant="outlined"
+									name="password"
 									fullWidth
-									label="Confirm Password"
+									variant="outlined"
+									label="Password"
 									required
 									type="password"
-									value={formState.values.confirmPassword}
-									error={!!formState.errors.confirmPassword}
+									value={formState.values.password}
+									error={!!formState.errors.password}
 									onChange={fieldChangeHandler}
 									onBlur={fieldBlurHandler}
 								/>
-								{formState.errors.confirmPassword && (
+								{formState.errors.password && (
 									<p className={classes.fieldError}>
-										{formState.errors.confirmPassword}
+										{formState.errors.password}
 									</p>
 								)}
 							</Grid>
-						</Slide>
-						<Grid item>
-							<Link
-								onClick={() => {
-									setError(null);
-									setIsSignIn((prevState) => !prevState);
-								}}
-								variant="body2"
-								style={{ cursor: 'pointer' }}
+							<Slide
+								direction="left"
+								in={!isSignIn}
+								mountOnEnter
+								unmountOnExit
 							>
-								{`Switch to ${
-									isSignIn ? 'Sign Up' : 'Sign In'
-								}`}
-							</Link>
-						</Grid>
-						<Grid item>
-							{error && (
-								<CustomMuiAlert
-									severity="error"
-									onClick={() => setError(null)}
+								<Grid item>
+									<TextField
+										size={textFieldSize}
+										name="confirmPassword"
+										variant="outlined"
+										fullWidth
+										label="Confirm Password"
+										required
+										type="password"
+										value={formState.values.confirmPassword}
+										error={
+											!!formState.errors.confirmPassword
+										}
+										onChange={fieldChangeHandler}
+										onBlur={fieldBlurHandler}
+									/>
+									{formState.errors.confirmPassword && (
+										<p className={classes.fieldError}>
+											{formState.errors.confirmPassword}
+										</p>
+									)}
+								</Grid>
+							</Slide>
+							<Grid item>
+								<Link
+									onClick={() => {
+										setError(null);
+										setIsSignIn((prevState) => !prevState);
+									}}
+									variant="body2"
+									style={{ cursor: 'pointer' }}
 								>
-									{error}
-								</CustomMuiAlert>
-							)}
-						</Grid>
-						<Grid item>
-							<Box className={classes.submitWrapper}>
-								{loading ? (
-									<CircularProgress size={36} />
-								) : (
-									<Button
-										style={{
-											paddingLeft: 40,
-											paddingRight: 40,
-										}}
-										onClick={submitHandler}
-										variant="contained"
-										color="primary"
-										type="submit"
+									{`Switch to ${
+										isSignIn ? 'Sign Up' : 'Sign In'
+									}`}
+								</Link>
+							</Grid>
+							<Grid item>
+								{error && (
+									<CustomMuiAlert
+										severity="error"
+										onClick={() => setError(null)}
 									>
-										{isSignIn ? 'Sign In' : 'Sign Up'}
-									</Button>
+										{error}
+									</CustomMuiAlert>
 								)}
-							</Box>
+							</Grid>
+							<Grid item>
+								<Box className={classes.submitWrapper}>
+									{loading ? (
+										<CircularProgress size={36} />
+									) : (
+										<Button
+											style={{
+												paddingLeft: 40,
+												paddingRight: 40,
+											}}
+											onClick={submitHandler}
+											variant="contained"
+											color="primary"
+											type="submit"
+										>
+											{isSignIn ? 'Sign In' : 'Sign Up'}
+										</Button>
+									)}
+								</Box>
+							</Grid>
 						</Grid>
-					</Grid>
-				</form>
-			</Paper>
-		</Container>
+					</form>
+				</Paper>
+			</Container>
+			<Modal
+				aria-labelledby="edit-field-modal-title"
+				className={classes.modal}
+				open={openEditModal}
+				onClose={() => setOpenEditModal(false)}
+				closeAfterTransition
+				BackdropComponent={Backdrop}
+				BackdropProps={{
+					timeout: 500,
+				}}
+			>
+				<Fade in={openEditModal}>
+					<Paper elevation={5} className={classes.modalPaper}>
+						<IconButton
+							aria-label="Close modal"
+							color="primary"
+							className={classes.modalClose}
+							onClick={() => setOpenEditModal(false)}
+						>
+							<CloseRoundedIcon />
+						</IconButton>
+						<Grid container direction="column" spacing={2}>
+							<Grid item>
+								<Typography
+									variant="h6"
+									component="h2"
+									id="edit-field-modal-title"
+								>
+									Enter New Value
+								</Typography>
+							</Grid>
+							<Grid item>
+								<TextField
+									color="primary"
+									value={formState.values.avatarUrl}
+									type="text"
+									disabled={loading}
+									size="medium"
+									error={!!formState.errors.avatarUrl}
+									fullWidth
+									name="avatarUrl"
+									onChange={fieldChangeHandler}
+									onBlur={fieldBlurHandler}
+								/>
+								{formState.errors.avatarUrl && (
+									<p className={classes.fieldError}>
+										{formState.errors.avatarUrl}
+									</p>
+								)}
+							</Grid>
+							<Grid item container justify="center">
+								<Button
+									color="primary"
+									type="submit"
+									onClick={() => setOpenEditModal(false)}
+								>
+									Ok
+								</Button>
+							</Grid>
+						</Grid>
+					</Paper>
+				</Fade>
+			</Modal>
+		</>
 	);
 };
 
@@ -402,6 +491,7 @@ const useStyle = makeStyles((theme: Theme) => ({
 		position: 'relative',
 		width: theme.spacing(12),
 		height: theme.spacing(12),
+		marginBottom: theme.spacing(1),
 	},
 	avatar: {
 		width: '100%',
@@ -427,6 +517,23 @@ const useStyle = makeStyles((theme: Theme) => ({
 	formErrorText: {
 		color: theme.palette.error.main,
 		fontWeight: 'bold',
+	},
+
+	modal: {
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	modalPaper: {
+		padding: theme.spacing(1, 3),
+		minWidth: 250,
+		maxWidth: '90vw',
+		position: 'relative',
+	},
+	modalClose: {
+		position: 'absolute',
+		right: 0,
+		top: 0,
 	},
 }));
 

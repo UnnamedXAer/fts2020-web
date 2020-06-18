@@ -13,7 +13,9 @@ import {
 } from '@material-ui/core';
 import { RouteComponentProps } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import validateAuthFormField from '../../utils/authFormValidator';
+import validateAuthFormField, {
+	ChangePasswordFormValues,
+} from '../../utils/authFormValidator';
 import useForm, {
 	ActionType,
 	FormAction,
@@ -29,7 +31,7 @@ type RouterParams = {
 	id: string;
 };
 
-const initialState: FormState = {
+const initialState: FormState<ChangePasswordFormValues> = {
 	formValidity: false,
 	values: {
 		oldPassword: '',
@@ -46,7 +48,9 @@ const initialState: FormState = {
 const ChangePassword: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const [formState, formDispatch] = useForm(initialState);
+	const [formState, formDispatch] = useForm<ChangePasswordFormValues>(
+		initialState
+	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
@@ -76,7 +80,7 @@ const ChangePassword: React.FC<Props> = (props) => {
 		ev
 	) => {
 		const { name } = ev.target;
-		let error = await validateAuthFormField(name, formState.values, false);
+		let error = await validateAuthFormField(name as keyof ChangePasswordFormValues, formState.values, false);
 
 		const action: FormAction = {
 			type: ActionType.SetError,
@@ -107,9 +111,9 @@ const ChangePassword: React.FC<Props> = (props) => {
 		setLoading(true);
 		setSuccess(false);
 
-		for (const name in formState.values) {
+		for (const name in formState.values ) {
 			let error = await validateAuthFormField(
-				name,
+				name as keyof ChangePasswordFormValues,
 				formState.values,
 				false
 			);
