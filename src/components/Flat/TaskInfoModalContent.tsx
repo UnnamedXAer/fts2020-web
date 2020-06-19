@@ -4,10 +4,11 @@ import { Grid, Typography, CircularProgress } from '@material-ui/core';
 import moment from 'moment';
 import CustomMuiAlert from '../UI/CustomMuiAlert';
 import MembersList from './MembersList';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props {
 	task: Task;
-	membersError: string | null;
+	membersError: StateError;
 	membersLoading: boolean;
 	onMemberSelect: (id: number) => void;
 }

@@ -335,9 +335,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 		}));
 
 	const speedDialOptionClickHandler = async (
-		optionName: FlatSpeedActions
+		optionKey: FlatSpeedActions
 	) => {
-		switch (optionName) {
+		switch (optionKey) {
 			case FlatSpeedActions.InviteMember:
 				props.history.push(`/flats/${flat!.id}/invite-members`);
 				break;

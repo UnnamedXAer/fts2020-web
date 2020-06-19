@@ -25,6 +25,7 @@ import RootState from '../../store/storeTypes';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { fetchFlats } from '../../store/actions/flats';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props extends RouteComponentProps {}
 
@@ -32,7 +33,7 @@ const Flats: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<StateError>(null);
 	const flats = useSelector<RootState, FlatModel[]>(
 		(state) => state.flats.flats
 	);

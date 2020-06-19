@@ -23,7 +23,9 @@ import useForm, {
 import HttpErrorParser from '../../utils/parseError';
 import { PhotoCamera } from '@material-ui/icons';
 import { FlatData } from '../../models/flat';
-import validateFlatFormField from '../../utils/flatFormValidator';
+import validateFlatFormField, {
+	FlatFormValues,
+} from '../../utils/flatFormValidator';
 import { createFlat } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { StateError } from '../../ReactTypes/customReactTypes';
@@ -39,7 +41,7 @@ const descriptionPlaceholder = `eg. lodgings ${new Date().getFullYear()}/10 - ${
 const NewFlat: React.FC<Props> = ({ history }) => {
 	const classes = useStyles();
 
-	const initialFormStateRef = useRef<FormState>({
+	const initialFormStateRef = useRef<FormState<FlatFormValues>>({
 		formValidity: false,
 		values: {
 			name: '',
@@ -101,30 +103,29 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
 		ev
 	) => {
-		const { name, value } = ev.target;
+		const { name, value } = ev.target as {
+			name: keyof FlatFormValues;
+			value: string;
+		};
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.UpdateValue,
 			fieldId: name,
 			value: value,
-		};
-
-		formDispatch(action);
+		});
 	};
 
 	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = (
 		ev
 	) => {
-		const { name } = ev.target;
+		const { name } = ev.target as { name: keyof FlatFormValues };
 		let error = validateFlatFormField(name, formState.values);
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.SetError,
 			fieldId: name,
 			error: error,
-		};
-
-		formDispatch(action);
+		});
 	};
 
 	const submitHandler: React.FormEventHandler = async (ev) => {
@@ -132,11 +133,14 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 		setLoading(true);
 
 		for (const name in formState.values) {
-			let error = validateFlatFormField(name, formState.values);
+			let error = validateFlatFormField(
+				name as keyof FlatFormValues,
+				formState.values
+			);
 
-			const action: FormAction = {
+			const action: FormAction<keyof FlatFormValues, StateError> = {
 				type: ActionType.SetError,
-				fieldId: name,
+				fieldId: name as keyof FlatFormValues,
 				error: error,
 			};
 
@@ -163,7 +167,7 @@ const NewFlat: React.FC<Props> = ({ history }) => {
 				fieldsErrors.forEach((x) =>
 					formDispatch({
 						type: ActionType.SetError,
-						fieldId: x.param,
+						fieldId: x.param as keyof FlatFormValues,
 						error: x.msg,
 					})
 				);

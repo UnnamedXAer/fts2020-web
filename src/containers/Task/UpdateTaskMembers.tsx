@@ -48,7 +48,7 @@ type RouterParams = {
 
 interface Props extends RouteComponentProps<RouterParams> {}
 
-const UpdateTaskMembers: React.FC<Props> = ({ match, location, history }) => {
+const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 	const dispatch = useDispatch();
 	const classes = useStyles();
 	const [loading, setLoading] = useState(false);

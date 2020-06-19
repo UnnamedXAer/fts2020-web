@@ -16,7 +16,7 @@ interface Props {
 	hidden?: boolean;
 	onClick: () => void;
 	onClose: () => void;
-	onOptionClick: (optionName: SpeedDialAction['key']) => void;
+	onOptionClick: (optionKey: SpeedDialAction['key']) => void;
 	disabled?: boolean;
 	actions: SpeedDialAction[];
 }

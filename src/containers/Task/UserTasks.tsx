@@ -24,6 +24,7 @@ import { Redirect, RouteComponentProps } from 'react-router-dom';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { fetchUserTasks } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props extends RouteComponentProps {}
 
@@ -32,7 +33,7 @@ const UserTasks: React.FC<Props> = (props) => {
 	const dispatch = useDispatch();
 	const [showInactive, setShowInactive] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<StateError>(null);
 	const tasks = useSelector<RootState, UserTask[]>((state) =>
 		showInactive
 			? state.tasks.userTasks

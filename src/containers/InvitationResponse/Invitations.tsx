@@ -28,6 +28,7 @@ import {
 	InvitationStatusInfo,
 } from '../../models/invitation';
 import { fetchUserInvitations } from '../../store/actions/invitations';
+import { StateError } from '../../ReactTypes/customReactTypes';
 
 interface Props extends RouteComponentProps {}
 
@@ -35,7 +36,7 @@ const Invitations: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<StateError>(null);
 	const [showInactive, setShowInactive] = useState(
 		localStorage.getItem('invitations_show_inactive') === '1'
 	);

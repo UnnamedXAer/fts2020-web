@@ -33,7 +33,6 @@ import RootState from '../../store/storeTypes';
 import moment from 'moment';
 import useForm, {
 	ActionType,
-	FormAction,
 	FormState,
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
@@ -127,8 +126,10 @@ const NewTask: FC<Props> = ({ history, match }) => {
 		errors: {
 			name: null,
 			description: null,
-			dates: null,
+			endDate: null,
+			startDate: null,
 			timePeriodValue: null,
+			timePeriodUnit: null,
 		},
 	});
 
@@ -233,28 +234,27 @@ const NewTask: FC<Props> = ({ history, match }) => {
 	}, [dispatch, elements.loaded.members, flat]);
 
 	const fieldChangeHandler: ChangeEventHandler<HTMLInputElement> = (ev) => {
-		const { name, value } = ev.target;
+		const { name, value } = ev.target as {
+			value: string;
+			name: keyof TaskFormValues;
+		};
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.UpdateValue,
 			fieldId: name,
 			value: value,
-		};
-
-		formDispatch(action);
+		});
 	};
 
 	const fieldBlurHandler: FocusEventHandler<HTMLInputElement> = (ev) => {
-		const { name } = ev.target;
+		const { name } = ev.target as { name: keyof TaskFormValues };
 		let error = validateTaskFormField(name, formState.values);
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.SetError,
 			fieldId: name,
 			error: error,
-		};
-
-		formDispatch(action);
+		});
 	};
 
 	const dateChangeHandler = (
@@ -262,19 +262,18 @@ const NewTask: FC<Props> = ({ history, match }) => {
 		date: MaterialUiPickersDate
 	) => {
 		const error = validateTaskDate(fieldName, formState.values, date);
-		const errorAction: FormAction = {
-			type: ActionType.SetError,
-			fieldId: 'dates',
-			error: error,
-		};
-		formDispatch(errorAction);
 
-		const valueAction: FormAction<MaterialUiPickersDate> = {
+		formDispatch({
+			type: ActionType.SetError,
+			fieldId: 'startDate',
+			error: error,
+		});
+
+		formDispatch({
 			type: ActionType.UpdateValue,
 			fieldId: fieldName,
 			value: date,
-		};
-		formDispatch(valueAction);
+		});
 	};
 
 	const membersChangeHandler = useCallback(
@@ -292,16 +291,19 @@ const NewTask: FC<Props> = ({ history, match }) => {
 		setLoading(true);
 
 		for (const name in formState.values) {
-			let error = validateTaskFormField(name, formState.values);
+			let error = validateTaskFormField(
+				name as keyof TaskFormValues,
+				formState.values
+			);
 
-			const action: FormAction = {
+			formDispatch({
 				type: ActionType.SetError,
 				fieldId:
-					name === 'startDate' || name === 'endDate' ? 'dates' : name,
+					name === 'endDate'
+						? 'startDate'
+						: (name as keyof TaskFormValues),
 				error: error,
-			};
-
-			formDispatch(action);
+			});
 		}
 
 		if (!formState.formValidity) {
@@ -312,8 +314,8 @@ const NewTask: FC<Props> = ({ history, match }) => {
 
 		const newTask = new Task({
 			flatId: flat?.id!,
-			startDate: formState.values.startDate.toDate(),
-			endDate: formState.values.endDate.toDate(),
+			startDate: formState.values.startDate!.toDate(),
+			endDate: formState.values.endDate!.toDate(),
 			timePeriodUnit: formState.values.timePeriodUnit,
 			timePeriodValue: +formState.values.timePeriodValue,
 			members: members,
@@ -329,10 +331,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 				const errorData = new HttpErrorParser(err);
 				const fieldsErrors = errorData.getFieldsErrors();
 				fieldsErrors.forEach((x) => {
-					const fieldName =
-						x.param === 'startDate' || x.param === 'endDate'
-							? 'dates'
-							: x.param;
+					const fieldName = 'startDate';
 					formDispatch({
 						type: ActionType.SetError,
 						fieldId: fieldName,
@@ -515,7 +514,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 							<Grid item>
 								<DatePicker
 									inputProps={{ tabIndex: 1 }}
-									error={!!formState.errors.dates}
+									error={!!formState.errors.startDate}
 									label="Start Date"
 									inputVariant="outlined"
 									value={formState.values.startDate}
@@ -529,7 +528,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 							<Grid item>
 								<DatePicker
 									inputProps={{ tabIndex: 1 }}
-									error={!!formState.errors.dates}
+									error={!!formState.errors.startDate}
 									label="End Date"
 									inputVariant="outlined"
 									value={formState.values.endDate}
@@ -542,9 +541,9 @@ const NewTask: FC<Props> = ({ history, match }) => {
 							</Grid>
 						</Grid>
 						<Grid item>
-							{formState.errors.dates && (
+							{formState.errors.startDate && (
 								<Typography className={classes.fieldError}>
-									{formState.errors.dates}
+									{formState.errors.startDate}
 								</Typography>
 							)}
 						</Grid>

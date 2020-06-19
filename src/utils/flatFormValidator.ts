@@ -1,7 +1,9 @@
+import { StateError } from '../ReactTypes/customReactTypes';
+
 export default function validateFlatFormField(
-	fieldId: string,
-	formValues: { [key: string]: string }
-): string | null {
+	fieldId: keyof FlatFormValues,
+	formValues: FlatFormValues
+): StateError {
 	let error = null;
 	switch (fieldId) {
 		case 'name':
@@ -10,7 +12,7 @@ export default function validateFlatFormField(
 				'administrator',
 				'moderator',
 				'null',
-				'undefined'
+				'undefined',
 			];
 			if (formValues[fieldId].length < 2) {
 				error = 'The Name must be minimum 2 characters long.';
@@ -28,4 +30,10 @@ export default function validateFlatFormField(
 	}
 
 	return error;
+}
+
+export interface FlatFormValues {
+	name: string;
+	description: string;
+	avatarUrl: string;
 }

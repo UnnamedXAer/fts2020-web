@@ -18,7 +18,6 @@ import validateAuthFormField, {
 } from '../../utils/authFormValidator';
 import useForm, {
 	ActionType,
-	FormAction,
 	FormState,
 } from '../../hooks/useForm';
 import HttpErrorParser from '../../utils/parseError';
@@ -26,10 +25,6 @@ import { updatePassword } from '../../store/actions/auth';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 
 interface Props extends RouteComponentProps {}
-
-type RouterParams = {
-	id: string;
-};
 
 const initialState: FormState<ChangePasswordFormValues> = {
 	formValidity: false,
@@ -67,28 +62,24 @@ const ChangePassword: React.FC<Props> = (props) => {
 	) => {
 		const { name, value } = ev.target;
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.UpdateValue,
-			fieldId: name,
+			fieldId: name as keyof ChangePasswordFormValues,
 			value: value,
-		};
-
-		formDispatch(action);
+		});
 	};
 
 	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = async (
 		ev
 	) => {
-		const { name } = ev.target;
-		let error = await validateAuthFormField(name as keyof ChangePasswordFormValues, formState.values, false);
+		const { name } = ev.target as { name: keyof ChangePasswordFormValues };
+		let error = await validateAuthFormField(name, formState.values, false);
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.SetError,
 			fieldId: name,
 			error: error,
-		};
-
-		formDispatch(action);
+		});
 
 		if (name === 'password') {
 			let error = await validateAuthFormField(
@@ -96,13 +87,12 @@ const ChangePassword: React.FC<Props> = (props) => {
 				formState.values,
 				false
 			);
-			const action: FormAction = {
+
+			formDispatch({
 				type: ActionType.SetError,
 				fieldId: 'confirmPassword',
 				error: error,
-			};
-
-			formDispatch(action);
+			});
 		}
 	};
 
@@ -111,20 +101,18 @@ const ChangePassword: React.FC<Props> = (props) => {
 		setLoading(true);
 		setSuccess(false);
 
-		for (const name in formState.values ) {
+		for (const name in formState.values) {
 			let error = await validateAuthFormField(
 				name as keyof ChangePasswordFormValues,
 				formState.values,
 				false
 			);
 
-			const action: FormAction = {
+			formDispatch({
 				type: ActionType.SetError,
-				fieldId: name,
+				fieldId: name as keyof ChangePasswordFormValues,
 				error: error,
-			};
-
-			formDispatch(action);
+			});
 		}
 
 		if (!formState.formValidity) {
@@ -149,7 +137,7 @@ const ChangePassword: React.FC<Props> = (props) => {
 				fieldsErrors.forEach((x) =>
 					formDispatch({
 						type: ActionType.SetError,
-						fieldId: x.param,
+						fieldId: x.param as keyof ChangePasswordFormValues,
 						error: x.msg,
 					})
 				);

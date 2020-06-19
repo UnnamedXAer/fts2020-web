@@ -39,7 +39,6 @@ export enum MembersStatus {
 	'already_member',
 }
 
-interface Props {}
 type RouterParams = {
 	id: string;
 };

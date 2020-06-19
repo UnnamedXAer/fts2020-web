@@ -1,50 +1,51 @@
-import { useReducer, Dispatch, Reducer } from 'react';
+import { useReducer, Reducer } from 'react';
+import { StateError } from '../ReactTypes/customReactTypes';
 
 export enum ActionType {
 	UpdateValue = 'UPDATE',
-	SetError = 'SET_ERROR'
+	SetError = 'SET_ERROR',
 }
 
-export type FormAction<T = any> = SetValueAction<T> | SetErrorAction<T>;
+export type FormAction<TField, V> =
+	| SetValueAction<TField, V>
+	| SetErrorAction<TField>;
 
-interface SetValueAction<T = any> {
+interface SetValueAction<TField, V> {
 	type: ActionType.UpdateValue;
-	fieldId: string;
-	value: T;
+	fieldId: TField;
+	value: V;
 }
 
-interface SetErrorAction<T = string | null> {
+interface SetErrorAction<TField, E = StateError> {
 	type: ActionType.SetError;
-	fieldId: string;
-	error:T;
+	fieldId: TField;
+	error: E;
 }
 
-interface DefaultFormStateValues {
-	[fieldId: string]: any;
-}
-
-export interface FormState<T = DefaultFormStateValues> {
+export interface FormState<TValues> {
 	formValidity: boolean;
-	values: T;
+	values: TValues;
 	errors: {
-		[fieldId: string]: string | null;
+		[fieldId in keyof TValues]: StateError;
 	};
 }
 
-const formReducer = <T = DefaultFormStateValues>(
-	state: FormState<T>,
-	action: SetValueAction | SetErrorAction
-): FormState<T> => {
+const formReducer = <TValues>(
+	state: FormState<TValues>,
+	action:
+		| SetValueAction<keyof TValues, TValues[keyof TValues]>
+		| SetErrorAction<keyof TValues>
+): FormState<TValues> => {
 	switch (action.type) {
 		case ActionType.UpdateValue:
 			const updatedValues = {
 				...state.values,
-				[action.fieldId]: action.value!
+				[action.fieldId]: action.value!,
 			};
 
 			return {
 				...state,
-				values: updatedValues
+				values: updatedValues,
 			};
 
 		case ActionType.SetError:
@@ -54,28 +55,28 @@ const formReducer = <T = DefaultFormStateValues>(
 			};
 
 			const updatedFormValidity = !Object.values(updatedErrors).some(
-				x => x !== null
+				(x) => x !== null
 			);
 
 			return {
 				...state,
 				errors: updatedErrors,
-				formValidity: updatedFormValidity
+				formValidity: updatedFormValidity,
 			};
 		default:
 			return state;
 	}
 };
 
-const useForm = <T, U = any>(
-	initialState: FormState<T>
-): [FormState<T>, Dispatch<FormAction<U>>] => {
-	const [state, dispatch] = useReducer<Reducer<FormState<T>, FormAction>>(
-		formReducer,
-		initialState
-	);
+const useForm = <TValues>(initialState: FormState<TValues>) => {
+	const [state, dispatch] = useReducer<
+		Reducer<
+			FormState<TValues>,
+			FormAction<keyof TValues, TValues[keyof TValues]>
+		>
+	>(formReducer, initialState);
 
-	return [state, dispatch];
+	return [state, dispatch] as const;
 };
 
 export default useForm;

@@ -33,7 +33,7 @@ import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { StateError } from '../../ReactTypes/customReactTypes';
 import HttpErrorParser from '../../utils/parseError';
 
-interface Props extends RouteComponentProps {}
+interface Props extends RouteComponentProps<RouterParams> {}
 
 type RouterParams = {
 	id: string;
@@ -44,12 +44,12 @@ type EditableFields = 'emailAddress' | 'userName' | 'avatarUrl';
 const Profile: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const userId = +(props.match.params as RouterParams).id!;
+	const userId = +props.match.params.id!;
 	const loggedUserId = useSelector<RootState, number>(
 		(state) => state.auth.user!.id!
 	);
 	const user = useSelector<RootState, User | undefined>((state) =>
-		state.users.users.find((x) => (x.id === userId))
+		state.users.users.find((x) => x.id === userId)
 	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);

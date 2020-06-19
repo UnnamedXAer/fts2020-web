@@ -23,7 +23,6 @@ import EditRoundedIcon from '@material-ui/icons/EditRounded';
 import CloseRoundedIcon from '@material-ui/icons/CloseRounded';
 import useForm, {
 	FormState,
-	FormAction,
 	ActionType,
 } from '../../../hooks/useForm';
 import validateAuthFormField, {
@@ -103,13 +102,11 @@ const SignIn = () => {
 	) => {
 		const { name, value } = ev.target;
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.UpdateValue,
-			fieldId: name,
+			fieldId: name as keyof AuthFormValues,
 			value: value,
-		};
-
-		formDispatch(action);
+		});
 	};
 
 	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = async (
@@ -122,13 +119,11 @@ const SignIn = () => {
 			isSignIn
 		);
 
-		const action: FormAction = {
+		formDispatch({
 			type: ActionType.SetError,
 			fieldId: name,
 			error: error,
-		};
-
-		formDispatch(action);
+		});
 
 		if (name === 'password') {
 			let error = await validateAuthFormField(
@@ -136,13 +131,12 @@ const SignIn = () => {
 				formState.values,
 				isSignIn
 			);
-			const action: FormAction = {
+
+			formDispatch({
 				type: ActionType.SetError,
 				fieldId: 'confirmPassword',
 				error: error,
-			};
-
-			formDispatch(action);
+			});
 		}
 	};
 
@@ -158,13 +152,12 @@ const SignIn = () => {
 				isSignIn
 			);
 			isFormValid = isFormValid && error === null;
-			const action: FormAction = {
-				type: ActionType.SetError,
-				fieldId: name,
-				error: error,
-			};
 
-			formDispatch(action);
+			formDispatch({
+				type: ActionType.SetError,
+				fieldId: name as keyof AuthFormValues,
+				error: error,
+			});
 		}
 
 		if (!isFormValid) {
@@ -191,7 +184,7 @@ const SignIn = () => {
 				fieldsErrors.forEach((x) =>
 					formDispatch({
 						type: ActionType.SetError,
-						fieldId: x.param,
+						fieldId: x.param as keyof AuthFormValues,
 						error: x.msg,
 					})
 				);

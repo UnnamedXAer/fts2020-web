@@ -1,12 +1,13 @@
 import { TaskPeriodUnit } from '../models/task';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import moment from 'moment';
+import { StateError } from '../ReactTypes/customReactTypes';
 
 export default function validateTaskFormField(
-	fieldId: string,
+	fieldId: keyof TaskFormValues,
 	formValues: TaskFormValues,
 	currentValue?: unknown
-): string | null {
+): StateError {
 	let error = null;
 	switch (fieldId) {
 		case 'name':
@@ -49,7 +50,7 @@ export const validateTaskDate = (
 	fieldName: 'startDate' | 'endDate',
 	formValues: TaskFormValues,
 	date: MaterialUiPickersDate
-): string | null => {
+): StateError => {
 	let error = null;
 	if (date) {
 		if (date.isAfter(moment().subtract(1, 'day'))) {
@@ -72,6 +73,9 @@ export const validateTaskDate = (
 			error = 'Date cannot be from the past.';
 		}
 	}
+	else {
+		error = 'Dates are required.'
+	}
 	return error;
 };
 
@@ -80,6 +84,6 @@ export interface TaskFormValues {
 	description: string;
 	timePeriodUnit: TaskPeriodUnit;
 	timePeriodValue: string;
-	startDate: moment.Moment;
-	endDate: moment.Moment;
+	startDate: moment.Moment | null;
+	endDate: moment.Moment | null;
 }
