@@ -3,10 +3,12 @@ import { TaskPeriodsActionTypes } from '../actions/actionTypes';
 import {
 	SetTaskPeriodsActionPayload,
 	CompletePeriodActionPayload,
+	SetCurrentPeriodsActionPayload,
 } from '../actions/periods';
 
 const initialState: PeriodsState = {
 	taskPeriods: {},
+	currentPeriods: null,
 };
 
 const setTaskPeriods: SimpleReducer<
@@ -22,6 +24,18 @@ const setTaskPeriods: SimpleReducer<
 	return {
 		...state,
 		taskPeriods: updatedPeriods,
+	};
+};
+const setCurrentPeriods: SimpleReducer<
+	PeriodsState,
+	SetCurrentPeriodsActionPayload
+> = (state, action) => {
+	const { periods } = action.payload;
+	const updatedCurrentPeriods = [...periods];
+
+	return {
+		...state,
+		currentPeriods: updatedCurrentPeriods,
 	};
 };
 
@@ -69,6 +83,8 @@ const reducer: AppReducer<PeriodsState, TaskPeriodsActionTypes> = (
 	switch (action.type) {
 		case TaskPeriodsActionTypes.SetTaskPeriods:
 			return setTaskPeriods(state, action);
+		case TaskPeriodsActionTypes.SetCurrentPeriods:
+			return setCurrentPeriods(state, action);
 		case TaskPeriodsActionTypes.CompletePeriod:
 			return completePeriod(state, action);
 		case TaskPeriodsActionTypes.ClearTaskPeriods:

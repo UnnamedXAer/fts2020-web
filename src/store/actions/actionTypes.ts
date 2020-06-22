@@ -36,6 +36,7 @@ export enum TaskPeriodsActionTypes {
 	SetTaskPeriods = 'PERIODS_SET_TASK_PERIODS',
 	CompletePeriod = 'PERIODS_COMPLETE_PERIOD',
 	ClearTaskPeriods = 'PERIODS_CLEAR_TASK_PERIODS',
+	SetCurrentPeriods = 'PERIODS_SET_CURRENT_PERIODS',
 	ClearState = 'PERIODS_CLEAR_STATE',
 }
 

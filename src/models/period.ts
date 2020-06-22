@@ -29,3 +29,21 @@ export class Period {
 		this.completedAt = completedAt;
 	}
 }
+
+export class CurrentPeriod {
+	id: number;
+	taskId: number;
+	taskName: string;
+	startDate: Date;
+	endDate: Date;
+
+	constructor(params: CurrentPeriod = {} as CurrentPeriod) {
+		const { id, taskId, taskName, startDate, endDate } = params;
+
+		this.id = id;
+		this.taskId = taskId;
+		this.taskName = taskName;
+		this.startDate = startDate;
+		this.endDate = endDate;
+	}
+}

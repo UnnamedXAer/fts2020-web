@@ -2,7 +2,7 @@ import User from '../models/user';
 import { Action } from 'redux';
 import Flat from '../models/flat';
 import Task, { UserTask } from '../models/task';
-import { Period } from '../models/period';
+import { CurrentPeriod, Period } from '../models/period';
 import { InvitationPresentation } from '../models/invitation';
 
 export type RootState = {
@@ -45,6 +45,7 @@ export type PeriodsState = {
 	taskPeriods: {
 		[taskId: number]: Period[];
 	};
+	currentPeriods: CurrentPeriod[] | null;
 };
 
 export type AppReducer<TState, AType = string, APayload = any> = (

@@ -2,7 +2,7 @@ import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
 import { TaskPeriodsActionTypes } from './actionTypes';
 import axios from '../../axios/axios';
-import { Period, PeriodUser } from '../../models/period';
+import { CurrentPeriod, PeriodUser, Period } from '../../models/period';
 
 type APITaskPeriod = {
 	id: number;
@@ -14,9 +14,21 @@ type APITaskPeriod = {
 	completedAt: string | null;
 };
 
+type APICurrentPeriod = {
+	id: number;
+	taskId: number;
+	taskName: string;
+	startDate: string;
+	endDate: string;
+};
+
 export type SetTaskPeriodsActionPayload = {
 	taskId: number;
 	periods: Period[];
+};
+
+export type SetCurrentPeriodsActionPayload = {
+	periods: CurrentPeriod[];
 };
 
 export type CompletePeriodActionPayload = {
@@ -45,6 +57,41 @@ export const fetchTaskPeriods = (
 				payload: {
 					periods,
 					taskId,
+				},
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const fetchCurrentPeriods = (): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<
+		SetCurrentPeriodsActionPayload,
+		TaskPeriodsActionTypes.SetCurrentPeriods
+	>
+> => {
+	return async (dispatch) => {
+		const url = `/periods/current`;
+		try {
+			const { data } = await axios.get<APICurrentPeriod[]>(url);
+			const periods = data.map(
+				(x) =>
+					new CurrentPeriod({
+						id: x.id,
+						taskId: x.taskId,
+						taskName: x.taskName,
+						endDate: new Date(x.endDate),
+						startDate: new Date(x.startDate),
+					})
+			);
+			dispatch({
+				type: TaskPeriodsActionTypes.SetCurrentPeriods,
+				payload: {
+					periods,
 				},
 			});
 		} catch (err) {

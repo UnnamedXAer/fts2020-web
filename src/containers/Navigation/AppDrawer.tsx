@@ -16,6 +16,7 @@ import {
 	ContactMailRounded as InvitationsIcon,
 } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
+import CurrentPeriods from '../../components/Navigation/CurrentPeriods';
 
 const useStyles = makeStyles<Theme, { drawerWidth: number }>((theme: Theme) =>
 	createStyles({
@@ -72,6 +73,14 @@ const AppDrawer: React.FC<Props> = (props) => {
 					<ListItemText primary="Invitations" />
 				</ListItem>
 			</List>
+			<Divider
+				style={{
+					width: '90%',
+					marginLeft: 'auto',
+					marginRight: 'auto',
+				}}
+			/>
+			<CurrentPeriods />
 		</Drawer>
 	);
 };
