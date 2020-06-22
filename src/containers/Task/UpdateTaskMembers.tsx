@@ -16,14 +16,14 @@ import {
 	Theme,
 } from '@material-ui/core';
 import User from '../../models/user';
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps, Redirect } from 'react-router-dom';
 import RootState from '../../store/storeTypes';
 import { useSelector, useDispatch } from 'react-redux';
 import { StateError } from '../../ReactTypes/customReactTypes';
 import HttpErrorParser from '../../utils/parseError';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TransferList from '../../components/UI/TransferList';
-import { fetchFlatMembers } from '../../store/actions/flats';
+import { fetchFlatMembers, fetchFlat } from '../../store/actions/flats';
 import { updatedTaskMembers } from '../../store/actions/tasks';
 import { clearTaskPeriods } from '../../store/actions/periods';
 
@@ -57,14 +57,16 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 	const taskId = +match.params.id;
 	const task = useSelector((state: RootState) =>
 		state.tasks.tasks.find((x) => x.id === taskId)
-	)!;
-	const flatMembers = useSelector(
-		(state: RootState) =>
-			state.flats.flats.find((x) => x.id === task.flatId)?.members
 	);
+	const flat = useSelector((state: RootState) =>
+		state.flats.flats.find((x) => x.id === task?.flatId)
+	);
+	const flatMembers = flat?.members;
+	const [loadingFlat, setLoadingFlat] = useState(false);
+	const [errorFlat, setErrorFlat] = useState<StateError>(null);
 	const [loadingFlatMembers, setLoadingFlatMembers] = useState(false);
 	const [errorFlatMembers, setErrorFlatMembers] = useState<StateError>(null);
-	const [members, setMembers] = useState<User[]>(task.members!);
+	const [members, setMembers] = useState<User[] | undefined>(task?.members!);
 	const isMounted = useRef(true);
 	useEffect(() => {
 		isMounted.current = true;
@@ -74,7 +76,13 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 	}, []);
 
 	useEffect(() => {
-		if (!flatMembers && !loadingFlatMembers && !errorFlatMembers) {
+		if (
+			task &&
+			flat &&
+			!flatMembers &&
+			!loadingFlatMembers &&
+			!errorFlatMembers
+		) {
 			const loadFlatMembers = async () => {
 				setLoadingFlatMembers(true);
 				setErrorFlatMembers(null);
@@ -98,10 +106,34 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 	}, [
 		dispatch,
 		errorFlatMembers,
+		flat,
 		flatMembers,
 		loadingFlatMembers,
-		task.flatId,
+		task,
 	]);
+
+	useEffect(() => {
+		if (task && !flat && !loadingFlat && !errorFlat) {
+			const loadFlat = async () => {
+				setLoadingFlat(true);
+				setErrorFlat(null);
+
+				try {
+					await dispatch(fetchFlat(task.flatId!));
+				} catch (err) {
+					if (isMounted.current) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						setErrorFlat(msg);
+					}
+				}
+				if (isMounted.current) {
+					setLoadingFlat(false);
+				}
+			};
+			loadFlat();
+		}
+	}, [dispatch, errorFlat, flat, loadingFlat, task]);
 
 	const membersChangeHandler = useCallback(
 		(newMembers: number[]) => {
@@ -139,6 +171,10 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 		}
 	};
 
+	if (!task) {
+		return <Redirect to={`/tasks/${taskId}`} />;
+	}
+
 	return (
 		<Container maxWidth="sm">
 			<Grid container spacing={2} direction="column">
@@ -156,14 +192,18 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 					</Typography>
 				</Grid>
 				<Grid item>
-					{errorFlatMembers ? (
+					{errorFlatMembers || errorFlat ? (
 						<CustomMuiAlert
 							severity="error"
 							onClick={() => setError(null)}
 						>
-							{error}
+							Sorry could not load all required data, please try
+							again later.
 						</CustomMuiAlert>
-					) : !flatMembers || loadingFlatMembers ? (
+					) : !flat ||
+					  loadingFlat ||
+					  !flatMembers ||
+					  loadingFlatMembers ? (
 						<CircularProgress />
 					) : (
 						<TransferList
@@ -175,7 +215,10 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 									id: user.id,
 									labelPrimary: user.emailAddress,
 									labelSecondary: user.userName,
-									initialChecked: members.findIndex(x => x.id === user.id) !== -1,
+									initialChecked:
+										members!.findIndex(
+											(x) => x.id === user.id
+										) !== -1,
 								};
 							})}
 							onChanged={membersChangeHandler}
