@@ -25,6 +25,7 @@ import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import TransferList from '../../components/UI/TransferList';
 import { fetchFlatMembers } from '../../store/actions/flats';
 import { updatedTaskMembers } from '../../store/actions/tasks';
+import { clearTaskPeriods } from '../../store/actions/periods';
 
 export type NewFlatMember = {
 	emailAddress: User['emailAddress'];
@@ -119,6 +120,7 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 
 		try {
 			await dispatch(updatedTaskMembers(taskId, updatedMembers));
+			dispatch(clearTaskPeriods(taskId));
 			isMounted.current && history.replace('/tasks/' + taskId);
 		} catch (err) {
 			if (isMounted.current) {

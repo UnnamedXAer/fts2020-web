@@ -43,6 +43,19 @@ const completePeriod: SimpleReducer<
 	};
 };
 
+const clearTaskPeriods: SimpleReducer<PeriodsState, { taskId: number }> = (
+	state,
+	action
+) => {
+	const updatedPeriods = { ...state.taskPeriods };
+	delete updatedPeriods[action.payload.taskId];
+
+	return {
+		...state,
+		taskPeriods: updatedPeriods,
+	};
+};
+
 const clearState: SimpleReducer<PeriodsState, undefined> = (state, action) => {
 	return {
 		...initialState,
@@ -58,6 +71,8 @@ const reducer: AppReducer<PeriodsState, TaskPeriodsActionTypes> = (
 			return setTaskPeriods(state, action);
 		case TaskPeriodsActionTypes.CompletePeriod:
 			return completePeriod(state, action);
+		case TaskPeriodsActionTypes.ClearTaskPeriods:
+			return clearTaskPeriods(state, action);
 		case TaskPeriodsActionTypes.ClearState:
 			return clearState(state, action);
 		default:

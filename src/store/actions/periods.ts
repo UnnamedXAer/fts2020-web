@@ -111,6 +111,15 @@ export const resetTaskPeriods = (
 	};
 };
 
+export const clearTaskPeriods = (
+	taskId: number
+): StoreAction<{ taskId: number }, TaskPeriodsActionTypes.ClearTaskPeriods> => {
+	return {
+		type: TaskPeriodsActionTypes.ClearTaskPeriods,
+		payload: { taskId },
+	};
+};
+
 const mapApiPeriodDataToModel = (period: APITaskPeriod) =>
 	new Period({
 		id: period.id,
