@@ -46,14 +46,28 @@ const completePeriod: SimpleReducer<
 	const { period, taskId } = action.payload;
 
 	const updatedPeriods = { ...state.taskPeriods };
-	const updatedTaskPeriods = [...updatedPeriods[taskId]];
-	const periodIdx = updatedTaskPeriods.findIndex((x) => x.id === period.id);
-	updatedTaskPeriods[periodIdx] = period;
-	updatedPeriods[taskId] = updatedTaskPeriods;
+	if (updatedPeriods[taskId]) {
+		const updatedTaskPeriods = [...updatedPeriods[taskId]];
+		const periodIdx = updatedTaskPeriods.findIndex(
+			(x) => x.id === period.id
+		);
+		updatedTaskPeriods[periodIdx] = period;
+		updatedPeriods[taskId] = updatedTaskPeriods;
+	}
+
+	let updatedCurrentPeriods: PeriodsState['currentPeriods'] = null;
+	if (state.currentPeriods) {
+		const idx = state.currentPeriods.findIndex((x) => x.id === period.id);
+		if (idx > -1) {
+			updatedCurrentPeriods = [...state.currentPeriods];
+			updatedCurrentPeriods.splice(idx, 1);
+		}
+	}
 
 	return {
 		...state,
 		taskPeriods: updatedPeriods,
+		currentPeriods: updatedCurrentPeriods,
 	};
 };
 
