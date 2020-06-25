@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Task from '../../models/task';
 import { Grid, Typography, CircularProgress } from '@material-ui/core';
 import moment from 'moment';
 import CustomMuiAlert from '../UI/CustomMuiAlert';
 import MembersList from './MembersList';
 import { StateError } from '../../ReactTypes/customReactTypes';
+import { useSelector, useDispatch } from 'react-redux';
+import RootState from '../../store/storeTypes';
+import Skeleton from '@material-ui/lab/Skeleton';
+import { fetchTaskPeriods } from '../../store/actions/periods';
+import HttpErrorParser from '../../utils/parseError';
 
 interface Props {
 	task: Task;
@@ -19,6 +24,44 @@ const TaskInfoModalContent: React.FC<Props> = ({
 	membersError,
 	onMemberSelect,
 }) => {
+	const dispatch = useDispatch();
+	const periods = useSelector(
+		(state: RootState) => state.periods.taskPeriods[task.id!]
+	);
+	const period = periods?.find((x) => {
+		const today = moment().startOf('day').toDate();
+		const match = x.startDate <= today && x.endDate >= today;
+
+		return match;
+	});
+	const [periodsError, setPeriodsError] = useState<StateError>(null);
+	const isMounted = useRef(true);
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!periods && !periodsError) {
+			const loadTaskPeriods = async () => {
+				setPeriodsError(null);
+				try {
+					await dispatch(fetchTaskPeriods(task.id!));
+				} catch (err) {
+					if (isMounted.current) {
+						const httpError = new HttpErrorParser(err);
+						const msg = httpError.getMessage();
+						setPeriodsError(msg);
+					}
+				}
+			};
+
+			loadTaskPeriods();
+		}
+	}, [periodsError, dispatch, periods, task.id]);
+
 	let membersContent = null;
 	if (!task) {
 		return <CircularProgress color="primary" />;
@@ -40,7 +83,7 @@ const TaskInfoModalContent: React.FC<Props> = ({
 			/>
 		);
 	}
-
+	console.log(period);
 	return (
 		<Grid container direction="column" spacing={1}>
 			<Grid item>
@@ -73,6 +116,39 @@ const TaskInfoModalContent: React.FC<Props> = ({
 						</Typography>
 					</Grid>
 				</Grid>
+			</Grid>
+			<Grid item>
+				<Typography variant="h6">Current Period</Typography>
+				{periodsError ? (
+					<CustomMuiAlert severity="error">
+						{periodsError}
+					</CustomMuiAlert>
+				) : !periods ? (
+					<>
+						<Skeleton height={24} width={320} />
+						<Skeleton height={24} width={280} />
+					</>
+				) : period?.assignedTo ? (
+					<>
+						{period.completedAt && (
+							<Typography variant="caption">
+								[Completed]
+							</Typography>
+						)}
+						<Typography>
+							{moment(period.startDate).format('Do MMMM YYYY')} -{' '}
+							{moment(period.endDate).format('Do MMMM YYYY')}
+						</Typography>
+						<Typography>
+							{period.assignedTo.emailAddress}
+						</Typography>
+						<Typography>{period.assignedTo.userName}</Typography>
+					</>
+				) : (
+					<CustomMuiAlert severity="info">
+						Currently not period is active.
+					</CustomMuiAlert>
+				)}
 			</Grid>
 			<Grid item>
 				<Typography variant="h6">Members</Typography>
