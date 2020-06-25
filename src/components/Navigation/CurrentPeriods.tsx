@@ -215,6 +215,7 @@ const CurrentPeriods: React.FC<Props> = () => {
 											<Link
 												className={classes.taskName}
 												variant="subtitle1"
+												color="secondary"
 												title={
 													'Task: ' + period.taskName
 												}
@@ -332,7 +333,7 @@ const useStyles = makeStyles((theme: Theme) =>
 					width: 'calc(100% + 60px)',
 					transform: 'scaleX(0)',
 					height: 3,
-					animation: `$animateHover 1100ms ${theme.transitions.easing.easeInOut}`,
+					animation: `$animateHover 1000ms ${theme.transitions.easing.easeInOut}`,
 					animationFillMode: 'forwards',
 					zIndex: -1,
 				},
