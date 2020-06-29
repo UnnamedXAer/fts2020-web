@@ -17,6 +17,7 @@ export type APIFlat = {
 	members?: number[];
 	createBy: number;
 	createAt: string;
+	active: boolean;
 };
 
 export type APIInvitation = {
@@ -184,12 +185,12 @@ export const updateFlat = (
 			const requestPayload: Partial<APIFlat> = {
 				name: flat.name!,
 				description: flat.description,
-				// active: flat.active,
+				active: flat.active,
 			};
 			const { data } = await axios.patch<APIFlat>(url, requestPayload);
 			const updatedTask = mapAPIFlatDataToModel(data);
 			dispatch({
-				type: FlatsActionTypes.Set,
+				type: FlatsActionTypes.SetFlat,
 				payload: updatedTask,
 			});
 		} catch (err) {
@@ -269,6 +270,7 @@ export const mapAPIFlatDataToModel = (data: APIFlat) =>
 			typeof data.createAt === 'string'
 				? new Date(data.createAt)
 				: data.createAt,
+		active: data.active,
 	});
 
 export const mapAPIInvitationDataToModel = (data: APIInvitation) =>

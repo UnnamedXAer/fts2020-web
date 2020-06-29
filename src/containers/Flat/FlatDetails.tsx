@@ -314,11 +314,13 @@ const FlatDetails: React.FC<Props> = (props) => {
 					onClose: closeSnackbarAlertHandler,
 					title: 'Could not close flat.',
 				});
+			}
+		} finally {
+			isMounted.current !== null &&
 				setDialogData((prevState) => ({
 					...prevState,
 					open: false,
 				}));
-			}
 		}
 	};
 
@@ -334,9 +336,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 			open: false,
 		}));
 
-	const speedDialOptionClickHandler = async (
-		optionKey: FlatSpeedActions
-	) => {
+	const speedDialOptionClickHandler = async (optionKey: FlatSpeedActions) => {
 		switch (optionKey) {
 			case FlatSpeedActions.InviteMember:
 				props.history.push(`/flats/${flat!.id}/invite-members`);

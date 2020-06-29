@@ -40,7 +40,7 @@ const setFlat: SimpleReducer<FlatsState, Flat> = (state, action) => {
 		}
 		updatedFlats[flatIdx] = updatedFlat;
 	}
-
+	
 	return {
 		...state,
 		flats: updatedFlats,
