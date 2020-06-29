@@ -100,7 +100,13 @@ type ElementsReducer = (
 
 const elementsReducer: ElementsReducer = (state, action) => {
 	if (action.type === 'loading' || action.type === 'not-loading')
-		return { ...state, [action.name]: action.type === 'loading' };
+		return {
+			...state,
+			loading: {
+				...state.loading,
+				[action.name]: action.type === 'loading',
+			},
+		};
 	else {
 		return {
 			...state,
@@ -397,8 +403,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 					action: true,
 					severity: 'success',
 					timeout: 3000,
-					content:
-						'Periods reset successfully.',
+					content: 'Periods reset successfully.',
 					onClose: closeSnackbarAlertHandler,
 				});
 		} catch (err) {
