@@ -130,11 +130,6 @@ const TaskInfoModalContent: React.FC<Props> = ({
 					</>
 				) : period?.assignedTo ? (
 					<>
-						{period.completedAt && (
-							<Typography variant="caption">
-								[Completed]
-							</Typography>
-						)}
 						<Typography>
 							{moment(period.startDate).format('Do MMMM YYYY')} -{' '}
 							{moment(period.endDate).format('Do MMMM YYYY')}
@@ -143,6 +138,11 @@ const TaskInfoModalContent: React.FC<Props> = ({
 							{period.assignedTo.emailAddress}
 						</Typography>
 						<Typography>{period.assignedTo.userName}</Typography>
+						{period.completedAt && (
+							<Typography variant="caption" color="primary">
+								[Completed]
+							</Typography>
+						)}
 					</>
 				) : (
 					<CustomMuiAlert severity="info">
