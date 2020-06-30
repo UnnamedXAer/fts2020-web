@@ -146,7 +146,7 @@ const TaskInfoModalContent: React.FC<Props> = ({
 					</>
 				) : (
 					<CustomMuiAlert severity="info">
-						Currently not period is active.
+						Currently there is no active period.
 					</CustomMuiAlert>
 				)}
 			</Grid>
