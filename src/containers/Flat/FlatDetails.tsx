@@ -442,6 +442,11 @@ const FlatDetails: React.FC<Props> = (props) => {
 						<Grid item>
 							{flat ? (
 								<Typography variant="h5" component="h2">
+									{!flat.active && (
+										<span style={{ color: '#888' }}>
+											[Inactive]{' '}
+										</span>
+									)}
 									{flat.name}
 								</Typography>
 							) : (
