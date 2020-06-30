@@ -13,6 +13,8 @@ import {
 	Link,
 	CircularProgress,
 	Box,
+	FormControlLabel,
+	Checkbox,
 } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -32,16 +34,19 @@ interface Props extends RouteComponentProps {}
 const Flats: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
+	const [showInactive, setShowInactive] = useState(localStorage.getItem('flats_show_inactive') === '1');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
-	const flats = useSelector<RootState, FlatModel[]>(
-		(state) => state.flats.flats
+	const flats = useSelector<RootState, FlatModel[]>((state) =>
+		showInactive
+			? state.flats.flats
+			: state.flats.flats.filter((x) => x.active)
 	);
 	const flatsLoadTime = useSelector<RootState, number>(
 		(state) => state.flats.flatsLoadTime
 	);
 	const [selectedFlat, setSelectedFlat] = useState<number | null>(null);
-	
+
 	const isMounted = useRef(true);
 	useEffect(() => {
 		isMounted.current = true;
@@ -72,6 +77,14 @@ const Flats: React.FC<Props> = (props) => {
 
 	const flatClickHandler = (flatId: number) => {
 		setSelectedFlat(flatId);
+	};
+
+	const showInactiveChangeHandler = (
+		_: React.ChangeEvent<HTMLInputElement>,
+		checked: boolean
+	) => {
+		localStorage.setItem('flats_show_inactive', checked ? '1' : '0');
+		setShowInactive(checked);
 	};
 
 	let content = (
@@ -131,7 +144,16 @@ const Flats: React.FC<Props> = (props) => {
 								</Avatar>
 							</ListItemAvatar>
 							<ListItemText
-								primary={flat.name}
+								primary={
+									<>
+										{!flat.active && (
+											<span style={{ color: '#888' }}>
+												[Inactive]{' '}
+											</span>
+										)}
+										{flat.name}
+									</>
+								}
 								secondary={flat.description}
 							/>
 						</ListItem>
@@ -148,6 +170,17 @@ const Flats: React.FC<Props> = (props) => {
 					<Typography variant="h4" component="h1">
 						Your Flats
 					</Typography>
+					<FormControlLabel
+						control={
+							<Checkbox
+								checked={showInactive}
+								onChange={showInactiveChangeHandler}
+								name="showInactive"
+								color="primary"
+							/>
+						}
+						label="Show inactive"
+					/>
 				</Grid>
 				<Grid item>{content}</Grid>
 			</Grid>

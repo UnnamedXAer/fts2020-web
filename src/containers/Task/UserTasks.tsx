@@ -31,7 +31,7 @@ interface Props extends RouteComponentProps {}
 const UserTasks: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const [showInactive, setShowInactive] = useState(false);
+	const [showInactive, setShowInactive] = useState(localStorage.getItem('user_tasks_show_inactive') === '1');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
 	const tasks = useSelector<RootState, UserTask[]>((state) =>
@@ -79,6 +79,7 @@ const UserTasks: React.FC<Props> = (props) => {
 		_: React.ChangeEvent<HTMLInputElement>,
 		checked: boolean
 	) => {
+		localStorage.setItem('user_tasks_show_inactive', checked ? '1' : '0');
 		setShowInactive(checked);
 	};
 
