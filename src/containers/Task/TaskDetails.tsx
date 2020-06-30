@@ -121,7 +121,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const [error, setError] = useState<StateError>(null);
 	const [userTasksError, setUserTasksError] = useState<StateError>(null);
 	const id = +(props.match.params as RouterParams).id;
-	const loggedUser = useSelector((state: RootState) => state.auth.user);
+	const loggedUser = useSelector((state: RootState) => state.auth.user)!;
 	const userTasksLoadTime = useSelector(
 		(state: RootState) => state.tasks.userTasksLoadTime
 	);
@@ -316,8 +316,62 @@ const TaskDetails: React.FC<Props> = (props) => {
 		props.history.push(`/profile/${id}`);
 	};
 
+	const completePeriodClickHandler = (id: number) => {
+		const period = periods!.find((x) => x.id === id)!;
+		const isPeriodDelayed = moment(period.endDate)
+			.startOf('day')
+			.isBefore(moment().startOf('day'));
+
+		setDialogData({
+			open: true,
+			content: (
+				<>
+					{period.assignedTo.emailAddress !==
+						loggedUser.emailAddress && (
+						<CustomMuiAlert
+							severity="warning"
+							variant="outlined"
+							style={{ marginBottom: 24 }}
+						>
+							You are about to complete period assigned to:{' '}
+							<strong>
+								{period.assignedTo.emailAddress} (
+								{period.assignedTo.userName})
+							</strong>
+							<br />
+							Make sure you selected the right one before confirm.
+						</CustomMuiAlert>
+					)}
+					<Typography
+						align="center"
+						color={isPeriodDelayed ? 'secondary' : 'primary'}
+					>
+						{moment(period.startDate).format('dddd, Do MMMM')} -{' '}
+						{moment(period.endDate).format('dddd, Do MMMM')}
+					</Typography>
+				</>
+			),
+			title: 'Complete Period?',
+			onClose: closeDialogAlertHandler,
+			loading: false,
+			actions: [
+				{
+					label: 'Complete',
+					onClick: () => completePeriodHandler(id),
+					color: 'primary',
+				},
+				{
+					color: 'secondary',
+					label: 'Cancel',
+					onClick: closeDialogAlertHandler,
+				},
+			],
+		});
+	};
+
 	const completePeriodHandler = async (id: number) => {
 		setPeriodsLoading((prevState) => ({ ...prevState, [id]: true }));
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
 		try {
 			await dispatch(completePeriod(id, task!.id!));
 			isMounted.current &&
@@ -343,9 +397,18 @@ const TaskDetails: React.FC<Props> = (props) => {
 					title: 'Could not complete the period.',
 				});
 			}
+		} finally {
+			if (isMounted.current) {
+				setPeriodsLoading((prevState) => ({
+					...prevState,
+					[id]: false,
+				}));
+				setDialogData((prevState) => ({
+					...prevState,
+					open: false,
+				}));
+			}
 		}
-		isMounted.current &&
-			setPeriodsLoading((prevState) => ({ ...prevState, [id]: false }));
 	};
 
 	const closeSnackbarAlertHandler = () => {
@@ -643,8 +706,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 							}
 							periodsLoading={periodsLoading}
 							error={elements.error.schedule}
-							loggedUserEmailAddress={loggedUser!.emailAddress}
-							onCompletePeriod={completePeriodHandler}
+							loggedUserEmailAddress={loggedUser.emailAddress}
+							onCompletePeriod={completePeriodClickHandler}
 						/>
 					</Grid>
 				</Grid>
@@ -658,7 +721,6 @@ const TaskDetails: React.FC<Props> = (props) => {
 					!task.owner ||
 					!task.active ||
 					!task.members ||
-					!loggedUser ||
 					loggedUser.id !== task.owner.id
 				}
 				open={speedDialOpen}

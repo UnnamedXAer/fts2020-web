@@ -20,7 +20,7 @@ type AlertDialogAction = {
 export type AlertDialogData = {
 	open: boolean;
 	onClose: () => void;
-	content: string;
+	content: React.ReactNode;
 	title: string;
 	actions?: AlertDialogAction[];
 	loading: boolean;
@@ -41,7 +41,12 @@ const AlertDialog: React.FC<AlertDialogProps> = (props) => {
 		>
 			<DialogTitle id="alert-dialog-title">{title}</DialogTitle>
 			<DialogContent dividers style={{ minWidth: 300 }}>
-				<Typography gutterBottom>{content}</Typography>
+				<Typography
+					gutterBottom
+					component={typeof content === 'string' ? 'p' : 'span'}
+				>
+					{content}
+				</Typography>
 			</DialogContent>
 			<DialogActions>
 				<Box justifySelf="flex-start" width={26} height={26}>
