@@ -9,6 +9,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Skeleton from '@material-ui/lab/Skeleton';
+import { Typography } from '@material-ui/core';
 
 function not(a: number[], b: number[]) {
 	return a.filter((value) => b.indexOf(value) === -1);
@@ -25,6 +26,9 @@ interface Props {
 		labelSecondary?: string;
 		initialChecked?: boolean;
 	}[];
+	unAssignedListTile: string;
+	assignedListTile: string;
+	alwaysCheckedItemId?: number;
 	onChanged: (rightData: number[]) => void;
 	listStyle?: React.CSSProperties;
 	disabled?: boolean;
@@ -32,6 +36,9 @@ interface Props {
 
 const TransferList: React.FC<Props> = ({
 	data,
+	alwaysCheckedItemId,
+	unAssignedListTile,
+	assignedListTile,
 	onChanged,
 	listStyle,
 	disabled,
@@ -62,16 +69,19 @@ const TransferList: React.FC<Props> = ({
 	}, [data, dataSet]);
 
 	const handleToggle = (value: number) => () => {
-		const currentIndex = checked.indexOf(value);
-		const newChecked = [...checked];
+		if (value !== alwaysCheckedItemId) {
+			setChecked((prevState) => {
+				const currentIndex = prevState.indexOf(value);
+				const newChecked = [...prevState];
 
-		if (currentIndex === -1) {
-			newChecked.push(value);
-		} else {
-			newChecked.splice(currentIndex, 1);
+				if (currentIndex === -1) {
+					newChecked.push(value);
+				} else {
+					newChecked.splice(currentIndex, 1);
+				}
+				return newChecked;
+			});
 		}
-
-		setChecked(newChecked);
 	};
 
 	const handleAllRight = () => {
@@ -92,51 +102,68 @@ const TransferList: React.FC<Props> = ({
 	};
 
 	const handleAllLeft = () => {
-		setLeft(left.concat(right));
-		setRight([]);
+		setLeft(left.concat(right.filter((x) => x !== alwaysCheckedItemId)));
+		setRight(right.filter((x) => x === alwaysCheckedItemId));
 	};
 
-	const customList = (items: number[]) => (
-		<Paper className={classes.paper} style={listStyle}>
-			{data ? (
-				<List dense component="div" role="list">
-					{items.map((itemId: number) => {
-						const labelId = `transfer-list-item-${itemId}-label`;
-						const item = data!.find((x) => x.id === itemId)!;
-						return (
-							<ListItem
-								key={itemId}
-								role="listitem"
-								button
-								onClick={handleToggle(itemId)}
-							>
-								<ListItemIcon>
-									<Checkbox
-										checked={checked.indexOf(itemId) !== -1}
-										tabIndex={-1}
-										disableRipple
-										inputProps={{
-											'aria-labelledby': labelId,
-										}}
+	const customList = (items: number[], listTitle: string) => (
+		<>
+			<Typography variant="caption">{listTitle}</Typography>
+			<Paper className={classes.paper} style={listStyle}>
+				{data ? (
+					<List dense component="div" role="list">
+						{items.map((itemId: number) => {
+							const labelId = `transfer-list-item-${itemId}-label`;
+							const item = data!.find((x) => x.id === itemId)!;
+							return (
+								<ListItem
+									key={itemId}
+									role="listitem"
+									button
+									onClick={handleToggle(itemId)}
+								>
+									<ListItemIcon>
+										<Checkbox
+											style={{
+												color:
+													alwaysCheckedItemId ===
+													itemId
+														? '#ccc'
+														: void 0,
+											}}
+											checked={
+												checked.indexOf(itemId) !== -1
+											}
+											tabIndex={-1}
+											disableRipple
+											inputProps={{
+												'aria-labelledby': labelId,
+											}}
+											title={
+												alwaysCheckedItemId === itemId
+													? 'This item must be included.'
+													: void 0
+											}
+										/>
+									</ListItemIcon>
+									<ListItemText
+										id={labelId}
+										primary={item.labelPrimary}
+										secondary={item.labelSecondary}
 									/>
-								</ListItemIcon>
-								<ListItemText
-									id={labelId}
-									primary={item.labelPrimary}
-									secondary={item.labelSecondary}
-								/>
-							</ListItem>
-						);
-					})}
-					<ListItem />
-				</List>
-			) : (
-				<>
-					<Skeleton />
-					<Skeleton />
-				</>
-			)}
-		</Paper>
+								</ListItem>
+							);
+						})}
+						<ListItem />
+					</List>
+				) : (
+					<>
+						<Skeleton />
+						<Skeleton />
+					</>
+				)}
+			</Paper>
+		</>
 	);
 
 	return (
@@ -147,7 +174,7 @@ const TransferList: React.FC<Props> = ({
 			alignItems="center"
 			className={classes.root}
 		>
-			<Grid item>{customList(left)}</Grid>
+			<Grid item>{customList(left, unAssignedListTile)}</Grid>
 			<Grid item>
 				<Grid container direction="column" alignItems="center">
 					<Button
@@ -192,7 +219,7 @@ const TransferList: React.FC<Props> = ({
 					</Button>
 				</Grid>
 			</Grid>
-			<Grid item>{customList(right)}</Grid>
+			<Grid item>{customList(right, assignedListTile)}</Grid>
 		</Grid>
 	);
 };

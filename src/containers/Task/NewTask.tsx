@@ -138,6 +138,7 @@ const NewTask: FC<Props> = ({ history, match }) => {
 	const [formState, formDispatch] = useForm<TaskFormValues>(
 		initialFormStateRef.current
 	);
+	const loggedUserId = useSelector((state: RootState) => state.auth.user!.id);
 	const [members, setMembers] = useState<User[]>(
 		flat?.members ? flat.members : []
 	);
@@ -561,6 +562,9 @@ const NewTask: FC<Props> = ({ history, match }) => {
 									initialChecked: true,
 								};
 							})}
+							alwaysCheckedItemId={loggedUserId}
+							assignedListTile={'Assigned people'}
+							unAssignedListTile={'Unassigned flat members'}
 							onChanged={membersChangeHandler}
 							disabled={loading}
 						/>

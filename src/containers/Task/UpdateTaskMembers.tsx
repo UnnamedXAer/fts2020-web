@@ -216,11 +216,15 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 									labelPrimary: user.emailAddress,
 									labelSecondary: user.userName,
 									initialChecked:
+										user.id === task.createBy ||
 										members!.findIndex(
 											(x) => x.id === user.id
 										) !== -1,
 								};
 							})}
+							alwaysCheckedItemId={task.createBy!}
+							assignedListTile={'Assigned people'}
+							unAssignedListTile={'Unassigned flat members'}
 							onChanged={membersChangeHandler}
 							disabled={loading}
 						/>
