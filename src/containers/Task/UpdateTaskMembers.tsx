@@ -255,7 +255,7 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 									}}
 									disabled={loading}
 									onClick={() =>
-										history.replace(`/tasks/${taskId}`)
+										history.replace(`/tasks/${taskId}?users-updated=true`)
 									}
 									color="primary"
 									type="button"

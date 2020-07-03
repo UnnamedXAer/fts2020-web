@@ -118,6 +118,9 @@ const elementsReducer: ElementsReducer = (state, action) => {
 const TaskDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
+	const askForPeriodsReset = new URLSearchParams(props.location.search).get(
+		'users-updated'
+	);
 	const [error, setError] = useState<StateError>(null);
 	const [userTasksError, setUserTasksError] = useState<StateError>(null);
 	const id = +(props.match.params as RouterParams).id;
@@ -244,6 +247,38 @@ const TaskDetails: React.FC<Props> = (props) => {
 		periods,
 		task,
 	]);
+
+	useEffect(() => {
+		if (askForPeriodsReset && periods) {
+			const today = moment().startOf('day').toDate();
+			if (
+				!periods.some(
+					(x) => x.startDate <= today && x.completedBy === null
+				)
+			) {
+				setDialogData({
+					open: true,
+					title: 'Periods',
+					content:
+						"It's look like there is no periods for future. Would you like to generate them now? You can do it later from Task Options.",
+					onClose: closeDialogAlertHandler,
+					loading: false,
+					actions: [
+						{
+							label: 'Yes',
+							onClick: resetPeriodsHandler,
+							color: 'primary',
+						},
+						{
+							color: 'secondary',
+							label: 'Cancel',
+							onClick: closeDialogAlertHandler,
+						},
+					],
+				});
+			}
+		}
+	}, [askForPeriodsReset, periods]);
 
 	useEffect(() => {
 		if (
@@ -521,7 +556,6 @@ const TaskDetails: React.FC<Props> = (props) => {
 						},
 					],
 				});
-
 				break;
 			case TaskSpeedActions.ResetPeriods:
 				setDialogData({
