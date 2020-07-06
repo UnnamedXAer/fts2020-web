@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useRef, useReducer } from 'react';
+import React, {
+	useEffect,
+	useState,
+	useRef,
+	useReducer,
+	useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RouteComponentProps, Link as RouterLink } from 'react-router-dom';
 import {
@@ -173,6 +179,234 @@ const TaskDetails: React.FC<Props> = (props) => {
 		};
 	}, []);
 
+	const resetPeriodsHandler = useCallback(async () => {
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
+
+		try {
+			await dispatch(resetTaskPeriods(id));
+			isMounted.current &&
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'success',
+					timeout: 3000,
+					content: 'Periods reset successfully.',
+					onClose: closeSnackbarAlertHandler,
+				});
+		} catch (err) {
+			if (isMounted.current) {
+				const httpError = new HttpErrorParser(err);
+				const msg = httpError.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not reset periods.\nPlease try again later.',
+				});
+			}
+		}
+		isMounted.current &&
+			setDialogData((prevState) => ({ ...prevState, open: false }));
+	}, [dispatch, id]);
+
+	const completePeriodHandler = useCallback(
+		async (id: number) => {
+			setPeriodsLoading((prevState) => ({ ...prevState, [id]: true }));
+			setDialogData((prevState) => ({ ...prevState, loading: true }));
+			try {
+				await dispatch(completePeriod(id, task!.id!));
+				isMounted.current &&
+					setSnackbarData({
+						open: true,
+						action: true,
+						severity: 'success',
+						timeout: 3000,
+						content: 'Period completed.',
+						onClose: closeSnackbarAlertHandler,
+					});
+			} catch (err) {
+				if (isMounted.current) {
+					const error = new HttpErrorParser(err);
+					const msg = error.getMessage();
+					setSnackbarData({
+						open: true,
+						action: true,
+						severity: 'error',
+						timeout: 4000,
+						content: msg,
+						onClose: closeSnackbarAlertHandler,
+						title: 'Could not complete the period.',
+					});
+				}
+			} finally {
+				if (isMounted.current) {
+					setPeriodsLoading((prevState) => ({
+						...prevState,
+						[id]: false,
+					}));
+					setDialogData((prevState) => ({
+						...prevState,
+						open: false,
+					}));
+				}
+			}
+		},
+		[dispatch, task]
+	);
+
+	const completePeriodClickHandler = useCallback(
+		(id: number) => {
+			const period = periods!.find((x) => x.id === id)!;
+			const isPeriodDelayed = moment(period.endDate)
+				.startOf('day')
+				.isBefore(moment().startOf('day'));
+
+			setDialogData({
+				open: true,
+				content: (
+					<>
+						{period.assignedTo.emailAddress !==
+							loggedUser.emailAddress && (
+							<CustomMuiAlert
+								severity="warning"
+								variant="outlined"
+								style={{ marginBottom: 24 }}
+							>
+								You are about to complete period assigned to:{' '}
+								<strong>
+									{period.assignedTo.emailAddress} (
+									{period.assignedTo.userName})
+								</strong>
+								<br />
+								Make sure you selected the right one before
+								confirm.
+							</CustomMuiAlert>
+						)}
+						<Typography
+							align="center"
+							color={isPeriodDelayed ? 'secondary' : 'primary'}
+						>
+							{moment(period.startDate).format('dddd, Do MMMM')} -{' '}
+							{moment(period.endDate).format('dddd, Do MMMM')}
+						</Typography>
+					</>
+				),
+				title: 'Complete Period?',
+				onClose: closeDialogAlertHandler,
+				loading: false,
+				actions: [
+					{
+						label: 'Complete',
+						onClick: () => completePeriodHandler(id),
+						color: 'primary',
+					},
+					{
+						color: 'secondary',
+						label: 'Cancel',
+						onClick: closeDialogAlertHandler,
+					},
+				],
+			});
+		},
+		[completePeriodHandler, loggedUser.emailAddress, periods]
+	);
+
+	const taskCloseHandler = useCallback(async () => {
+		const _task: Partial<Task> = new Task({
+			id: task!.id,
+			active: false,
+		});
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
+
+		try {
+			await dispatch(updateTask(_task));
+			isMounted.current &&
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'success',
+					timeout: 3000,
+					content: 'Task closed.',
+					onClose: closeSnackbarAlertHandler,
+				});
+		} catch (err) {
+			if (isMounted.current) {
+				const httpError = new HttpErrorParser(err);
+				const msg = httpError.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not close task.',
+				});
+			}
+		}
+		isMounted.current &&
+			setDialogData((prevState) => ({ ...prevState, open: false }));
+	}, [dispatch, task]);
+
+	const speedDialOptionClickHandler = useCallback(
+		async (optionName: TaskSpeedActions) => {
+			switch (optionName) {
+				case TaskSpeedActions.UpdateMembers:
+					props.history.push(`${props.match.url}/update-members`);
+					break;
+				case TaskSpeedActions.CloseTask:
+					setDialogData({
+						open: true,
+						content: 'Do you want to close this task?',
+						title: 'Close Task',
+						onClose: closeDialogAlertHandler,
+						loading: false,
+						actions: [
+							{
+								label: 'Yes',
+								onClick: taskCloseHandler,
+								color: 'primary',
+							},
+							{
+								color: 'secondary',
+								label: 'Cancel',
+								onClick: closeDialogAlertHandler,
+							},
+						],
+					});
+					break;
+				case TaskSpeedActions.ResetPeriods:
+					setDialogData({
+						open: true,
+						content: 'Do you want reset future periods?',
+						title: 'Reset Task Periods - Confirmation',
+						onClose: closeDialogAlertHandler,
+						loading: false,
+						actions: [
+							{
+								label: 'Yes',
+								onClick: resetPeriodsHandler,
+								color: 'primary',
+							},
+							{
+								color: 'secondary',
+								label: 'Cancel',
+								onClick: closeDialogAlertHandler,
+							},
+						],
+					});
+					break;
+				default:
+					break;
+			}
+			setSpeedDialOpen(false);
+		},
+		[props.history, props.match.url, resetPeriodsHandler, taskCloseHandler]
+	);
+
 	useEffect(() => {
 		if (userTasksLoadTime === 0) {
 			const loadUserTasks = async () => {
@@ -278,7 +512,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 				});
 			}
 		}
-	}, [askForPeriodsReset, periods]);
+	}, [askForPeriodsReset, periods, resetPeriodsHandler]);
 
 	useEffect(() => {
 		if (
@@ -351,101 +585,6 @@ const TaskDetails: React.FC<Props> = (props) => {
 		props.history.push(`/profile/${id}`);
 	};
 
-	const completePeriodClickHandler = (id: number) => {
-		const period = periods!.find((x) => x.id === id)!;
-		const isPeriodDelayed = moment(period.endDate)
-			.startOf('day')
-			.isBefore(moment().startOf('day'));
-
-		setDialogData({
-			open: true,
-			content: (
-				<>
-					{period.assignedTo.emailAddress !==
-						loggedUser.emailAddress && (
-						<CustomMuiAlert
-							severity="warning"
-							variant="outlined"
-							style={{ marginBottom: 24 }}
-						>
-							You are about to complete period assigned to:{' '}
-							<strong>
-								{period.assignedTo.emailAddress} (
-								{period.assignedTo.userName})
-							</strong>
-							<br />
-							Make sure you selected the right one before confirm.
-						</CustomMuiAlert>
-					)}
-					<Typography
-						align="center"
-						color={isPeriodDelayed ? 'secondary' : 'primary'}
-					>
-						{moment(period.startDate).format('dddd, Do MMMM')} -{' '}
-						{moment(period.endDate).format('dddd, Do MMMM')}
-					</Typography>
-				</>
-			),
-			title: 'Complete Period?',
-			onClose: closeDialogAlertHandler,
-			loading: false,
-			actions: [
-				{
-					label: 'Complete',
-					onClick: () => completePeriodHandler(id),
-					color: 'primary',
-				},
-				{
-					color: 'secondary',
-					label: 'Cancel',
-					onClick: closeDialogAlertHandler,
-				},
-			],
-		});
-	};
-
-	const completePeriodHandler = async (id: number) => {
-		setPeriodsLoading((prevState) => ({ ...prevState, [id]: true }));
-		setDialogData((prevState) => ({ ...prevState, loading: true }));
-		try {
-			await dispatch(completePeriod(id, task!.id!));
-			isMounted.current &&
-				setSnackbarData({
-					open: true,
-					action: true,
-					severity: 'success',
-					timeout: 3000,
-					content: 'Period completed.',
-					onClose: closeSnackbarAlertHandler,
-				});
-		} catch (err) {
-			if (isMounted.current) {
-				const error = new HttpErrorParser(err);
-				const msg = error.getMessage();
-				setSnackbarData({
-					open: true,
-					action: true,
-					severity: 'error',
-					timeout: 4000,
-					content: msg,
-					onClose: closeSnackbarAlertHandler,
-					title: 'Could not complete the period.',
-				});
-			}
-		} finally {
-			if (isMounted.current) {
-				setPeriodsLoading((prevState) => ({
-					...prevState,
-					[id]: false,
-				}));
-				setDialogData((prevState) => ({
-					...prevState,
-					open: false,
-				}));
-			}
-		}
-	};
-
 	const closeSnackbarAlertHandler = () => {
 		setSnackbarData((prevState) => ({
 			...prevState,
@@ -453,136 +592,11 @@ const TaskDetails: React.FC<Props> = (props) => {
 		}));
 	};
 
-	const taskCloseHandler = async () => {
-		const _task: Partial<Task> = new Task({
-			id: task!.id,
-			active: false,
-		});
-		setDialogData((prevState) => ({ ...prevState, loading: true }));
-
-		try {
-			await dispatch(updateTask(_task));
-			isMounted.current &&
-				setSnackbarData({
-					open: true,
-					action: true,
-					severity: 'success',
-					timeout: 3000,
-					content: 'Task closed.',
-					onClose: closeSnackbarAlertHandler,
-				});
-		} catch (err) {
-			if (isMounted.current) {
-				const httpError = new HttpErrorParser(err);
-				const msg = httpError.getMessage();
-				setSnackbarData({
-					open: true,
-					action: true,
-					severity: 'error',
-					timeout: 4000,
-					content: msg,
-					onClose: closeSnackbarAlertHandler,
-					title: 'Could not close task.',
-				});
-			}
-		}
-		isMounted.current &&
-			setDialogData((prevState) => ({ ...prevState, open: false }));
-	};
-
-	const resetPeriodsHandler = async () => {
-		setDialogData((prevState) => ({ ...prevState, loading: true }));
-
-		try {
-			await dispatch(resetTaskPeriods(id));
-			isMounted.current &&
-				setSnackbarData({
-					open: true,
-					action: true,
-					severity: 'success',
-					timeout: 3000,
-					content: 'Periods reset successfully.',
-					onClose: closeSnackbarAlertHandler,
-				});
-		} catch (err) {
-			if (isMounted.current) {
-				const httpError = new HttpErrorParser(err);
-				const msg = httpError.getMessage();
-				setSnackbarData({
-					open: true,
-					action: true,
-					severity: 'error',
-					timeout: 4000,
-					content: msg,
-					onClose: closeSnackbarAlertHandler,
-					title: 'Could not reset periods.\nPlease try again later.',
-				});
-			}
-		}
-		isMounted.current &&
-			setDialogData((prevState) => ({ ...prevState, open: false }));
-	};
-
 	const closeDialogAlertHandler = () =>
 		setDialogData((prevState) => ({
 			...prevState,
 			open: prevState.loading,
 		}));
-
-	const speedDialOptionClickHandler = async (
-		optionName: TaskSpeedActions
-	) => {
-		switch (optionName) {
-			case TaskSpeedActions.UpdateMembers:
-				props.history.push(`${props.match.url}/update-members`);
-				break;
-			case TaskSpeedActions.CloseTask:
-				setDialogData({
-					open: true,
-					content: 'Do you want to close this task?',
-					title: 'Close Task',
-					onClose: closeDialogAlertHandler,
-					loading: false,
-					actions: [
-						{
-							label: 'Yes',
-							onClick: taskCloseHandler,
-							color: 'primary',
-						},
-						{
-							color: 'secondary',
-							label: 'Cancel',
-							onClick: closeDialogAlertHandler,
-						},
-					],
-				});
-				break;
-			case TaskSpeedActions.ResetPeriods:
-				setDialogData({
-					open: true,
-					content: 'Do you want reset future periods?',
-					title: 'Reset Task Periods - Confirmation',
-					onClose: closeDialogAlertHandler,
-					loading: false,
-					actions: [
-						{
-							label: 'Yes',
-							onClick: resetPeriodsHandler,
-							color: 'primary',
-						},
-						{
-							color: 'secondary',
-							label: 'Cancel',
-							onClick: closeDialogAlertHandler,
-						},
-					],
-				});
-				break;
-			default:
-				break;
-		}
-		setSpeedDialOpen(false);
-	};
 
 	return (
 		<>
