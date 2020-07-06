@@ -198,7 +198,7 @@ const Invitations: React.FC<Props> = (props) => {
 								color="primary"
 							/>
 						}
-						label="Show inactive"
+						label="Show answered"
 					/>
 				</Grid>
 				<Grid item style={{ paddingTop: 0 }}>
