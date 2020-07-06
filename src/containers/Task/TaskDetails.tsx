@@ -53,6 +53,7 @@ import AlertDialog, { AlertDialogData } from '../../components/UI/AlertDialog';
 import AlertSnackbar, {
 	AlertSnackbarData,
 } from '../../components/UI/AlertSnackbar';
+import TaskCompleteModalText from '../../components/Task/TaskCompleteModalText';
 
 interface Props extends RouteComponentProps {}
 
@@ -260,39 +261,14 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const completePeriodClickHandler = useCallback(
 		(id: number) => {
 			const period = periods!.find((x) => x.id === id)!;
-			const isPeriodDelayed = moment(period.endDate)
-				.startOf('day')
-				.isBefore(moment().startOf('day'));
 
 			setDialogData({
 				open: true,
 				content: (
-					<>
-						{period.assignedTo.emailAddress !==
-							loggedUser.emailAddress && (
-							<CustomMuiAlert
-								severity="warning"
-								variant="outlined"
-								style={{ marginBottom: 24 }}
-							>
-								You are about to complete period assigned to:{' '}
-								<strong>
-									{period.assignedTo.emailAddress} (
-									{period.assignedTo.userName})
-								</strong>
-								<br />
-								Make sure you selected the right one before
-								confirm.
-							</CustomMuiAlert>
-						)}
-						<Typography
-							align="center"
-							color={isPeriodDelayed ? 'secondary' : 'primary'}
-						>
-							{moment(period.startDate).format('dddd, Do MMMM')} -{' '}
-							{moment(period.endDate).format('dddd, Do MMMM')}
-						</Typography>
-					</>
+					<TaskCompleteModalText
+						loggedUserEmailAddress={loggedUser.emailAddress}
+						period={period}
+					/>
 				),
 				title: 'Complete Period?',
 				onClose: closeDialogAlertHandler,
