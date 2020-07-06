@@ -24,6 +24,11 @@ type FetchTaskAction = {
 	payload: Task;
 };
 
+export type AddTaskActionPayload = {
+	task: Task;
+	userTask: UserTask;
+};
+
 type SetTaskMembersAction = {
 	type: TasksActionTypes.SetMembers;
 	payload: { members: User[]; taskId: number };
@@ -56,8 +61,13 @@ type APIUserTask = {
 
 export const createTask = (
 	task: Task
-): ThunkAction<Promise<void>, RootState, any, StoreAction<Task, string>> => {
-	return async (dispatch) => {
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<AddTaskActionPayload, string>
+> => {
+	return async (dispatch, getState) => {
 		const url = `/flats/${task.flatId}/tasks`;
 		try {
 			const requestPayload: APITask = {
@@ -72,9 +82,16 @@ export const createTask = (
 			};
 			const { data } = await axios.post<APITask>(url, requestPayload);
 			const createdTask = mapApiTaskDataToModel(data);
+			const flatName = getState().flats.flats.find(
+				(x) => x.id === createdTask.flatId
+			)!.name;
+			const userTask = mapApiUserTaskDataToModel({
+				...data,
+				flatName: flatName,
+			});
 			dispatch({
 				type: TasksActionTypes.Add,
-				payload: createdTask,
+				payload: { task: createdTask, userTask },
 			});
 		} catch (err) {
 			throw err;

@@ -2,6 +2,7 @@ import { AppReducer, TasksState, SimpleReducer } from '../storeTypes';
 import { TasksActionTypes } from '../actions/actionTypes';
 import Task from '../../models/task';
 import User from '../../models/user';
+import { AddTaskActionPayload } from '../actions/tasks';
 
 const initialState: TasksState = {
 	tasks: [],
@@ -59,12 +60,18 @@ const setFlatTasks: SimpleReducer<
 	};
 };
 
-const addTask: SimpleReducer<TasksState, Task> = (state, action) => {
-	const updatedTasks = state.tasks.concat(action.payload);
+const addTask: SimpleReducer<TasksState, AddTaskActionPayload> = (
+	state,
+	action
+) => {
+	const { task, userTask } = action.payload;
+	const updatedTasks = state.tasks.concat(task);
+	const updatedUserTasks = state.userTasks.concat(userTask);
 
 	return {
 		...state,
 		tasks: updatedTasks,
+		userTasks: updatedUserTasks,
 	};
 };
 
