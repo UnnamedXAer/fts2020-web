@@ -54,6 +54,7 @@ import AlertSnackbar, {
 	AlertSnackbarData,
 } from '../../components/UI/AlertSnackbar';
 import TaskCompleteModalText from '../../components/Task/TaskCompleteModalText';
+import NoPeriodsWarning from '../../components/Task/NoPeriodsWarning';
 
 interface Props extends RouteComponentProps {}
 
@@ -125,9 +126,6 @@ const elementsReducer: ElementsReducer = (state, action) => {
 const TaskDetails: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const askForPeriodsReset = new URLSearchParams(props.location.search).get(
-		'users-updated'
-	);
 	const [error, setError] = useState<StateError>(null);
 	const [userTasksError, setUserTasksError] = useState<StateError>(null);
 	const id = +(props.match.params as RouterParams).id;
@@ -149,7 +147,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const task = useSelector((state: RootState) =>
 		state.tasks.tasks.find((x) => x.id === id)
 	);
-	const periods = useSelector((state: RootState) =>
+	const periods = useSelector((state: RootState) => 
 		task ? state.periods.taskPeriods[task.id!] : void 0
 	);
 	const [elements, elementsDispatch] = useReducer(
@@ -209,9 +207,20 @@ const TaskDetails: React.FC<Props> = (props) => {
 				});
 			}
 		}
-		isMounted.current &&
+		if (isMounted.current) {
+			props.history.replace(
+				props.location.pathname +
+					props.location.search.replace(/.users-updated=true/, '')
+			);
 			setDialogData((prevState) => ({ ...prevState, open: false }));
-	}, [dispatch, id]);
+		}
+	}, [
+		dispatch,
+		id,
+		props.history,
+		props.location.pathname,
+		props.location.search,
+	]);
 
 	const completePeriodHandler = useCallback(
 		async (id: number) => {
@@ -459,38 +468,6 @@ const TaskDetails: React.FC<Props> = (props) => {
 	]);
 
 	useEffect(() => {
-		if (askForPeriodsReset && periods) {
-			const today = moment().startOf('day').toDate();
-			if (
-				!periods.some(
-					(x) => x.startDate <= today && x.completedBy === null
-				)
-			) {
-				setDialogData({
-					open: true,
-					title: 'Periods',
-					content:
-						"It's look like there is no periods for future. Would you like to generate them now? You can do it later from Task Options.",
-					onClose: closeDialogAlertHandler,
-					loading: false,
-					actions: [
-						{
-							label: 'Yes',
-							onClick: resetPeriodsHandler,
-							color: 'primary',
-						},
-						{
-							color: 'secondary',
-							label: 'Cancel',
-							onClick: closeDialogAlertHandler,
-						},
-					],
-				});
-			}
-		}
-	}, [askForPeriodsReset, periods, resetPeriodsHandler]);
-
-	useEffect(() => {
 		if (
 			task &&
 			!task.owner &&
@@ -582,6 +559,11 @@ const TaskDetails: React.FC<Props> = (props) => {
 						View Task
 					</Typography>
 				</Grid>
+				<NoPeriodsWarning
+					task={task}
+					periods={periods}
+					onSubmit={resetPeriodsHandler}
+				/>
 				{(error || userTasksError) && (
 					<Grid item>
 						<CustomMuiAlert severity="error">

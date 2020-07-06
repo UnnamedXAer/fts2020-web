@@ -30,9 +30,9 @@ const TaskInfoModalContent: React.FC<Props> = ({
 	);
 	const period = periods?.find((x) => {
 		const today = moment().startOf('day').toDate();
-		const match = x.startDate <= today && x.endDate >= today;
+		const currentPeriod = x.startDate <= today && x.endDate >= today;
 
-		return match;
+		return currentPeriod;
 	});
 	const [periodsError, setPeriodsError] = useState<StateError>(null);
 	const isMounted = useRef(true);

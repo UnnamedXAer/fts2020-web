@@ -153,7 +153,8 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 		try {
 			await dispatch(updatedTaskMembers(taskId, updatedMembers));
 			dispatch(clearTaskPeriods(taskId));
-			isMounted.current && history.replace('/tasks/' + taskId);
+			isMounted.current &&
+				history.replace(`/tasks/${taskId}`);
 		} catch (err) {
 			if (isMounted.current) {
 				const httpError = new HttpErrorParser(err);
@@ -255,7 +256,7 @@ const UpdateTaskMembers: React.FC<Props> = ({ match, history }) => {
 									}}
 									disabled={loading}
 									onClick={() =>
-										history.replace(`/tasks/${taskId}?users-updated=true`)
+										history.replace(`/tasks/${taskId}`)
 									}
 									color="primary"
 									type="button"
