@@ -23,6 +23,7 @@ import HttpErrorParser from '../../utils/parseError';
 import InvitationMembersList from '../../components/Flat/InvitationMembersList';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { UsersActionTypes } from '../../store/actions/actionTypes';
+import { addFlatInvitations } from '../../store/actions/flats';
 
 export type NewFlatMember = {
 	emailAddress: User['emailAddress'];
@@ -226,9 +227,7 @@ const FlatInviteMembers: React.FC<Props> = ({ match, location, history }) => {
 		setError(null);
 		setLoading(true);
 		try {
-			await axios.post(`/flats/${flatId}/members/invite`, {
-				members: emails,
-			});
+			dispatch(addFlatInvitations(emails, flatId));
 			if (inputRef.current) {
 				history.replace(`/flats/${flatId}`);
 			}

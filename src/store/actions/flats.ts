@@ -199,6 +199,40 @@ export const updateFlat = (
 	};
 };
 
+export const addFlatInvitations = (
+	emails: User['emailAddress'][],
+	flatId: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<
+		SetFlatInvitationsActionPayload,
+		FlatsActionTypes.SetInvitations
+	>
+> => {
+	return async (dispatch) => {
+		const url = `/flats/${flatId}/members/invite`;
+		try {
+			const { data } = await axios.post<APIInvitation[]>(url, {
+				members: emails,
+			});
+
+			const invitations = data.map(mapAPIInvitationDataToModel);
+
+			dispatch({
+				type: FlatsActionTypes.SetInvitations,
+				payload: {
+					invitations,
+					flatId,
+				},
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
 export const fetchFlatInvitations = (
 	flatId: number
 ): ThunkAction<
