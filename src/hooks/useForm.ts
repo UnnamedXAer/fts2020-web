@@ -4,11 +4,13 @@ import { StateError } from '../ReactTypes/customReactTypes';
 export enum ActionType {
 	UpdateValue = 'UPDATE',
 	SetError = 'SET_ERROR',
+	ResetForm = 'RESET_FORM',
 }
 
 export type FormAction<TField, V> =
 	| SetValueAction<TField, V>
-	| SetErrorAction<TField>;
+	| SetErrorAction<TField>
+	| ResetFormAction;
 
 interface SetValueAction<TField, V> {
 	type: ActionType.UpdateValue;
@@ -20,6 +22,10 @@ interface SetErrorAction<TField, E = StateError> {
 	type: ActionType.SetError;
 	fieldId: TField;
 	error: E;
+}
+
+interface ResetFormAction {
+	type: ActionType.ResetForm;
 }
 
 export interface FormState<TValues> {
@@ -35,6 +41,8 @@ const formReducer = <TValues>(
 	action:
 		| SetValueAction<keyof TValues, TValues[keyof TValues]>
 		| SetErrorAction<keyof TValues>
+		| ResetFormAction,
+	initialState: FormState<TValues>
 ): FormState<TValues> => {
 	switch (action.type) {
 		case ActionType.UpdateValue:
@@ -63,6 +71,10 @@ const formReducer = <TValues>(
 				errors: updatedErrors,
 				formValidity: updatedFormValidity,
 			};
+		case ActionType.ResetForm:
+			return {
+				...initialState,
+			};
 		default:
 			return state;
 	}
@@ -74,7 +86,16 @@ const useForm = <TValues>(initialState: FormState<TValues>) => {
 			FormState<TValues>,
 			FormAction<keyof TValues, TValues[keyof TValues]>
 		>
-	>(formReducer, initialState);
+	>(
+		(
+			state: FormState<TValues>,
+			action:
+				| SetValueAction<keyof TValues, TValues[keyof TValues]>
+				| SetErrorAction<keyof TValues>
+				| ResetFormAction
+		) => formReducer(state, action, initialState),
+		initialState
+	);
 
 	return [state, dispatch] as const;
 };

@@ -43,6 +43,8 @@ import { FlatData } from '../../models/flat';
 import InvitationsTable from '../../components/Flat/InvitationsTable';
 import { InvitationAction } from '../../models/invitation';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
+import SendMessageDialog from '../../components/SendMessageDialog/SendMessageDialog';
+import User from '../../models/user';
 
 interface Props extends RouteComponentProps {}
 
@@ -143,6 +145,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 			invitations: !!flat?.invitations,
 		},
 	} as ElementsState);
+
+	const [messageUser, setMessageUser] = useState<User | null>(null);
+	const [showMessageDialog, setShowMessageDialog] = useState(false);
 
 	const [loadingInvs, setLoadingInvs] = useState<{ [key: number]: boolean }>(
 		{}
@@ -407,6 +412,36 @@ const FlatDetails: React.FC<Props> = (props) => {
 			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
 	};
 
+	const sendMessageToMemberHandler = (id: number) => {
+		setMessageUser(flat!.members!.find((x) => x.id === id)!);
+		setShowMessageDialog(true);
+	};
+
+	const sendMessageCallback = (success: boolean) => {
+		if (success) {
+			setSnackbarData({
+				open: true,
+				action: true,
+				severity: 'success',
+				timeout: 3000,
+				content: 'Message sent.',
+				onClose: closeSnackbarAlertHandler,
+				title: 'Message sent.',
+			});
+			setShowMessageDialog(false);
+		} else {
+			setSnackbarData({
+				open: true,
+				action: true,
+				severity: 'error',
+				timeout: 4000,
+				content:
+					'Sorry, could not send the message, please try again later',
+				onClose: closeSnackbarAlertHandler,
+				title: 'Could not send the message',
+			});
+		}
+	};
 	return (
 		<>
 			<Grid container spacing={2} direction="column">
@@ -498,6 +533,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 							onMemberSelect={memberSelectHandler}
 							loading={elements.loading.members}
 							members={flat?.members}
+							onMemberMessage={sendMessageToMemberHandler}
 						/>
 					</Grid>
 					<Grid item className={classes.gridItem}>
@@ -538,6 +574,14 @@ const FlatDetails: React.FC<Props> = (props) => {
 				onOptionClick={speedDialOptionClickHandler}
 			/>
 			<AlertDialog data={dialogData} />
+			<SendMessageDialog
+				user={messageUser}
+				open={showMessageDialog}
+				onMessageSent={sendMessageCallback}
+				onClose={() => {
+					setShowMessageDialog(false);
+				}}
+			/>
 		</>
 	);
 };
