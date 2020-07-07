@@ -9,4 +9,5 @@ export enum FlatSpeedActions {
 	InviteMember,
 	CloseFlat,
 	AddTask,
+	LeaveFlat,
 }

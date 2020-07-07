@@ -39,6 +39,7 @@ import AlertSnackbar, {
 import PersonAddRoundedIcon from '@material-ui/icons/PersonAddRounded';
 import CancelPresentationRoundedIcon from '@material-ui/icons/CancelPresentationRounded';
 import QueuePlayNextRoundedIcon from '@material-ui/icons/QueuePlayNextRounded';
+import ExitToAppRoundedIcon from '@material-ui/icons/ExitToAppRounded';
 import HttpErrorParser from '../../utils/parseError';
 import { FlatData } from '../../models/flat';
 import InvitationsTable from '../../components/Flat/InvitationsTable';
@@ -53,23 +54,48 @@ type RouterParams = {
 	id: string;
 };
 
-const actions: SpeedDialAction<FlatSpeedActions>[] = [
-	{
-		key: FlatSpeedActions.InviteMember,
-		name: 'Invite new member',
-		icon: <PersonAddRoundedIcon />,
-	},
-	{
-		key: FlatSpeedActions.CloseFlat,
-		name: 'Close Flat',
-		icon: <CancelPresentationRoundedIcon />,
-	},
-	{
-		key: FlatSpeedActions.AddTask,
-		name: 'Add Task',
-		icon: <QueuePlayNextRoundedIcon />,
-	},
-];
+const actions: {
+	owner: SpeedDialAction<FlatSpeedActions>[];
+	member: SpeedDialAction<FlatSpeedActions>[];
+	disabled: SpeedDialAction<FlatSpeedActions>[];
+} = {
+	owner: [
+		{
+			key: FlatSpeedActions.InviteMember,
+			name: 'Invite new member',
+			icon: <PersonAddRoundedIcon />,
+		},
+		{
+			key: FlatSpeedActions.CloseFlat,
+			name: 'Close Flat',
+			icon: <CancelPresentationRoundedIcon />,
+		},
+		{
+			key: FlatSpeedActions.AddTask,
+			name: 'Add Task',
+			icon: <QueuePlayNextRoundedIcon />,
+		},
+	],
+	member: [
+		{
+			key: FlatSpeedActions.LeaveFlat,
+			name: 'Leave Flat',
+			icon: <ExitToAppRoundedIcon />,
+		},
+		{
+			key: FlatSpeedActions.AddTask,
+			name: 'Add Task',
+			icon: <QueuePlayNextRoundedIcon />,
+		},
+	],
+	disabled: [
+		{
+			key: FlatSpeedActions.LeaveFlat,
+			name: 'Leave Flat',
+			icon: <ExitToAppRoundedIcon />,
+		},
+	],
+};
 
 const elementsInitState = {
 	loading: {
@@ -473,6 +499,19 @@ const FlatDetails: React.FC<Props> = (props) => {
 			});
 		}
 	};
+
+	let fabActions: SpeedDialAction<FlatSpeedActions>[];
+	if (loggedUser && flat) {
+		if (flat.active) {
+			fabActions =
+				actions[loggedUser.id === flat.ownerId ? 'owner' : 'member'];
+		} else {
+			fabActions = actions.disabled;
+		}
+	} else {
+		fabActions = [];
+	}
+
 	return (
 		<>
 			<Grid container spacing={2} direction="column">
@@ -603,12 +642,12 @@ const FlatDetails: React.FC<Props> = (props) => {
 			</Grid>
 			<AlertSnackbar data={snackbarData} />
 			<CustomSpeedDial
-				actions={actions}
+				actions={fabActions}
 				hidden={
 					!flat ||
 					!loggedUser ||
+					(!flat.active && loggedUser.id === flat.ownerId) ||
 					!flat.owner ||
-					loggedUser.id !== flat.owner.id ||
 					!flat.members ||
 					!flat.invitations
 				}
