@@ -92,6 +92,9 @@ const TaskInfoModalContent: React.FC<Props> = ({
 					component="h2"
 					id="modal-task-title-id"
 				>
+					{!task.active && (
+						<span style={{ color: '#888' }}>[Inactive] </span>
+					)}
 					{task.name}
 				</Typography>
 			</Grid>
@@ -117,39 +120,46 @@ const TaskInfoModalContent: React.FC<Props> = ({
 					</Grid>
 				</Grid>
 			</Grid>
-			<Grid item>
-				<Typography variant="h6">Current Period</Typography>
-				{periodsError ? (
-					<CustomMuiAlert severity="error">
-						{periodsError}
-					</CustomMuiAlert>
-				) : !periods ? (
-					<>
-						<Skeleton height={24} width={320} />
-						<Skeleton height={24} width={280} />
-					</>
-				) : period?.assignedTo ? (
-					<>
-						<Typography>
-							{moment(period.startDate).format('Do MMMM YYYY')} -{' '}
-							{moment(period.endDate).format('Do MMMM YYYY')}
-						</Typography>
-						<Typography>
-							{period.assignedTo.emailAddress}
-						</Typography>
-						<Typography>{period.assignedTo.userName}</Typography>
-						{period.completedAt && (
-							<Typography variant="caption" color="primary">
-								[Completed]
+			{task.active && (
+				<Grid item>
+					<Typography variant="h6">Current Period</Typography>
+					{periodsError ? (
+						<CustomMuiAlert severity="error">
+							{periodsError}
+						</CustomMuiAlert>
+					) : !periods ? (
+						<>
+							<Skeleton height={24} width={320} />
+							<Skeleton height={24} width={280} />
+						</>
+					) : period?.assignedTo ? (
+						<>
+							<Typography>
+								{moment(period.startDate).format(
+									'Do MMMM YYYY'
+								)}{' '}
+								-{' '}
+								{moment(period.endDate).format('Do MMMM YYYY')}
 							</Typography>
-						)}
-					</>
-				) : (
-					<CustomMuiAlert severity="info">
-						Currently there is no active period.
-					</CustomMuiAlert>
-				)}
-			</Grid>
+							<Typography>
+								{period.assignedTo.emailAddress}
+							</Typography>
+							<Typography>
+								{period.assignedTo.userName}
+							</Typography>
+							{period.completedAt && (
+								<Typography variant="caption" color="primary">
+									[Completed]
+								</Typography>
+							)}
+						</>
+					) : (
+						<CustomMuiAlert severity="info">
+							Currently there is no active period.
+						</CustomMuiAlert>
+					)}
+				</Grid>
+			)}
 			<Grid item>
 				<Typography variant="h6">Members</Typography>
 				{membersContent}
