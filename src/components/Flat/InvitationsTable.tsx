@@ -32,6 +32,7 @@ interface Props {
 	flatOwner: boolean;
 	loadingInvs: { [key: number]: boolean };
 	onInvitationAction: (id: number, action: InvitationAction) => void;
+	disabled: boolean;
 }
 
 const InvitationsTable: React.FC<Props> = ({
@@ -41,6 +42,7 @@ const InvitationsTable: React.FC<Props> = ({
 	error,
 	flatOwner,
 	onInvitationAction,
+	disabled,
 }) => {
 	const classes = useStyles();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -83,7 +85,7 @@ const InvitationsTable: React.FC<Props> = ({
 							<StyledTableCell align="right">
 								Action Date
 							</StyledTableCell>
-							{flatOwner && (
+							{flatOwner && !disabled && (
 								<StyledTableCell align="right">
 									Actions
 								</StyledTableCell>
@@ -93,7 +95,7 @@ const InvitationsTable: React.FC<Props> = ({
 					<TableBody>
 						{loading ? (
 							<LoadingTableRows
-								colsNumber={flatOwner ? 5 : 4}
+								colsNumber={flatOwner && !disabled ? 5 : 4}
 								rowsNumber={2}
 							/>
 						) : (
@@ -117,7 +119,7 @@ const InvitationsTable: React.FC<Props> = ({
 											  )
 											: ''}
 									</StyledTableCell>
-									{flatOwner && (
+									{flatOwner && !disabled && (
 										<StyledTableCell align="right">
 											<IconButton
 												title="Invitation menu"

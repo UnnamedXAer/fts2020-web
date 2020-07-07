@@ -590,6 +590,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 							flatOwner={loggedUser!.id === flat?.ownerId}
 							loadingInvs={loadingInvs}
 							onInvitationAction={invitationActionHandler}
+							disabled={!flat || !flat.active}
 						/>
 					</Grid>
 					<Grid item className={classes.gridItem}>
