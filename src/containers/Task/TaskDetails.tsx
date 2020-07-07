@@ -623,7 +623,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 											component={RouterLink}
 											to={`/profile/${task.createBy}`}
 										>
-											{task.owner!.emailAddress}
+											{task.owner.emailAddress} (
+											{task.owner.userName})
 										</Link>
 									</Typography>
 								) : (

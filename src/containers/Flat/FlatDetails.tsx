@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useReducer } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps, Link as RouterLink } from 'react-router-dom';
 import {
 	Grid,
 	Typography,
@@ -9,6 +9,7 @@ import {
 	Theme,
 	createStyles,
 	TextField,
+	Link,
 } from '@material-ui/core';
 import { HomeWorkOutlined as HomeIcon } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -492,7 +493,14 @@ const FlatDetails: React.FC<Props> = (props) => {
 									variant="subtitle1"
 									color="textSecondary"
 								>
-									Created By {flat.owner!.emailAddress}
+									Created by{' '}
+									<Link
+										component={RouterLink}
+										to={`/profile/${flat.ownerId}`}
+									>
+										{flat.owner.emailAddress} (
+										{flat.owner.userName})
+									</Link>
 								</Typography>
 							) : (
 								<Skeleton animation="wave" />
