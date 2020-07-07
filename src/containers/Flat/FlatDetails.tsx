@@ -413,6 +413,36 @@ const FlatDetails: React.FC<Props> = (props) => {
 			setLoadingInvs((prevState) => ({ ...prevState, [id]: false }));
 	};
 
+	const deleteMember = async (id: number) => {
+		console.log('removing', id);
+	};
+
+	const deleteMemberHandler = (id: number) => {
+		const user = flat!.members!.find((x) => x.id === id);
+
+		setDialogData({
+			open: true,
+			content: `Do you want to remove ${user!.emailAddress} (${
+				user!.userName
+			}) from your flat?`,
+			title: 'Remove member',
+			onClose: closeDialogAlertHandler,
+			loading: false,
+			actions: [
+				{
+					label: 'Yes',
+					onClick: () => deleteMember(id),
+					color: 'primary',
+				},
+				{
+					color: 'secondary',
+					label: 'Cancel',
+					onClick: closeDialogAlertHandler,
+				},
+			],
+		});
+	};
+
 	const sendMessageToMemberHandler = (id: number) => {
 		setMessageUser(flat!.members!.find((x) => x.id === id)!);
 		setShowMessageDialog(true);
@@ -541,6 +571,11 @@ const FlatDetails: React.FC<Props> = (props) => {
 							onMemberSelect={memberSelectHandler}
 							loading={elements.loading.members}
 							members={flat?.members}
+							onMemberDelete={
+								flat?.ownerId === loggedUser?.id
+									? deleteMemberHandler
+									: void 0
+							}
 							onMemberMessage={sendMessageToMemberHandler}
 						/>
 					</Grid>
