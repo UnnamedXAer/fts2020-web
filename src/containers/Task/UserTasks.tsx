@@ -31,7 +31,9 @@ interface Props extends RouteComponentProps {}
 const UserTasks: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const [showInactive, setShowInactive] = useState(localStorage.getItem('user_tasks_show_inactive') === '1');
+	const [showInactive, setShowInactive] = useState(
+		localStorage.getItem('user_tasks_show_inactive') === '1'
+	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
 	const tasks = useSelector<RootState, UserTask[]>((state) =>
@@ -134,6 +136,7 @@ const UserTasks: React.FC<Props> = (props) => {
 								key={task.id}
 								button
 								onClick={() => taskClickHandler(task.id!)}
+								className={classes.listItem}
 							>
 								<ListItemAvatar>
 									<Avatar>
@@ -207,6 +210,9 @@ const UserTasks: React.FC<Props> = (props) => {
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
+	listItem: {
+		wordBreak: 'break-word',
+	},
 	alertLink: {
 		position: 'relative',
 		color: theme.palette.warning.light,

@@ -187,7 +187,7 @@ const Profile: React.FC<Props> = (props) => {
 					<Grid item container style={{ minHeight: 36 }}>
 						{user ? (
 							<>
-								<Typography variant="h5">
+								<Typography variant="h5" className={classes.wordBreak}>
 									{user!.userName}
 								</Typography>
 								{user.id === loggedUserId && (
@@ -213,7 +213,7 @@ const Profile: React.FC<Props> = (props) => {
 					<Grid item container style={{ minHeight: 36 }}>
 						{user ? (
 							<>
-								<Typography variant="h5">
+								<Typography variant="h5" className={classes.wordBreak}>
 									{user!.emailAddress}
 								</Typography>
 								{user.id === loggedUserId && (
@@ -382,6 +382,9 @@ const useStyles = makeStyles((theme: Theme) =>
 			position: 'absolute',
 			right: 0,
 			top: 0,
+		},
+		wordBreak: {
+			wordBreak: 'break-word',
 		},
 	})
 );

@@ -146,6 +146,7 @@ const Invitations: React.FC<Props> = (props) => {
 								onClick={() =>
 									invitationClickHandler(invitation.token)
 								}
+								className={classes.listItem}
 							>
 								<ListItemAvatar>
 									<Avatar>
@@ -210,6 +211,9 @@ const Invitations: React.FC<Props> = (props) => {
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
+	listItem: {
+		wordBreak: 'break-word',
+	},
 	alertLink: {
 		position: 'relative',
 		color: theme.palette.warning.light,

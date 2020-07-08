@@ -263,7 +263,7 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 							<Grid item style={{ flex: 1 }}>
 								{invitation ? (
 									<>
-										<Typography variant="h5" component="h2">
+										<Typography variant="h5" component="h2" className={classes.wordBreak}>
 											{invitation.flat.name}
 										</Typography>
 										<Typography>
@@ -297,7 +297,7 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 							</Grid>
 							<Grid item>
 								{invitation ? (
-									<Typography>
+									<Typography className={classes.wordBreak}>
 										{invitation.flat.description}
 									</Typography>
 								) : (
@@ -387,6 +387,9 @@ const useStyles = makeStyles((theme: Theme) =>
 		},
 		infoLabel: {
 			color: theme.palette.grey[600],
+		},
+		wordBreak: {
+			wordBreak: 'break-word',
 		},
 		avatar: {
 			width: theme.spacing(10),

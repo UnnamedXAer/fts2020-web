@@ -34,7 +34,9 @@ interface Props extends RouteComponentProps {}
 const Flats: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const [showInactive, setShowInactive] = useState(localStorage.getItem('flats_show_inactive') === '1');
+	const [showInactive, setShowInactive] = useState(
+		localStorage.getItem('flats_show_inactive') === '1'
+	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
 	const flats = useSelector<RootState, FlatModel[]>((state) =>
@@ -137,6 +139,7 @@ const Flats: React.FC<Props> = (props) => {
 							key={flat.id}
 							button
 							onClick={() => flatClickHandler(flat.id!)}
+							className={classes.listItem}
 						>
 							<ListItemAvatar>
 								<Avatar>
@@ -205,6 +208,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 	margin: {
 		margin: theme.spacing(1),
+	},
+	listItem: {
+		wordBreak: 'break-word',
 	},
 	alertLink: {
 		position: 'relative',
