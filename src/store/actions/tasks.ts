@@ -217,7 +217,10 @@ export const updateTask = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<Partial<Task>, string>
+	StoreAction<
+		Task,
+		TasksActionTypes.SetTask | TasksActionTypes.SetUserTask
+	>
 > => {
 	return async (dispatch) => {
 		const url = `/tasks/${task.id}`;
@@ -233,6 +236,10 @@ export const updateTask = (
 			const updatedTask = mapApiTaskDataToModel(data);
 			dispatch({
 				type: TasksActionTypes.SetTask,
+				payload: updatedTask,
+			});
+			dispatch({
+				type: TasksActionTypes.SetUserTask,
 				payload: updatedTask,
 			});
 		} catch (err) {

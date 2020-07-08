@@ -1,6 +1,6 @@
 import { AppReducer, TasksState, SimpleReducer } from '../storeTypes';
 import { TasksActionTypes } from '../actions/actionTypes';
-import Task from '../../models/task';
+import Task, { UserTask } from '../../models/task';
 import User from '../../models/user';
 import { AddTaskActionPayload } from '../actions/tasks';
 
@@ -16,6 +16,30 @@ const setUserTasks: SimpleReducer<TasksState, Task[]> = (state, action) => {
 		...state,
 		userTasks: action.payload,
 		userTasksLoadTime: Date.now(),
+	};
+};
+
+const setUserTask: SimpleReducer<TasksState, Task> = (state, action) => {
+	const updatedUserTasks = [...state.userTasks];
+
+	const idx = updatedUserTasks.findIndex((x) => x.id === action.payload.id);
+
+	if (idx !== -1) {
+		const updatedTask = new UserTask({
+			id: updatedUserTasks[idx].id,
+			flatName: updatedUserTasks[idx].flatName,
+			name: action.payload.name,
+			flatId: updatedUserTasks[idx].flatId,
+			timePeriodUnit: updatedUserTasks[idx].timePeriodUnit,
+			timePeriodValue: updatedUserTasks[idx].timePeriodValue,
+			active: action.payload.active,
+		});
+		updatedUserTasks[idx] = updatedTask;
+	}
+
+	return {
+		...state,
+		userTasks: updatedUserTasks,
 	};
 };
 
@@ -136,6 +160,8 @@ const reducer: AppReducer<TasksState, TasksActionTypes> = (
 			return setFlatTasks(state, action);
 		case TasksActionTypes.SetUserTasks:
 			return setUserTasks(state, action);
+		case TasksActionTypes.SetUserTask:
+			return setUserTask(state, action);
 		case TasksActionTypes.Add:
 			return addTask(state, action);
 		case TasksActionTypes.SetMembers:

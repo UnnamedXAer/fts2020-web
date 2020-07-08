@@ -11,7 +11,7 @@ import {
 	InvitationsActionTypes,
 	TaskPeriodsActionTypes,
 } from './actionTypes';
-import RootState from '../storeTypes';
+import RootState, { StoreAction } from '../storeTypes';
 import User from '../../models/user';
 import { mapApiUserDataToModel, FetchUserAction } from './users';
 
@@ -118,6 +118,16 @@ export const logOut = (): ThunkAction<
 			await axios.post('/auth/logout');
 		} catch (err) {}
 		dispatch(clearStore());
+	};
+};
+
+export const updateLoggedUser = (
+	user: User
+): StoreAction<User, AuthActionTypes.SetLoggedUser> => {
+	localStorage.setItem('loggedUser', JSON.stringify(user));
+	return {
+		type: AuthActionTypes.SetLoggedUser,
+		payload: user,
 	};
 };
 

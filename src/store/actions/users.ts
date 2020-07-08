@@ -1,9 +1,10 @@
 import { ThunkAction } from 'redux-thunk';
 import RootState from '../storeTypes';
 import axios from '../../axios/axios';
-import { UsersActionTypes } from './actionTypes';
+import { UsersActionTypes, AuthActionTypes } from './actionTypes';
 import User, { Provider } from '../../models/user';
 import { AxiosResponse } from 'axios';
+import { updateLoggedUser } from './auth';
 
 export type FetchUserAction = {
 	type: UsersActionTypes.SetUser;
@@ -29,6 +30,7 @@ export const fetchUser = (
 			const { data, status } = await axios.get<APIUser>(url);
 			if (status === 200) {
 				const user = mapApiUserDataToModel(data);
+
 				dispatch({
 					type: UsersActionTypes.SetUser,
 					payload: user,
@@ -45,7 +47,12 @@ export const fetchUser = (
 export const updateUser = (
 	userId: number,
 	user: Partial<User>
-): ThunkAction<Promise<void>, RootState, any, FetchUserAction> => {
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	FetchUserAction | { type: AuthActionTypes.SetLoggedUser; payload: User }
+> => {
 	return async (dispatch) => {
 		const url = `/users/${userId}`;
 		try {
@@ -60,6 +67,7 @@ export const updateUser = (
 				type: UsersActionTypes.SetUser,
 				payload: updatedUser,
 			});
+			dispatch(updateLoggedUser(updatedUser));
 		} catch (err) {
 			throw err;
 		}

@@ -2,6 +2,7 @@ export const AUTHORIZE = 'AUTHORIZE';
 export const LOGOUT = 'LOGOUT';
 
 export enum AuthActionTypes {
+	SetLoggedUser = 'AUTH_SET_LOGGEDUSER',
 	UpdatePassword = 'AUTH_UPDATE_PASSWORD',
 }
 
@@ -22,6 +23,7 @@ export enum TasksActionTypes {
 	SetTask = 'TASKS_SET_TASK',
 	SetFlatTasks = 'TASKS_SET_FLAT_TASKS',
 	SetUserTasks = 'TASKS_SET_USER_TASKS',
+	SetUserTask = 'TASKS_SET_USER_TASK',
 	SetOwner = 'TASKS_SET_OWNER',
 	SetMembers = 'TASKS_SET_MEMBERS',
 	ClearState = 'TASKS_CLEAR_STATE',
