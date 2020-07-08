@@ -24,7 +24,6 @@ interface Props {
 	loading: boolean;
 	onMemberSelect: (id: number) => void;
 	onMemberDelete?: (id: number) => void;
-	onMemberMessage?: (id: number) => void;
 }
 
 const MembersList: React.FC<Props> = ({
@@ -33,7 +32,6 @@ const MembersList: React.FC<Props> = ({
 	loading,
 	onMemberSelect,
 	onMemberDelete,
-	onMemberMessage,
 }) => {
 	if (error) {
 		return (
@@ -70,13 +68,11 @@ const MembersList: React.FC<Props> = ({
 						secondary={member.userName}
 					/>
 					<ListItemSecondaryAction>
-						{onMemberMessage && (
-							<IconButton
-								onClick={() => onMemberMessage(member.id)}
-							>
-								<MoreVertIcon />
-							</IconButton>
-						)}
+						<IconButton
+							href={`mailto:${member.emailAddress}?subject=FTS2020%20-%20member%20message`}
+						>
+							<MoreVertIcon />
+						</IconButton>
 						{onMemberDelete && (
 							<IconButton
 								onClick={() => onMemberDelete(member.id)}
