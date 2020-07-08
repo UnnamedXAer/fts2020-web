@@ -177,7 +177,7 @@ export const updateFlat = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<Partial<Flat>, string>
+	StoreAction<Flat, FlatsActionTypes.SetFlat>
 > => {
 	return async (dispatch) => {
 		const url = `/flats/${flat.id}`;

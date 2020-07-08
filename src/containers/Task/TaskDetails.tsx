@@ -133,9 +133,14 @@ const TaskDetails: React.FC<Props> = (props) => {
 	const userTasksLoadTime = useSelector(
 		(state: RootState) => state.tasks.userTasksLoadTime
 	);
+	const task = useSelector((state: RootState) =>
+		state.tasks.tasks.find((x) => x.id === id)
+	);
 	const flatName = useSelector<RootState, string>((state) => {
 		let flatName: string;
-		const flat = state.flats.flats.find((x) => x.id === id);
+		const flat = task
+			? state.flats.flats.find((x) => x.id === task.flatId)
+			: void 0;
 		if (flat) {
 			flatName = flat.name;
 		} else {
@@ -144,10 +149,8 @@ const TaskDetails: React.FC<Props> = (props) => {
 		}
 		return flatName;
 	});
-	const task = useSelector((state: RootState) =>
-		state.tasks.tasks.find((x) => x.id === id)
-	);
-	const periods = useSelector((state: RootState) => 
+
+	const periods = useSelector((state: RootState) =>
 		task ? state.periods.taskPeriods[task.id!] : void 0
 	);
 	const [elements, elementsDispatch] = useReducer(

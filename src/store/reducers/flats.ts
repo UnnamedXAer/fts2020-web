@@ -30,17 +30,17 @@ const setFlat: SimpleReducer<FlatsState, Flat> = (state, action) => {
 	if (flatIdx === -1) {
 		updatedFlats.push(flat);
 	} else {
-		const updatedFlat = new Flat({ ...updatedFlats[flatIdx] });
+		const updatedFlat = flat;
 
-		if (flat.owner) {
-			updatedFlat.owner = flat.owner;
+		if (updatedFlats[flatIdx].owner) {
+			updatedFlat.owner = updatedFlats[flatIdx].owner;
 		}
-		if (flat.members) {
-			updatedFlat.members = flat.members;
+		if (updatedFlats[flatIdx].members) {
+			updatedFlat.members = updatedFlats[flatIdx].members;
 		}
 		updatedFlats[flatIdx] = updatedFlat;
 	}
-	
+
 	return {
 		...state,
 		flats: updatedFlats,
