@@ -603,7 +603,11 @@ const TaskDetails: React.FC<Props> = (props) => {
 						>
 							<Grid item>
 								{task ? (
-									<Typography variant="h5" component="h2">
+									<Typography
+										variant="h5"
+										component="h2"
+										className={classes.wordBreak}
+									>
 										{!task.active && (
 											<span style={{ color: '#888' }}>
 												[Inactive]{' '}
@@ -620,6 +624,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 									<Typography
 										variant="subtitle1"
 										color="textSecondary"
+										className={classes.wordBreak}
 									>
 										Created by{' '}
 										<Link
@@ -651,6 +656,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 									<Typography
 										variant="subtitle1"
 										color="textSecondary"
+										className={classes.wordBreak}
 									>
 										Flat:{' '}
 										<Link
@@ -755,6 +761,9 @@ const useStyles = makeStyles((theme: Theme) =>
 		avatar: {
 			width: theme.spacing(10),
 			height: theme.spacing(10),
+		},
+		wordBreak: {
+			wordBreak: 'break-word',
 		},
 	})
 );

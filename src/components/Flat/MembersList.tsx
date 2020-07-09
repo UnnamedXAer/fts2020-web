@@ -64,8 +64,28 @@ const MembersList: React.FC<Props> = ({
 						</Avatar>
 					</ListItemAvatar>
 					<ListItemText
-						primary={member.emailAddress}
-						secondary={member.userName}
+						primary={
+							<span
+								style={{
+									wordBreak: 'break-word',
+									display: 'inline-block',
+									maxWidth: '95%',
+								}}
+							>
+								{member.emailAddress}
+							</span>
+						}
+						secondary={
+							<span
+								style={{
+									wordBreak: 'break-word',
+									display: 'inline-block',
+									maxWidth: '95%',
+								}}
+							>
+								{member.userName}
+							</span>
+						}
 					/>
 					<ListItemSecondaryAction>
 						<IconButton

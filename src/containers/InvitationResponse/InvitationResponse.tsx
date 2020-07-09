@@ -134,7 +134,7 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 				<Grid item>
 					<Paper variant="outlined" className={classes.paper}>
 						{invitation ? (
-							<Typography>
+							<Typography className={classes.wordBreak}>
 								You were invited by{' '}
 								{invitation.sender.emailAddress}{' '}
 								{`(${invitation.sender.userName})`} to join to a
@@ -181,7 +181,11 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 							<Grid item style={{ flex: 1 }}>
 								{invitation ? (
 									<>
-										<Typography variant="h5" component="h2">
+										<Typography
+											variant="h5"
+											component="h2"
+											className={classes.wordBreak}
+										>
 											{typeof invitation.invitedPerson ===
 											'string'
 												? invitation.invitedPerson
@@ -201,7 +205,9 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 													: invitation.createAt
 											).format('LLLL')}
 										</Typography>
-										<Typography>
+										<Typography
+											className={classes.wordBreak}
+										>
 											<span>Invited by </span>
 											{invitation.sender!.emailAddress} (
 											{invitation.sender!.userName})
@@ -263,7 +269,11 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 							<Grid item style={{ flex: 1 }}>
 								{invitation ? (
 									<>
-										<Typography variant="h5" component="h2" className={classes.wordBreak}>
+										<Typography
+											variant="h5"
+											component="h2"
+											className={classes.wordBreak}
+										>
 											{invitation.flat.name}
 										</Typography>
 										<Typography>
@@ -271,7 +281,9 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 												invitation.flat.createAt
 											).format('LLLL')}
 										</Typography>
-										<Typography>
+										<Typography
+											className={classes.wordBreak}
+										>
 											{
 												invitation.flat.owner!
 													.emailAddress

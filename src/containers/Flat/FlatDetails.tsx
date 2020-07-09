@@ -510,7 +510,11 @@ const FlatDetails: React.FC<Props> = (props) => {
 						</Grid>
 						<Grid item>
 							{flat ? (
-								<Typography variant="h5" component="h2">
+								<Typography
+									variant="h5"
+									component="h2"
+									className={classes.wordBreak}
+								>
 									{!flat.active && (
 										<span style={{ color: '#888' }}>
 											[Inactive]{' '}
@@ -646,6 +650,9 @@ const useStyles = makeStyles((theme: Theme) =>
 			position: 'fixed',
 			bottom: theme.spacing(2),
 			right: theme.spacing(2),
+		},
+		wordBreak: {
+			wordBreak: 'break-word',
 		},
 	})
 );

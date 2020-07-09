@@ -173,6 +173,7 @@ const InvitationMembersList: React.FC<Props> = ({
 											style={{
 												overflowWrap: 'break-word',
 											}}
+											className={classes.wordBreak}
 											title={email}
 										>
 											{primaryText}
@@ -242,6 +243,9 @@ const useStyles = makeStyles((theme: Theme) =>
 			fontStyle: 'italic',
 			fontSize: 12,
 			textAlign: 'end',
+		},
+		wordBreak: {
+			wordBreak: 'break-word',
 		},
 	})
 );

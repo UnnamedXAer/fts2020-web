@@ -91,6 +91,9 @@ const TaskInfoModalContent: React.FC<Props> = ({
 					variant="h3"
 					component="h2"
 					id="modal-task-title-id"
+					style={{
+						wordBreak: 'break-word',
+					}}
 				>
 					{!task.active && (
 						<span style={{ color: '#888' }}>[Inactive] </span>
@@ -100,7 +103,12 @@ const TaskInfoModalContent: React.FC<Props> = ({
 			</Grid>
 			<Grid item>
 				<Typography variant="h6">Description</Typography>
-				<Typography id="modal-task-description-id">
+				<Typography
+					id="modal-task-description-id"
+					style={{
+						wordBreak: 'break-word',
+					}}
+				>
 					{task.description}
 				</Typography>
 			</Grid>
@@ -141,10 +149,18 @@ const TaskInfoModalContent: React.FC<Props> = ({
 								-{' '}
 								{moment(period.endDate).format('Do MMMM YYYY')}
 							</Typography>
-							<Typography>
+							<Typography
+								style={{
+									wordBreak: 'break-word',
+								}}
+							>
 								{period.assignedTo.emailAddress}
 							</Typography>
-							<Typography>
+							<Typography
+								style={{
+									wordBreak: 'break-word',
+								}}
+							>
 								{period.assignedTo.userName}
 							</Typography>
 							{period.completedAt && (

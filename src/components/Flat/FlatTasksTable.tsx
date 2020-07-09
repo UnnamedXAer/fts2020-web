@@ -33,7 +33,7 @@ const FlatTasksTable: React.FC<Props> = ({
 	onTaskSelected,
 }) => {
 	const classes = useStyles();
-	
+
 	return (
 		<>
 			<TableContainer component={Paper}>
@@ -60,12 +60,20 @@ const FlatTasksTable: React.FC<Props> = ({
 					</TableHead>
 					<TableBody>
 						{loading ? (
-							<LoadingTableRows colsNumber={6} rowsNumber={2} height={40} />
+							<LoadingTableRows
+								colsNumber={6}
+								rowsNumber={2}
+								height={40}
+							/>
 						) : (
 							tasks &&
 							tasks.map((task) => (
 								<StyledTableRow key={task.id} hover>
-									<StyledTableCell component="th" scope="row">
+									<StyledTableCell
+										component="th"
+										scope="row"
+										className={classes.wordBreak}
+									>
 										{task.name}
 									</StyledTableCell>
 									<StyledTableCell align="right">
@@ -123,6 +131,9 @@ const FlatTasksTable: React.FC<Props> = ({
 const useStyles = makeStyles((theme: Theme) => ({
 	table: {
 		minWidth: 550,
+	},
+	wordBreak: {
+		wordBreak: 'break-word',
 	},
 }));
 

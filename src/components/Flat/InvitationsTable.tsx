@@ -101,7 +101,11 @@ const InvitationsTable: React.FC<Props> = ({
 						) : (
 							invitations?.map((inv) => (
 								<StyledTableRow key={inv.id} hover>
-									<StyledTableCell component="th" scope="row">
+									<StyledTableCell
+										component="th"
+										scope="row"
+										className={classes.emailAddressCell}
+									>
 										{inv.emailAddress}
 									</StyledTableCell>
 									<StyledTableCell align="right">
@@ -209,6 +213,10 @@ const InvitationsTable: React.FC<Props> = ({
 const useStyles = makeStyles((theme: Theme) => ({
 	table: {
 		minWidth: 550,
+	},
+	emailAddressCell: {
+		wordBreak: 'break-word',
+		maxWidth: 350
 	},
 }));
 export default InvitationsTable;
