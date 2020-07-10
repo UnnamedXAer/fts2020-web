@@ -15,9 +15,28 @@ const initialState: FlatsState = {
 };
 
 const setFlats: SimpleReducer<FlatsState, Flat[]> = (state, action) => {
+	const updatedFlats: Flat[] = action.payload.map((flat) => {
+		const oldFlat = state.flats.find((x) => x.id === flat.id);
+		if (!oldFlat) {
+			return flat;
+		} else {
+			const newFlat = new Flat(flat);
+			if (oldFlat.members) {
+				newFlat.members = oldFlat.members;
+			}
+			if (oldFlat.invitations) {
+				newFlat.invitations = oldFlat.invitations;
+			}
+			if (oldFlat.owner) {
+				newFlat.owner = oldFlat.owner;
+			}
+			return newFlat;
+		}
+	});
+
 	return {
 		...state,
-		flats: action.payload,
+		flats: updatedFlats,
 		flatsLoadTime: Date.now(),
 	};
 };

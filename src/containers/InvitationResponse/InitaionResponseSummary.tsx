@@ -18,7 +18,7 @@ import {
 } from '../../models/invitation';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { useDispatch } from 'react-redux';
-import { resetFlatsLoadTime } from '../../store/actions/flats';
+import { fetchFlat } from '../../store/actions/flats';
 
 type RouterParams = {
 	token: string;
@@ -72,13 +72,24 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 		loadInvitation();
 	}, [error, invitation, token]);
 
-	const submitHandler = () => {
-		dispatch(resetFlatsLoadTime());
-		history.replace(
-			action === InvitationAction.ACCEPT && invitation
-				? `/flats/${invitation.flat.id}`
-				: `/`
-		);
+	const submitHandler = async () => {
+		try {
+			if (InvitationAction.ACCEPT && invitation) {
+				await dispatch(fetchFlat(invitation!.flat.id!));
+			}
+			history.replace(
+				action === InvitationAction.ACCEPT && invitation
+					? `/flats/${invitation.flat.id}`
+					: `/`
+			);
+		} catch (err) {
+			history.replace(
+				action === InvitationAction.ACCEPT && invitation
+					? `/flats/${invitation.flat.id}`
+					: `/`
+			);
+			window.document.location.reload();
+		}
 	};
 
 	const screenAction = (
