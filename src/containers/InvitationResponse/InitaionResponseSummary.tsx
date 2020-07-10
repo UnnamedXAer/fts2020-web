@@ -9,16 +9,17 @@ import {
 import { RouteComponentProps } from 'react-router-dom';
 import HttpErrorParser from '../../utils/parseError';
 import { StateError } from '../../ReactTypes/customReactTypes';
-import axios from '../../axios/axios';
 import {
 	InvitationPresentation,
-	APIInvitationPresentation,
 	InvitationStatus,
 	InvitationAction,
 } from '../../models/invitation';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchFlat } from '../../store/actions/flats';
+import { fetchUserInvitation } from '../../store/actions/invitations';
+import Skeleton from '@material-ui/lab/Skeleton';
+import RootState from '../../store/storeTypes';
 
 type RouterParams = {
 	token: string;
@@ -30,12 +31,12 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 	const dispatch = useDispatch();
 	const token = match.params.token;
 	const searchParams = new URLSearchParams(location.search);
-	const status = searchParams.get('status');
 	const action = searchParams.get('action');
 	const [error, setError] = useState<StateError>(null);
-	const [invitation, setInvitation] = useState<InvitationPresentation | null>(
-		null
+	const invitation = useSelector((state: RootState) =>
+		state.invitations.userInvitations.find((x) => x.token === token)
 	);
+	const [loading, setLoading] = useState(false);
 
 	const isMounted = useRef(true);
 	useEffect(() => {
@@ -50,17 +51,8 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 			return;
 		}
 		const loadInvitation = async () => {
-			const url = `/invitations/${token}`;
 			try {
-				const { data, status } = await axios.get<
-					APIInvitationPresentation
-				>(url);
-				if (isMounted.current) {
-					if (status === 200) {
-						const invitation = new InvitationPresentation(data);
-						setInvitation(invitation);
-					}
-				}
+				await dispatch(fetchUserInvitation(token));
 			} catch (err) {
 				if (isMounted.current) {
 					const httpError = new HttpErrorParser(err);
@@ -69,26 +61,21 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 				}
 			}
 		};
-		loadInvitation();
-	}, [error, invitation, token]);
+		setTimeout(loadInvitation, 1300);
+	}, [dispatch, error, invitation, token]);
 
 	const submitHandler = async () => {
-		try {
-			if (InvitationAction.ACCEPT && invitation) {
+		if (action === InvitationAction.ACCEPT && invitation) {
+			setLoading(true);
+			try {
 				await dispatch(fetchFlat(invitation!.flat.id!));
+				history.replace(`/flats/${invitation.flat.id}`);
+			} catch (err) {
+				history.replace(`/flats/${invitation.flat.id}`);
+				window.document.location.reload();
 			}
-			history.replace(
-				action === InvitationAction.ACCEPT && invitation
-					? `/flats/${invitation.flat.id}`
-					: `/`
-			);
-		} catch (err) {
-			history.replace(
-				action === InvitationAction.ACCEPT && invitation
-					? `/flats/${invitation.flat.id}`
-					: `/`
-			);
-			window.document.location.reload();
+		} else {
+			history.replace('/');
 		}
 	};
 
@@ -131,43 +118,46 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 
 	let content: React.ReactNode = null;
 
-	if (action === 'autoredirect') {
-		content = (
-			<Grid item>
-				<Typography>
-					The invitation is no longer available.{' '}
-					{status || invitation
-						? `Current status is: "${invitation?.status || status}"`
-						: ''}
-				</Typography>
-			</Grid>
-		);
-	} else if (status && action) {
-		if (
-			(status === InvitationStatus.ACCEPTED &&
-				action === InvitationAction.ACCEPT) ||
-			(status === InvitationStatus.REJECTED &&
-				action === InvitationAction.REJECT)
-		) {
+	if (!invitation && !error) {
+	} else if (invitation) {
+		if (action === 'autoredirect') {
 			content = (
 				<Grid item>
-					<Typography>Thank You for action.</Typography>
+					<Typography>
+						The invitation is no longer available.{' '}
+						{invitation
+							? `Current status is: "${invitation.status}"`
+							: ''}
+					</Typography>
+				</Grid>
+			);
+		} else if (invitation && action) {
+			if (
+				(invitation.status === InvitationStatus.ACCEPTED &&
+					action === InvitationAction.ACCEPT) ||
+				(invitation.status === InvitationStatus.REJECTED &&
+					action === InvitationAction.REJECT)
+			) {
+				content = (
+					<Grid item>
+						<Typography>Thank You for action.</Typography>
+					</Grid>
+				);
+			}
+		} else {
+			content = (
+				<Grid item>
+					{invitation ? (
+						<Typography>
+							The invitation status is already set as : "
+							{invitation.status}"
+						</Typography>
+					) : (
+						<Typography>Thank You for action.</Typography>
+					)}
 				</Grid>
 			);
 		}
-	} else {
-		content = (
-			<Grid item>
-				{invitation ? (
-					<Typography>
-						The invitation status is already set as :{' '}
-						{invitation.status}
-					</Typography>
-				) : (
-					<Typography>Thank You for action.</Typography>
-				)}
-			</Grid>
-		);
 	}
 	return (
 		<Container maxWidth="sm">

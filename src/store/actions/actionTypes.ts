@@ -31,6 +31,7 @@ export enum TasksActionTypes {
 
 export enum InvitationsActionTypes {
 	SetUserInvitations = 'INVITATIONS_SET_USER_INVITATIONS',
+	SetUserInvitation = 'INVITATIONS_SET_USER_INVITATION',
 	ClearState = 'INVITATIONS_CLEAR_STATE',
 }
 

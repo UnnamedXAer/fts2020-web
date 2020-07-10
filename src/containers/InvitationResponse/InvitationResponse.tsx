@@ -18,18 +18,21 @@ import HomeIcon from '@material-ui/icons/HomeWorkOutlined';
 import { RouteComponentProps } from 'react-router-dom';
 import HttpErrorParser from '../../utils/parseError';
 import { StateError } from '../../ReactTypes/customReactTypes';
-import axios from '../../axios/axios';
 import moment from 'moment';
 import Skeleton from '@material-ui/lab/Skeleton/Skeleton';
 import {
 	InvitationPresentation,
-	APIInvitationPresentation,
 	InvitationStatusInfo,
 	InvitationAction,
 	invitationInactiveStatuses,
 } from '../../models/invitation';
-import { APIInvitation } from '../../store/actions/flats';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+	answerUserInvitations,
+	fetchUserInvitation,
+} from '../../store/actions/invitations';
+import RootState from '../../store/storeTypes';
 
 type RouterParams = {
 	token: string;
@@ -39,12 +42,16 @@ interface Props extends RouteComponentProps<RouterParams> {}
 
 const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 	const classes = useStyles();
+	const dispatch = useDispatch();
 	const token = match.params.token;
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
-	const [invitation, setInvitation] = useState<InvitationPresentation | null>(
-		null
+	const invitation = useSelector((state: RootState) =>
+		state.invitations.userInvitations.find((x) => x.token === token)
 	);
+	const [invitationAnswerAction, setInvitationAnswerAction] = useState<
+		InvitationAction.ACCEPT | InvitationAction.REJECT | null
+	>(null);
 
 	const isMounted = useRef(true);
 	useEffect(() => {
@@ -55,30 +62,31 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 	}, []);
 
 	useEffect(() => {
+		if (invitationAnswerAction) {
+			const url = `/invitation/${token}/summary?${location.search}&action=${invitationAnswerAction}`;
+			history.replace(url);
+		}
+	}, [invitationAnswerAction, history, token, location.search, invitation]);
+
+	useEffect(() => {
+		if (invitation && !invitationAnswerAction) {
+			const notActionable = invitationInactiveStatuses.includes(
+				invitation.status
+			);
+			if (notActionable) {
+				const url = `/invitation/${invitation.token}/summary?&action=autoredirect`;
+				history.replace(url);
+			}
+		}
+	}, [history, invitation, invitationAnswerAction]);
+
+	useEffect(() => {
 		if (loading || error || invitation) {
 			return;
 		}
 		const loadInvitation = async () => {
-			const url = `/invitations/${token}`;
 			try {
-				const { data, status } = await axios.get<
-					APIInvitationPresentation
-				>(url);
-				if (isMounted.current) {
-					if (status === 200) {
-						const invitation = new InvitationPresentation(data);
-						const notActionable = invitationInactiveStatuses.includes(
-							invitation.status
-						);
-						if (notActionable) {
-							history.replace(
-								`/invitation/${token}/summary?status=${invitation.status}&action=autoredirect`
-							);
-						} else {
-							setInvitation(invitation);
-						}
-					}
-				}
+				await dispatch(fetchUserInvitation(token));
 			} catch (err) {
 				if (isMounted.current) {
 					const httpError = new HttpErrorParser(err);
@@ -88,31 +96,24 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 			}
 		};
 		loadInvitation();
-	}, [error, history, invitation, loading, token]);
+	}, [dispatch, error, invitation, loading, token]);
 
 	const actionHandler = async (
 		action: InvitationAction.ACCEPT | InvitationAction.REJECT
 	) => {
 		setLoading(true);
-		const url = `/invitations/${invitation!.id}`;
 		try {
-			const { data } = await axios.patch<APIInvitation>(url, {
-				action: action,
-			});
+			await dispatch(answerUserInvitations(invitation!.id, action));
 			if (isMounted.current) {
-				history.replace(
-					`/invitation/${token}/summary?${location.search}&status=${data.status}&action=${action}`
-				);
+				setInvitationAnswerAction(action);
 			}
 		} catch (err) {
 			if (isMounted.current) {
 				const httpError = new HttpErrorParser(err);
 				const msg = httpError.getMessage();
 				setError(msg);
+				setLoading(false);
 			}
-		}
-		if (isMounted.current) {
-			setLoading(false);
 		}
 	};
 

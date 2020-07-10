@@ -18,6 +18,26 @@ const setUserInvitations: SimpleReducer<InvitationsState, InvitationPresentation
 	};
 };
 
+const setUserInvitation: SimpleReducer<InvitationsState, InvitationPresentation> = (
+	state,
+	action
+) => {
+	const invitation = action.payload;
+	const updatedInvitations = [...state.userInvitations];
+	const idx = updatedInvitations.findIndex(x => x.id === invitation.id);
+	if (idx === -1) {
+		updatedInvitations.push(invitation);
+	}
+	else {
+		updatedInvitations[idx] = invitation;
+	}
+	
+	return {
+		...state,
+		userInvitations: updatedInvitations,
+	};
+};
+
 const clearState: SimpleReducer<InvitationsState, undefined> = (
 	state,
 	action
@@ -34,6 +54,8 @@ const reducer: AppReducer<InvitationsState, InvitationsActionTypes> = (
 	switch (action.type) {
 		case InvitationsActionTypes.SetUserInvitations:
 			return setUserInvitations(state, action);
+			case InvitationsActionTypes.SetUserInvitation:
+				return setUserInvitation(state, action);	
 		case InvitationsActionTypes.ClearState:
 			return clearState(state, action);
 		default:
