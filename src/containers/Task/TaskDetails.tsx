@@ -592,6 +592,7 @@ const TaskDetails: React.FC<Props> = (props) => {
 								<AllInclusiveRoundedIcon
 									color="primary"
 									aria-label="task icon"
+									fontSize="large"
 								/>
 							</Avatar>
 						</Grid>

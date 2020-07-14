@@ -505,7 +505,11 @@ const FlatDetails: React.FC<Props> = (props) => {
 								alt="flat avatar"
 								src={void 0}
 							>
-								<HomeIcon color="primary" />
+								<HomeIcon
+									color="primary"
+									aria-label="flat icon"
+									fontSize="large"
+								/>
 							</Avatar>
 						</Grid>
 						<Grid item>
