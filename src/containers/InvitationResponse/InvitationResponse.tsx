@@ -21,7 +21,6 @@ import { StateError } from '../../ReactTypes/customReactTypes';
 import moment from 'moment';
 import Skeleton from '@material-ui/lab/Skeleton/Skeleton';
 import {
-	InvitationPresentation,
 	InvitationStatusInfo,
 	InvitationAction,
 	invitationInactiveStatuses,
@@ -49,6 +48,13 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 	const invitation = useSelector((state: RootState) =>
 		state.invitations.userInvitations.find((x) => x.token === token)
 	);
+	const [invitationNotActionable, setInvitationNotActionable] = useState<
+		null | boolean
+	>(
+		invitation
+			? invitationInactiveStatuses.includes(invitation.status)
+			: null
+	);
 	const [invitationAnswerAction, setInvitationAnswerAction] = useState<
 		InvitationAction.ACCEPT | InvitationAction.REJECT | null
 	>(null);
@@ -62,23 +68,27 @@ const InvitationResponse: FC<Props> = ({ history, match, location }) => {
 	}, []);
 
 	useEffect(() => {
+		if (invitationNotActionable === null && invitation) {
+			const notActionable = invitationInactiveStatuses.includes(
+				invitation.status
+			);
+			setInvitationNotActionable(notActionable);
+		}
+	}, [invitation, invitationNotActionable]);
+
+	useEffect(() => {
+		if (invitationNotActionable) {
+			const url = `/invitation/${token}/summary?&action=autoredirect`;
+			history.replace(url);
+		}
+	}, [history, token, invitationNotActionable]);
+
+	useEffect(() => {
 		if (invitationAnswerAction) {
 			const url = `/invitation/${token}/summary?${location.search}&action=${invitationAnswerAction}`;
 			history.replace(url);
 		}
-	}, [invitationAnswerAction, history, token, location.search, invitation]);
-
-	useEffect(() => {
-		if (invitation && !invitationAnswerAction) {
-			const notActionable = invitationInactiveStatuses.includes(
-				invitation.status
-			);
-			if (notActionable) {
-				const url = `/invitation/${invitation.token}/summary?&action=autoredirect`;
-				history.replace(url);
-			}
-		}
-	}, [history, invitation, invitationAnswerAction]);
+	}, [invitation, invitationAnswerAction, history, token, location.search]);
 
 	useEffect(() => {
 		if (loading || error || invitation) {

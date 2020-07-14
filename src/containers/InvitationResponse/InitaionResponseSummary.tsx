@@ -9,16 +9,11 @@ import {
 import { RouteComponentProps } from 'react-router-dom';
 import HttpErrorParser from '../../utils/parseError';
 import { StateError } from '../../ReactTypes/customReactTypes';
-import {
-	InvitationPresentation,
-	InvitationStatus,
-	InvitationAction,
-} from '../../models/invitation';
+import { InvitationStatus, InvitationAction } from '../../models/invitation';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFlat } from '../../store/actions/flats';
 import { fetchUserInvitation } from '../../store/actions/invitations';
-import Skeleton from '@material-ui/lab/Skeleton';
 import RootState from '../../store/storeTypes';
 
 type RouterParams = {
@@ -36,7 +31,6 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 	const invitation = useSelector((state: RootState) =>
 		state.invitations.userInvitations.find((x) => x.token === token)
 	);
-	const [loading, setLoading] = useState(false);
 
 	const isMounted = useRef(true);
 	useEffect(() => {
@@ -66,7 +60,6 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 
 	const submitHandler = async () => {
 		if (action === InvitationAction.ACCEPT && invitation) {
-			setLoading(true);
 			try {
 				await dispatch(fetchFlat(invitation!.flat.id!));
 				history.replace(`/flats/${invitation.flat.id}`);
@@ -119,15 +112,14 @@ const InvitationResponseSummary: FC<Props> = ({ history, match, location }) => {
 	let content: React.ReactNode = null;
 
 	if (!invitation && !error) {
+		content = 'Please wait...';
 	} else if (invitation) {
 		if (action === 'autoredirect') {
 			content = (
 				<Grid item>
 					<Typography>
-						The invitation is no longer available.{' '}
-						{invitation
-							? `Current status is: "${invitation.status}"`
-							: ''}
+						The invitation is no longer available. Current status
+						is: "{invitation.status}"
 					</Typography>
 				</Grid>
 			);

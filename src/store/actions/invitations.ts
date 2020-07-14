@@ -75,7 +75,7 @@ export const answerUserInvitations = (
 	any,
 	{
 		type: InvitationsActionTypes.SetUserInvitation;
-		payload: Partial<InvitationPresentation>;
+		payload: InvitationPresentation;
 	}
 > => {
 	return async (dispatch, getState) => {
@@ -84,16 +84,23 @@ export const answerUserInvitations = (
 			const { data } = await axios.patch<APIInvitation>(url, {
 				action: action,
 			});
-			const loggedUser = getState().auth.user!;
+			const state = getState();
+			const loggedUser = state.auth.user!;
+			const invitation = state.invitations.userInvitations.find(
+				(x) => x.id === id
+			);
 
-			dispatch({
-				type: InvitationsActionTypes.SetUserInvitation,
-				payload: {
-					status: data.status,
-					actionBy: loggedUser,
-					actionDate: new Date(data.actionDate!),
-				},
-			});
+			if (invitation) {
+				dispatch({
+					type: InvitationsActionTypes.SetUserInvitation,
+					payload: {
+						...invitation,
+						status: data.status,
+						actionBy: loggedUser,
+						actionDate: new Date(data.actionDate!),
+					},
+				});
+			}
 		} catch (err) {
 			throw err;
 		}
