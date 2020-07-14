@@ -503,7 +503,7 @@ const FlatDetails: React.FC<Props> = (props) => {
 							<Avatar
 								className={classes.avatar}
 								alt="flat avatar"
-								src="https://vscode-icons-team.gallerycdn.vsassets.io/extensions/vscode-icons-team/vscode-icons/10.0.0/1581882255844/Microsoft.VisualStudio.Services.Icons.Default"
+								src={void 0}
 							>
 								<HomeIcon color="primary" />
 							</Avatar>
