@@ -1,7 +1,7 @@
 import Flat, { FlatData } from '../../models/flat';
 import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
-import { FlatsActionTypes } from './actionTypes';
+import { FlatsActionTypes, TasksActionTypes, TaskPeriodsActionTypes } from './actionTypes';
 import axios from '../../axios/axios';
 import User from '../../models/user';
 import Invitation, {
@@ -282,6 +282,42 @@ export const updateInvitation = (
 			dispatch({
 				type: FlatsActionTypes.SetInvitation,
 				payload: { invitation: updatedInvitation, flatId },
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const leaveFlat = (
+	id: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	StoreAction<void, FlatsActionTypes.ClearState | TasksActionTypes.ClearState | TaskPeriodsActionTypes.ClearState>
+> => {
+	return async (dispatch, getState) => {
+		const url = `/flats/${id}/members`;
+		const userId = getState().auth.user!.id;
+		try {
+			await axios.delete(url, {
+				data: {
+					userId
+				}
+			});
+
+			dispatch({
+				type: FlatsActionTypes.ClearState,
+				payload: void 0
+			});
+			dispatch({
+				type: TasksActionTypes.ClearState,
+				payload: void 0
+			});
+			dispatch({
+				type: TaskPeriodsActionTypes.ClearState,
+				payload: void 0
 			});
 		} catch (err) {
 			throw err;

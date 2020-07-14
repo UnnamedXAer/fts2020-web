@@ -24,6 +24,7 @@ import {
 	fetchFlatInvitations,
 	updateInvitation,
 	fetchFlats,
+	leaveFlat,
 } from '../../store/actions/flats';
 import {
 	StateError,
@@ -45,6 +46,7 @@ import { FlatData } from '../../models/flat';
 import InvitationsTable from '../../components/Flat/InvitationsTable';
 import { InvitationAction } from '../../models/invitation';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
+import { assertUnreachable } from '../../utils/assertUnreachable';
 
 interface Props extends RouteComponentProps {}
 
@@ -351,6 +353,35 @@ const FlatDetails: React.FC<Props> = (props) => {
 		}
 	};
 
+	const leaveFlatHandler = async () => {
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
+
+		try {
+			await dispatch(leaveFlat(flat!.id!));
+			props.history.replace('/');
+		} catch (err) {
+			if (isMounted.current !== null) {
+				const httpError = new HttpErrorParser(err);
+				const msg = httpError.getMessage();
+				setSnackbarData({
+					open: true,
+					action: true,
+					severity: 'error',
+					timeout: 4000,
+					content: msg,
+					onClose: closeSnackbarAlertHandler,
+					title: 'Could not close flat.',
+				});
+			}
+		} finally {
+			isMounted.current !== null &&
+				setDialogData((prevState) => ({
+					...prevState,
+					open: false,
+				}));
+		}
+	};
+
 	const closeDialogAlertHandler = () =>
 		setDialogData((prevState) => ({
 			...prevState,
@@ -388,13 +419,33 @@ const FlatDetails: React.FC<Props> = (props) => {
 						},
 					],
 				});
-
 				break;
 			case FlatSpeedActions.AddTask:
 				props.history.push(`/flats/${flat!.id}/tasks/add`);
 				break;
-			default:
+			case FlatSpeedActions.LeaveFlat:
+				setDialogData({
+					open: true,
+					content: 'Do you want to leave this flat?',
+					title: 'Leave Flat',
+					onClose: closeDialogAlertHandler,
+					loading: false,
+					actions: [
+						{
+							label: 'Yes',
+							onClick: leaveFlatHandler,
+							color: 'primary',
+						},
+						{
+							color: 'secondary',
+							label: 'Cancel',
+							onClick: closeDialogAlertHandler,
+						},
+					],
+				});
 				break;
+			default:
+				assertUnreachable(optionKey);
 		}
 		setSpeedDialOpen(false);
 	};
