@@ -7,6 +7,7 @@ import {
 	ListItemText,
 	ListItemSecondaryAction,
 	IconButton,
+	CircularProgress,
 } from '@material-ui/core';
 import User from '../../models/user';
 import {
@@ -22,6 +23,10 @@ interface Props {
 	error: StateError;
 	members: User[] | undefined;
 	loading: boolean;
+	loadingMembers?: {
+		[key: number]: boolean;
+	};
+	flatCreateBy?: number;
 	onMemberSelect: (id: number) => void;
 	onMemberDelete?: (id: number) => void;
 }
@@ -30,6 +35,8 @@ const MembersList: React.FC<Props> = ({
 	error,
 	members,
 	loading,
+	loadingMembers = {},
+	flatCreateBy,
 	onMemberSelect,
 	onMemberDelete,
 }) => {
@@ -95,9 +102,17 @@ const MembersList: React.FC<Props> = ({
 						</IconButton>
 						{onMemberDelete && (
 							<IconButton
+								disabled={flatCreateBy === member.id}
 								onClick={() => onMemberDelete(member.id)}
 							>
-								<DeleteIcon />
+								{loadingMembers[member.id] ? (
+									<CircularProgress
+										color="primary"
+										size={24}
+									/>
+								) : (
+									<DeleteIcon />
+								)}
 							</IconButton>
 						)}
 					</ListItemSecondaryAction>

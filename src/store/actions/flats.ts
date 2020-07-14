@@ -1,7 +1,11 @@
 import Flat, { FlatData } from '../../models/flat';
 import { ThunkAction } from 'redux-thunk';
 import RootState, { StoreAction } from '../storeTypes';
-import { FlatsActionTypes, TasksActionTypes, TaskPeriodsActionTypes } from './actionTypes';
+import {
+	FlatsActionTypes,
+	TasksActionTypes,
+	TaskPeriodsActionTypes,
+} from './actionTypes';
 import axios from '../../axios/axios';
 import User from '../../models/user';
 import Invitation, {
@@ -42,6 +46,11 @@ export type SetFlatInvitationsActionPayload = {
 export type UpdateInvitationActionPayload = {
 	invitation: Invitation;
 	flatId: number;
+};
+
+export type RemoveFlatMemberActionPayload = {
+	flatId: number;
+	userId: number;
 };
 
 export const createFlat = (
@@ -295,7 +304,12 @@ export const leaveFlat = (
 	Promise<void>,
 	RootState,
 	any,
-	StoreAction<void, FlatsActionTypes.ClearState | TasksActionTypes.ClearState | TaskPeriodsActionTypes.ClearState>
+	StoreAction<
+		void,
+		| FlatsActionTypes.ClearState
+		| TasksActionTypes.ClearState
+		| TaskPeriodsActionTypes.ClearState
+	>
 > => {
 	return async (dispatch, getState) => {
 		const url = `/flats/${id}/members`;
@@ -303,21 +317,53 @@ export const leaveFlat = (
 		try {
 			await axios.delete(url, {
 				data: {
-					userId
-				}
+					userId,
+				},
 			});
 
 			dispatch({
 				type: FlatsActionTypes.ClearState,
-				payload: void 0
+				payload: void 0,
 			});
 			dispatch({
 				type: TasksActionTypes.ClearState,
-				payload: void 0
+				payload: void 0,
 			});
 			dispatch({
 				type: TaskPeriodsActionTypes.ClearState,
-				payload: void 0
+				payload: void 0,
+			});
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const deleteFlatMember = (
+	id: number,
+	userId: number
+): ThunkAction<
+	Promise<void>,
+	RootState,
+	any,
+	| StoreAction<RemoveFlatMemberActionPayload, FlatsActionTypes.RemoveMember>
+	| StoreAction<
+			void,
+			TasksActionTypes.ClearState | TaskPeriodsActionTypes.ClearState
+	  >
+> => {
+	return async (dispatch) => {
+		const url = `/flats/${id}/members`;
+		try {
+			await axios.delete(url, {
+				data: {
+					userId,
+				},
+			});
+
+			dispatch({
+				type: FlatsActionTypes.RemoveMember,
+				payload: { flatId: id, userId },
 			});
 		} catch (err) {
 			throw err;

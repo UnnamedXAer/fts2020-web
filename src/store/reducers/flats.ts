@@ -6,6 +6,7 @@ import {
 	AddFlatActionPayload,
 	SetFlatInvitationsActionPayload,
 	UpdateInvitationActionPayload,
+	RemoveFlatMemberActionPayload,
 } from '../actions/flats';
 
 const initialState: FlatsState = {
@@ -119,6 +120,29 @@ const setMembers: SimpleReducer<
 	};
 };
 
+const removeMember: SimpleReducer<FlatsState, RemoveFlatMemberActionPayload> = (
+	state,
+	action
+) => {
+	const { flatId, userId } = action.payload;
+	const updatedFlats = [...state.flats];
+	const flatIdx = updatedFlats.findIndex((x) => x.id === flatId);
+
+	if (flatIdx !== -1) {
+		const updatedMembers = updatedFlats[flatIdx].members?.filter(
+			(x) => x.id !== userId
+		);
+		if (updatedMembers) {
+			updatedFlats[flatIdx].members = updatedMembers;
+		}
+	}
+
+	return {
+		...state,
+		flats: updatedFlats,
+	};
+};
+
 const setInvitations: SimpleReducer<
 	FlatsState,
 	SetFlatInvitationsActionPayload
@@ -194,6 +218,8 @@ const reducer: AppReducer<FlatsState, FlatsActionTypes> = (
 			return setOwner(state, action);
 		case FlatsActionTypes.SetMembers:
 			return setMembers(state, action);
+		case FlatsActionTypes.RemoveMember:
+			return removeMember(state, action);
 		case FlatsActionTypes.SetInvitations:
 			return setInvitations(state, action);
 		case FlatsActionTypes.SetInvitation:

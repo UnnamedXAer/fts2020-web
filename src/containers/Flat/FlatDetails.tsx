@@ -25,6 +25,7 @@ import {
 	updateInvitation,
 	fetchFlats,
 	leaveFlat,
+	deleteFlatMember,
 } from '../../store/actions/flats';
 import {
 	StateError,
@@ -176,6 +177,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 	const [loadingInvs, setLoadingInvs] = useState<{ [key: number]: boolean }>(
 		{}
 	);
+	const [loadingMembers, setLoadingMembers] = useState<{
+		[key: number]: boolean;
+	}>({});
 
 	const [snackbarData, setSnackbarData] = useState<AlertSnackbarData>({
 		content: '',
@@ -486,7 +490,54 @@ const FlatDetails: React.FC<Props> = (props) => {
 	};
 
 	const deleteMember = async (id: number) => {
-		console.log('removing', id);
+		const member = flat!.members!.find((x) => x.id === id)!;
+
+		setDialogData((prevState) => ({ ...prevState, loading: true }));
+		setLoadingMembers((prevState) => ({ ...prevState, [id]: true }));
+
+		setTimeout(async () => {
+			try {
+				await dispatch(deleteFlatMember(flat!.id!, id));
+				if (isMounted.current) {
+					setSnackbarData({
+						open: true,
+						action: true,
+						severity: 'info',
+						timeout: 3000,
+						content: `${member.emailAddress} (${member.userName}) was removed from flat.`,
+						onClose: closeSnackbarAlertHandler,
+					});
+					setDialogData((prevState) => ({
+						...prevState,
+						open: false,
+					}));
+				}
+			} catch (err) {
+				if (isMounted.current) {
+					const error = new HttpErrorParser(err);
+					const msg = error.getMessage();
+					setSnackbarData({
+						open: true,
+						action: true,
+						severity: 'error',
+						timeout: 4000,
+						content: msg,
+						onClose: closeSnackbarAlertHandler,
+						title: 'Could not remove member.',
+					});
+				}
+			}
+			if (isMounted.current) {
+				setDialogData((prevState) => ({
+					...prevState,
+					loading: false,
+				}));
+				setLoadingMembers((prevState) => ({
+					...prevState,
+					[id]: false,
+				}));
+			}
+		}, 2000);
 	};
 
 	const deleteMemberHandler = (id: number) => {
@@ -494,9 +545,15 @@ const FlatDetails: React.FC<Props> = (props) => {
 
 		setDialogData({
 			open: true,
-			content: `Do you want to remove ${user!.emailAddress} (${
-				user!.userName
-			}) from your flat?`,
+			content: (
+				<Typography>
+					Do you want to remove{' '}
+					<strong>
+						{user!.emailAddress} ({user!.userName})
+					</strong>{' '}
+					from your flat members?
+				</Typography>
+			),
 			title: 'Remove member',
 			onClose: closeDialogAlertHandler,
 			loading: false,
@@ -632,7 +689,9 @@ const FlatDetails: React.FC<Props> = (props) => {
 							error={elements.error.members}
 							onMemberSelect={memberSelectHandler}
 							loading={elements.loading.members}
+							loadingMembers={loadingMembers}
 							members={flat?.members}
+							flatCreateBy={flat?.ownerId}
 							onMemberDelete={
 								flat?.ownerId === loggedUser?.id
 									? deleteMemberHandler
