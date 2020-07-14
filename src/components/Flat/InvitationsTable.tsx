@@ -35,6 +35,12 @@ interface Props {
 	disabled: boolean;
 }
 
+const notActionableStatuses = [
+	InvitationStatus.ACCEPTED,
+	InvitationStatus.REJECTED,
+	InvitationStatus.PENDING,
+];
+
 const InvitationsTable: React.FC<Props> = ({
 	invitations,
 	loadingInvs,
@@ -68,6 +74,54 @@ const InvitationsTable: React.FC<Props> = ({
 		setAnchorEl(null);
 		setSelectedInId(null);
 	};
+
+	let menuActions: JSX.Element[] = [];
+
+	if (invitations && !disabled && selectedInId) {
+		if (
+			[
+				InvitationStatus.PENDING,
+				InvitationStatus.CREATED,
+				InvitationStatus.SEND_ERROR,
+			].includes(invitations!.find((x) => x.id === selectedInId!)!.status)
+		) {
+			menuActions.push(
+				<MenuItem
+					onClick={() => {
+						closeMenuHandler();
+						onInvitationAction(
+							selectedInId!,
+							InvitationAction.CANCEL
+						);
+					}}
+				>
+					Cancel
+				</MenuItem>
+			);
+		}
+
+		if (
+			![
+				InvitationStatus.PENDING,
+				InvitationStatus.ACCEPTED,
+				InvitationStatus.REJECTED,
+			].includes(invitations!.find((x) => x.id === selectedInId!)!.status)
+		) {
+			menuActions.push(
+				<MenuItem
+					onClick={() => {
+						closeMenuHandler();
+						onInvitationAction(
+							selectedInId!,
+							InvitationAction.RESEND
+						);
+					}}
+				>
+					Resend
+				</MenuItem>
+			);
+		}
+	}
 
 	return (
 		<>
@@ -130,7 +184,12 @@ const InvitationsTable: React.FC<Props> = ({
 												onClick={(ev) =>
 													openMenuHandler(ev, inv.id!)
 												}
-												disabled={loadingInvs[inv.id]}
+												disabled={
+													loadingInvs[inv.id] ||
+													notActionableStatuses.includes(
+														inv.status
+													)
+												}
 											>
 												{loadingInvs[inv.id] ? (
 													<CircularProgress
@@ -161,50 +220,10 @@ const InvitationsTable: React.FC<Props> = ({
 				id="invitation-menu"
 				anchorEl={anchorEl}
 				keepMounted
-				open={Boolean(anchorEl)}
+				open={Boolean(anchorEl) && menuActions.length > 0}
 				onClose={closeMenuHandler}
 			>
-				{invitations &&
-					selectedInId &&
-					[
-						InvitationStatus.PENDING,
-						InvitationStatus.CREATED,
-						InvitationStatus.SEND_ERROR,
-					].includes(
-						invitations!.find((x) => x.id === selectedInId!)!.status
-					) && (
-						<MenuItem
-							onClick={() => {
-								closeMenuHandler();
-								onInvitationAction(
-									selectedInId!,
-									InvitationAction.CANCEL
-								);
-							}}
-						>
-							Cancel
-						</MenuItem>
-					)}
-				{invitations &&
-					selectedInId &&
-					![
-						InvitationStatus.PENDING,
-						InvitationStatus.ACCEPTED,
-					].includes(
-						invitations!.find((x) => x.id === selectedInId!)!.status
-					) && (
-						<MenuItem
-							onClick={() => {
-								closeMenuHandler();
-								onInvitationAction(
-									selectedInId!,
-									InvitationAction.RESEND
-								);
-							}}
-						>
-							Resend
-						</MenuItem>
-					)}
+				{menuActions}
 			</Menu>
 		</>
 	);
@@ -216,7 +235,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 	emailAddressCell: {
 		wordBreak: 'break-word',
-		maxWidth: 350
+		maxWidth: 350,
 	},
 }));
 export default InvitationsTable;
