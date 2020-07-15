@@ -184,21 +184,31 @@ const Profile: React.FC<Props> = (props) => {
 							User Name
 						</Typography>
 					</Grid>
-					<Grid item container style={{ minHeight: 36 }}>
+					<Grid
+						item
+						container
+						alignItems="center"
+						style={{ minHeight: 36 }}
+					>
 						{user ? (
 							<>
-								<Typography variant="h5" className={classes.wordBreak}>
+								<Typography
+									variant="h5"
+									className={classes.wordBreak}
+								>
 									{user!.userName}
 								</Typography>
 								{user.id === loggedUserId && (
-									<EditOutlinedIcon
-										className={classes.modifyFieldIcon}
+									<IconButton
+										className={classes.editButton}
 										onClick={() =>
 											openFieldModificationHandler(
 												'userName'
 											)
 										}
-									/>
+									>
+										<EditOutlinedIcon />
+									</IconButton>
 								)}
 							</>
 						) : (
@@ -210,21 +220,31 @@ const Profile: React.FC<Props> = (props) => {
 							Email Address
 						</Typography>
 					</Grid>
-					<Grid item container style={{ minHeight: 36 }}>
+					<Grid
+						item
+						container
+						alignItems="center"
+						style={{ minHeight: 36 }}
+					>
 						{user ? (
 							<>
-								<Typography variant="h5" className={classes.wordBreak}>
+								<Typography
+									variant="h5"
+									className={classes.wordBreak}
+								>
 									{user!.emailAddress}
 								</Typography>
 								{user.id === loggedUserId && (
-									<EditOutlinedIcon
-										className={classes.modifyFieldIcon}
+									<IconButton
+										className={classes.editButton}
 										onClick={() =>
 											openFieldModificationHandler(
 												'emailAddress'
 											)
 										}
-									/>
+									>
+										<EditOutlinedIcon />
+									</IconButton>
 								)}
 							</>
 						) : (
@@ -355,14 +375,6 @@ const Profile: React.FC<Props> = (props) => {
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
-		modifyFieldIcon: {
-			paddingLeft: theme.spacing(3),
-			paddingRight: theme.spacing(3),
-			opacity: 0.16,
-			'&:hover': {
-				opacity: 0.7,
-			},
-		},
 		avatar: {
 			width: theme.spacing(12),
 			height: theme.spacing(12),
@@ -377,6 +389,12 @@ const useStyles = makeStyles((theme: Theme) =>
 			minWidth: 250,
 			maxWidth: '90vw',
 			position: 'relative',
+		},
+		editButton: {
+			opacity: 0.3,
+			'&:hover': { opacity: 0.7 },
+			marginLeft: theme.spacing(1),
+			marginRight: theme.spacing(1)
 		},
 		modalClose: {
 			position: 'absolute',
