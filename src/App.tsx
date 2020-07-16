@@ -37,6 +37,8 @@ import Invitations from './containers/InvitationResponse/Invitations';
 import axios from './axios/axios';
 import { logOut } from './store/actions/auth';
 import Home from './containers/Home/Home';
+import Cookies from './components/Cookies/Cookies';
+import { setCookiesAlertVisible } from './store/actions/settings';
 
 const drawerWidth = 240;
 
@@ -55,7 +57,14 @@ interface Props {}
 const StyledApp: React.FC<Props> = () => {
 	const classes = useStyles();
 	const user = useSelector((state: RootState) => state.auth.user);
+	const cookiesVisible = useSelector(
+		(state: RootState) => state.settings.cookieVisible
+	);
 	const dispatch = useDispatch();
+
+	useEffect(() => {
+		dispatch(setCookiesAlertVisible());
+	}, [dispatch]);
 
 	useEffect(() => {
 		const interceptorAuth = axios.interceptors.response.use(
@@ -80,7 +89,7 @@ const StyledApp: React.FC<Props> = () => {
 	let layout = (
 		<>
 			<CssBaseline />
-			<AppNavBar drawerWidth={drawerWidth}  />
+			<AppNavBar drawerWidth={drawerWidth} />
 			<AppDrawer drawerWidth={drawerWidth} />
 			<Box className={classes.appBody}>
 				<div className={classes.toolbar} />
@@ -140,6 +149,10 @@ const StyledApp: React.FC<Props> = () => {
 	return (
 		<div className={classes.app} id="AppRootComponent">
 			{layout}
+			<Cookies
+				visible={cookiesVisible}
+				onDismiss={() => dispatch(setCookiesAlertVisible(false))}
+			/>
 		</div>
 	);
 };

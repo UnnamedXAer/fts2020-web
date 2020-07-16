@@ -1,6 +1,7 @@
 import { combineReducers, createStore, applyMiddleware } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import ReduxThunk from 'redux-thunk';
+import settingsReducer from './reducers/settings';
 import authReducer from './reducers/auth';
 import flatsReducer from './reducers/flats';
 import tasksReducer from './reducers/tasks';
@@ -9,6 +10,7 @@ import usersReducer from './reducers/users';
 import invitationsReducer from './reducers/invitations';
 
 const rootReducer = combineReducers({
+	settings: settingsReducer,
 	auth: authReducer,
 	flats: flatsReducer,
 	tasks: tasksReducer,

@@ -6,12 +6,17 @@ import { CurrentPeriod, Period } from '../models/period';
 import { InvitationPresentation } from '../models/invitation';
 
 export type RootState = {
+	settings: SettingsState;
 	auth: AuthState;
 	flats: FlatsState;
 	tasks: TasksState;
 	users: UsersState;
 	periods: PeriodsState;
 	invitations: InvitationsState;
+};
+
+export type SettingsState = {
+	cookieVisible: boolean;
 };
 
 export type AuthState = {

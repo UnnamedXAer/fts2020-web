@@ -1,6 +1,11 @@
 export const AUTHORIZE = 'AUTHORIZE';
 export const LOGOUT = 'LOGOUT';
 
+export enum SettingsActionTypes {
+	SetCookieAlertVisible = 'SETTINGS_SET_COOKIE_VISIBLE',
+	ClearState = 'SETTINGS_CLEAR_STATE',
+}
+
 export enum AuthActionTypes {
 	SetLoggedUser = 'AUTH_SET_LOGGEDUSER',
 	UpdatePassword = 'AUTH_UPDATE_PASSWORD',
