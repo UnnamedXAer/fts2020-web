@@ -15,7 +15,7 @@ import { Avatar } from '@material-ui/core';
 
 interface Props {
 	children?: React.ReactNode;
-	title: string;
+	title?: string;
 	drawerWidth: number;
 }
 

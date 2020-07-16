@@ -18,13 +18,10 @@ import {
 	Fade,
 	Backdrop,
 } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import EditRoundedIcon from '@material-ui/icons/EditRounded';
 import CloseRoundedIcon from '@material-ui/icons/CloseRounded';
-import useForm, {
-	FormState,
-	ActionType,
-} from '../../../hooks/useForm';
+import useForm, { FormState, ActionType } from '../../../hooks/useForm';
 import validateAuthFormField, {
 	AuthFormValues,
 } from '../../../utils/authFormValidator';
@@ -32,6 +29,7 @@ import { authorize, tryAuthorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
 import CustomMuiAlert from '../../../components/UI/CustomMuiAlert';
+import RootState from '../../../store/storeTypes';
 
 const initialState: FormState<AuthFormValues> = {
 	formValidity: false,
@@ -59,6 +57,7 @@ const getFieldSize = (isLogIn: boolean): TextFieldSize =>
 const SignIn = () => {
 	const classes = useStyle();
 	const dispatch = useDispatch();
+	const loggedUser = useSelector((state: RootState) => state.auth.user);
 	const [formState, formDispatch] = useForm<AuthFormValues>(initialState);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -76,12 +75,14 @@ const SignIn = () => {
 	}, []);
 
 	useEffect(() => {
-		(async () => {
-			try {
-				await dispatch(tryAuthorize());
-			} catch (err) {}
-		})();
-	}, [dispatch]);
+		if (!loggedUser) {
+			(async () => {
+				try {
+					await dispatch(tryAuthorize());
+				} catch (err) {}
+			})();
+		}
+	}, [dispatch, loggedUser]);
 
 	const updateTextFieldSize = useCallback(() => {
 		setTextFieldSize(getFieldSize(isSignIn));

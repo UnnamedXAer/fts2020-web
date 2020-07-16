@@ -10,7 +10,12 @@ import {
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
 import { Provider, useSelector, useDispatch } from 'react-redux';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import {
+	BrowserRouter as Router,
+	Switch,
+	Route,
+	Redirect,
+} from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
 import NewFlat from './containers/Flat/NewFlat';
@@ -31,6 +36,7 @@ import InvitationResponseSummary from './containers/InvitationResponse/InitaionR
 import Invitations from './containers/InvitationResponse/Invitations';
 import axios from './axios/axios';
 import { logOut } from './store/actions/auth';
+import Home from './containers/Home/Home';
 
 const drawerWidth = 240;
 
@@ -74,7 +80,7 @@ const StyledApp: React.FC<Props> = () => {
 	let layout = (
 		<>
 			<CssBaseline />
-			<AppNavBar drawerWidth={drawerWidth} title="Flats" />
+			<AppNavBar drawerWidth={drawerWidth}  />
 			<AppDrawer drawerWidth={drawerWidth} />
 			<Box className={classes.appBody}>
 				<div className={classes.toolbar} />
@@ -113,7 +119,7 @@ const StyledApp: React.FC<Props> = () => {
 							path="/invitation/:token"
 							component={InvitationResponse}
 						/>
-						<Route path="/" component={Flats} />
+						<Redirect path="/" to="/flats" />
 					</Switch>
 				</Container>
 			</Box>
@@ -124,7 +130,8 @@ const StyledApp: React.FC<Props> = () => {
 		layout = (
 			<Switch>
 				<Route path="/invitation/:token" component={SignIn} />
-				<Route path="/" component={SignIn} />
+				<Route path="/auth" component={SignIn} />
+				<Route path="/" component={Home} />
 				{/* <Redirect to="/" /> */}
 			</Switch>
 		);
@@ -153,6 +160,7 @@ const useStyles = makeStyles({
 	app: {
 		display: 'flex',
 		background: '#fafafa',
+		minHeight: '100vh',
 	},
 	appBody: {
 		flexGrow: 1,
