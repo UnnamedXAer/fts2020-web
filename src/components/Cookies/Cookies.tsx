@@ -18,9 +18,7 @@ const Cookies: React.FC<Props> = ({ visible, onDismiss }) => {
 	const classes = useStyle();
 	return visible ? (
 		<Box className={classes.container}>
-			<Typography>
-				This site may use some cookies to store some data.
-			</Typography>
+			<Typography>This site may store some data in cookies.</Typography>
 			<IconButton onClick={onDismiss}>
 				<CloseRoundedIcon />
 			</IconButton>

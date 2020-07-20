@@ -16,16 +16,14 @@ export const setCookiesAlertVisible = (
 		if (visible === void 0) {
 			_visible =
 				localStorage.getItem(
-					'cookies_alert_visibility_' + typeof id === 'number'
-						? '' + id
-						: 'all'
-				) === '1';
+					'cookies_alert_visibility_' +
+						(typeof id === 'number' ? '' + id : 'all')
+				) !== '0';
 		} else {
 			_visible = visible;
 			localStorage.setItem(
-				'cookies_alert_visibility_' + typeof id === 'number'
-					? '' + id
-					: 'all',
+				'cookies_alert_visibility_' +
+					(typeof id === 'number' ? '' + id : 'all'),
 				_visible ? '1' : '0'
 			);
 		}
