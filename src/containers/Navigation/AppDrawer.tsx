@@ -9,6 +9,7 @@ import {
 	makeStyles,
 	Theme,
 	createStyles,
+	Typography,
 } from '@material-ui/core';
 import {
 	HomeWorkOutlined as HomeIcon,
@@ -28,6 +29,21 @@ const useStyles = makeStyles<Theme, { drawerWidth: number }>((theme: Theme) =>
 			width: (props) => props.drawerWidth,
 		},
 		toolbar: theme.mixins.toolbar,
+		logoContainer: {
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'center',
+			width: '100%',
+			height: '100%',
+		},
+		logoText: {
+			fontSize: theme.spacing(3),
+			fontWeight: 'bold',
+			background: `linear-gradient(153deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 61%)`,
+			color: 'transparent',
+			backgroundClip: 'text',
+			'-webkit-background-clip': 'text',
+		},
 	})
 );
 
@@ -48,7 +64,13 @@ const AppDrawer: React.FC<Props> = (props) => {
 			}}
 			anchor="left"
 		>
-			<div className={classes.toolbar}>FTS 2020</div>
+			<div className={classes.toolbar}>
+				<div className={classes.logoContainer}>
+					<Typography className={classes.logoText}>
+						FTS 2020
+					</Typography>
+				</div>
+			</div>
 			<Divider />
 			<List>
 				<ListItem button onClick={() => history.push('/flats')}>
