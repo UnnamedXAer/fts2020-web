@@ -1,17 +1,38 @@
 import { SettingsActionTypes } from '../actions/actionTypes';
 import { SettingsState, SimpleReducer, AppReducer } from '../storeTypes';
+import { ShowInactiveElementsActionPayload } from '../actions/settings';
 
 const initialState: SettingsState = {
 	cookieVisible: true,
+	showInactive: {
+		flats: false,
+		tasks: false,
+		invitations: false,
+	},
 };
 
-const setCookiesAlertVisible: SimpleReducer<SettingsState, boolean> = (
+const setCookiesAlertVisibility: SimpleReducer<SettingsState, boolean> = (
 	state,
 	action
 ) => {
 	return {
 		...state,
 		cookieVisible: action.payload,
+	};
+};
+
+const setInactiveElementsVisibility: SimpleReducer<
+	SettingsState,
+	ShowInactiveElementsActionPayload
+> = (state, action) => {
+	const { visible, elements } = action.payload;
+
+	return {
+		...state,
+		showInactive: {
+			...state.showInactive,
+			[elements]: visible,
+		},
 	};
 };
 
@@ -26,8 +47,10 @@ const reducer: AppReducer<SettingsState, SettingsActionTypes> = (
 	action
 ) => {
 	switch (action.type) {
-		case SettingsActionTypes.SetCookieAlertVisible:
-			return setCookiesAlertVisible(state, action);
+		case SettingsActionTypes.SetCookieAlertVisibility:
+			return setCookiesAlertVisibility(state, action);
+		case SettingsActionTypes.SetInactiveElementsVisibility:
+			return setInactiveElementsVisibility(state, action);
 		case SettingsActionTypes.ClearState:
 			return clearState(state, action);
 		default:

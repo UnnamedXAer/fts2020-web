@@ -2,7 +2,8 @@ export const AUTHORIZE = 'AUTHORIZE';
 export const LOGOUT = 'LOGOUT';
 
 export enum SettingsActionTypes {
-	SetCookieAlertVisible = 'SETTINGS_SET_COOKIE_VISIBLE',
+	SetCookieAlertVisibility = 'SETTINGS_SET_COOKIE_VISIBILITY',
+	SetInactiveElementsVisibility = 'SETTINGS_SET_INACTIVE_ELEMENTS_VISIBILITY',
 	ClearState = 'SETTINGS_CLEAR_STATE',
 }
 

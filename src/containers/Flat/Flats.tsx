@@ -28,14 +28,15 @@ import { Redirect, RouteComponentProps } from 'react-router-dom';
 import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { fetchFlats } from '../../store/actions/flats';
 import { StateError } from '../../ReactTypes/customReactTypes';
+import { setCookiesInactiveElementsVisibility } from '../../store/actions/settings';
 
 interface Props extends RouteComponentProps {}
 
 const Flats: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const [showInactive, setShowInactive] = useState(
-		localStorage.getItem('flats_show_inactive') === '1'
+	const showInactive = useSelector(
+		(state: RootState) => state.settings.showInactive.flats
 	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
@@ -85,8 +86,9 @@ const Flats: React.FC<Props> = (props) => {
 		_: React.ChangeEvent<HTMLInputElement>,
 		checked: boolean
 	) => {
-		localStorage.setItem('flats_show_inactive', checked ? '1' : '0');
-		setShowInactive(checked);
+		dispatch(
+			setCookiesInactiveElementsVisibility('flats', void 0, checked)
+		);
 	};
 
 	let content = (

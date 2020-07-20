@@ -17,6 +17,11 @@ export type RootState = {
 
 export type SettingsState = {
 	cookieVisible: boolean;
+	showInactive: {
+		flats: boolean;
+		tasks: boolean;
+		invitations: boolean;
+	};
 };
 
 export type AuthState = {

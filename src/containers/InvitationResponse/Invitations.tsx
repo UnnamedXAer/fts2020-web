@@ -29,6 +29,7 @@ import {
 } from '../../models/invitation';
 import { fetchUserInvitations } from '../../store/actions/invitations';
 import { StateError } from '../../ReactTypes/customReactTypes';
+import { setCookiesInactiveElementsVisibility } from '../../store/actions/settings';
 
 interface Props extends RouteComponentProps {}
 
@@ -37,8 +38,8 @@ const Invitations: React.FC<Props> = (props) => {
 	const dispatch = useDispatch();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
-	const [showInactive, setShowInactive] = useState(
-		localStorage.getItem('invitations_show_inactive') === '1'
+	const showInactive = useSelector(
+		(state: RootState) => state.settings.showInactive.invitations
 	);
 	const invitations = useSelector<RootState, InvitationPresentation[]>(
 		(state) =>
@@ -90,8 +91,9 @@ const Invitations: React.FC<Props> = (props) => {
 		_: React.ChangeEvent<HTMLInputElement>,
 		checked: boolean
 	) => {
-		localStorage.setItem('invitations_show_inactive', checked ? '1' : '0');
-		setShowInactive(checked);
+		dispatch(
+			setCookiesInactiveElementsVisibility('invitations', void 0, checked)
+		);
 	};
 
 	let content = (

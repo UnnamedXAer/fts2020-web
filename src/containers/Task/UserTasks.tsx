@@ -25,14 +25,15 @@ import CustomMuiAlert from '../../components/UI/CustomMuiAlert';
 import { fetchUserTasks } from '../../store/actions/tasks';
 import HttpErrorParser from '../../utils/parseError';
 import { StateError } from '../../ReactTypes/customReactTypes';
+import { setCookiesInactiveElementsVisibility } from '../../store/actions/settings';
 
 interface Props extends RouteComponentProps {}
 
 const UserTasks: React.FC<Props> = (props) => {
 	const classes = useStyles();
 	const dispatch = useDispatch();
-	const [showInactive, setShowInactive] = useState(
-		localStorage.getItem('user_tasks_show_inactive') === '1'
+	const showInactive = useSelector(
+		(state: RootState) => state.settings.showInactive.tasks
 	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<StateError>(null);
@@ -81,8 +82,9 @@ const UserTasks: React.FC<Props> = (props) => {
 		_: React.ChangeEvent<HTMLInputElement>,
 		checked: boolean
 	) => {
-		localStorage.setItem('user_tasks_show_inactive', checked ? '1' : '0');
-		setShowInactive(checked);
+		dispatch(
+			setCookiesInactiveElementsVisibility('tasks', void 0, checked)
+		);
 	};
 
 	let content = (

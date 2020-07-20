@@ -38,7 +38,10 @@ import axios from './axios/axios';
 import { logOut } from './store/actions/auth';
 import Home from './containers/Home/Home';
 import Cookies from './components/Cookies/Cookies';
-import { setCookiesAlertVisible } from './store/actions/settings';
+import {
+	setCookiesAlertVisible,
+	setCookiesInactiveElementsVisibility,
+} from './store/actions/settings';
 
 const drawerWidth = 240;
 
@@ -63,8 +66,24 @@ const StyledApp: React.FC<Props> = () => {
 	const dispatch = useDispatch();
 
 	useEffect(() => {
-		dispatch(setCookiesAlertVisible());
-	}, [dispatch]);
+		dispatch(setCookiesAlertVisible(user?.id));
+	}, [dispatch, user]);
+
+	useEffect(() => {
+		if (user) {
+			(async () => {
+				dispatch(
+					setCookiesInactiveElementsVisibility('flats', user.id)
+				);
+				dispatch(
+					setCookiesInactiveElementsVisibility('tasks', user.id)
+				);
+				dispatch(
+					setCookiesInactiveElementsVisibility('invitations', user.id)
+				);
+			})();
+		}
+	}, [dispatch, user]);
 
 	useEffect(() => {
 		const interceptorAuth = axios.interceptors.response.use(
@@ -151,7 +170,9 @@ const StyledApp: React.FC<Props> = () => {
 			{layout}
 			<Cookies
 				visible={cookiesVisible}
-				onDismiss={() => dispatch(setCookiesAlertVisible(false))}
+				onDismiss={() =>
+					dispatch(setCookiesAlertVisible(user?.id, false))
+				}
 			/>
 		</div>
 	);

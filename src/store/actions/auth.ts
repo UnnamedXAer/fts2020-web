@@ -14,7 +14,6 @@ import {
 import RootState, { StoreAction } from '../storeTypes';
 import User from '../../models/user';
 import { mapApiUserDataToModel, FetchUserAction } from './users';
-import { setCookiesAlertVisible } from './settings';
 
 type AuthorizeActionPayload = {
 	user: User;
@@ -53,8 +52,6 @@ export const authorize = (
 				type: UsersActionTypes.SetUser,
 				payload: user,
 			});
-
-			dispatch(setCookiesAlertVisible());
 
 			setTimeout(() => {
 				dispatch(logOut());
