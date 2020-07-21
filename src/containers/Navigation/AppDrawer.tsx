@@ -35,10 +35,12 @@ const useStyles = makeStyles<Theme, { drawerWidth: number }>((theme: Theme) =>
 			justifyContent: 'center',
 			width: '100%',
 			height: '100%',
+			cursor: 'pointer',
 		},
 		logoText: {
-			fontSize: theme.spacing(3),
-			fontWeight: 'bold',
+			fontSize: theme.spacing(4),
+			fontWeight: 'bolder',
+			fontStyle: 'italic',
 			background: `linear-gradient(153deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 61%)`,
 			color: 'transparent',
 			backgroundClip: 'text',
@@ -65,7 +67,10 @@ const AppDrawer: React.FC<Props> = (props) => {
 			anchor="left"
 		>
 			<div className={classes.toolbar}>
-				<div className={classes.logoContainer}>
+				<div
+					className={classes.logoContainer}
+					onClick={() => history.push('/')}
+				>
 					<Typography className={classes.logoText}>
 						FTS 2020
 					</Typography>
