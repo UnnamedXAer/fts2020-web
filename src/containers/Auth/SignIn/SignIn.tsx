@@ -22,14 +22,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import EditRoundedIcon from '@material-ui/icons/EditRounded';
 import CloseRoundedIcon from '@material-ui/icons/CloseRounded';
 import useForm, { FormState, ActionType } from '../../../hooks/useForm';
-import validateAuthFormField, {
-	AuthFormValues,
-} from '../../../utils/authFormValidator';
-import { authorize, tryAuthorize } from '../../../store/actions/auth';
+import validateAuthFormField, { AuthFormValues } from '../../../utils/authFormValidator';
+import { authorize, fetchLoggedUser, tryAuthorize } from '../../../store/actions/auth';
 import { Credentials } from '../../../models/auth';
 import HttpErrorParser from '../../../utils/parseError';
 import CustomMuiAlert from '../../../components/UI/CustomMuiAlert';
 import RootState from '../../../store/storeTypes';
+import { RouteComponentProps } from 'react-router-dom';
 
 const initialState: FormState<AuthFormValues> = {
 	formValidity: false,
@@ -54,7 +53,9 @@ type TextFieldSize = 'small' | 'medium';
 const getFieldSize = (isLogIn: boolean): TextFieldSize =>
 	!isLogIn && window.innerHeight < 700 ? 'small' : 'medium';
 
-const SignIn = () => {
+interface Props extends RouteComponentProps {}
+
+const SignIn = (props: Props) => {
 	const classes = useStyle();
 	const dispatch = useDispatch();
 	const loggedUser = useSelector((state: RootState) => state.auth.user);
@@ -73,6 +74,22 @@ const SignIn = () => {
 			isMounted.current = false;
 		};
 	}, []);
+
+	useEffect(() => {
+		if (props.location.hash === '#success') {
+			setLoading(true);
+			(async () => {
+				console.log('#success');
+				try {
+					await dispatch(fetchLoggedUser());
+					props.history.replace('/');
+				} catch (err) {
+					console.log('err', err);
+					props.history.replace('/auth');
+				}
+			})();
+		}
+	}, [dispatch, props.history, props.location]);
 
 	useEffect(() => {
 		if (!loggedUser) {
@@ -98,9 +115,7 @@ const SignIn = () => {
 		};
 	}, [updateTextFieldSize]);
 
-	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (
-		ev
-	) => {
+	const fieldChangeHandler: React.ChangeEventHandler<HTMLInputElement> = (ev) => {
 		const { name, value } = ev.target;
 
 		formDispatch({
@@ -110,15 +125,9 @@ const SignIn = () => {
 		});
 	};
 
-	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = async (
-		ev
-	) => {
+	const fieldBlurHandler: React.FocusEventHandler<HTMLInputElement> = async (ev) => {
 		const name = ev.target.name as keyof AuthFormValues;
-		let error = await validateAuthFormField(
-			name,
-			formState.values,
-			isSignIn
-		);
+		let error = await validateAuthFormField(name, formState.values, isSignIn);
 
 		formDispatch({
 			type: ActionType.SetError,
@@ -171,9 +180,7 @@ const SignIn = () => {
 			userName: isSignIn ? void 0 : formState.values.userName,
 			emailAddress: formState.values.emailAddress,
 			password: formState.values.password,
-			confirmPassword: isSignIn
-				? void 0
-				: formState.values.confirmPassword,
+			confirmPassword: isSignIn ? void 0 : formState.values.confirmPassword,
 			avatarUrl: isSignIn ? void 0 : formState.values.avatarUrl,
 		});
 		try {
@@ -189,9 +196,7 @@ const SignIn = () => {
 						error: x.msg,
 					})
 				);
-				const msg = isSignIn
-					? 'Invalid credentials.'
-					: httpError.getMessage();
+				const msg = isSignIn ? 'Invalid credentials.' : httpError.getMessage();
 				setError(msg);
 				setLoading(false);
 			}
@@ -230,8 +235,7 @@ const SignIn = () => {
 									<Avatar
 										alt="user avatar"
 										src={
-											isSignIn ||
-											formState.errors.avatarUrl
+											isSignIn || formState.errors.avatarUrl
 												? ''
 												: formState.values.avatarUrl
 										}
@@ -243,9 +247,7 @@ const SignIn = () => {
 											color="primary"
 											aria-label="upload picture"
 											component="span"
-											onClick={() =>
-												setOpenEditModal(true)
-											}
+											onClick={() => setOpenEditModal(true)}
 										>
 											<EditRoundedIcon />
 										</IconButton>
@@ -339,9 +341,7 @@ const SignIn = () => {
 										required
 										type="password"
 										value={formState.values.confirmPassword}
-										error={
-											!!formState.errors.confirmPassword
-										}
+										error={!!formState.errors.confirmPassword}
 										onChange={fieldChangeHandler}
 										onBlur={fieldBlurHandler}
 									/>
@@ -361,9 +361,7 @@ const SignIn = () => {
 									variant="body2"
 									style={{ cursor: 'pointer' }}
 								>
-									{`Switch to ${
-										isSignIn ? 'Sign Up' : 'Sign In'
-									}`}
+									{`Switch to ${isSignIn ? 'Sign Up' : 'Sign In'}`}
 								</Link>
 							</Grid>
 							<Grid item>
@@ -398,6 +396,41 @@ const SignIn = () => {
 							</Grid>
 						</Grid>
 					</form>
+					<Grid item container justify="center">
+						<Button
+							color="secondary"
+							onClick={(ev) => {
+								ev.preventDefault();
+								window.open(
+									'http://localhost:3020/auth/github/login',
+									'_self'
+								);
+								// window.location.href =
+								// 	'http://192.168.1.9:3020/auth/github';
+								// const win = window.open(
+								// 	'http://192.168.1.9:3020/auth/github',
+								// 	'_blank',
+								// 	'top:150px;left:150px;height:500px;width:500px'
+								// );
+								// if (win && win !== null) {
+								// 	win.onclose = (ev) => {
+								// 		alert('closed');
+								// 		(async () => {
+								// 			try {
+								// 				await dispatch(fetchLoggedUser());
+								// 				props.history.replace('/');
+								// 			} catch (err) {
+								// 				console.log('err', err);
+								// 				props.history.replace('/auth');
+								// 			}
+								// 		})();
+								// 	};
+								// }
+							}}
+						>
+							GitHub
+						</Button>
+					</Grid>
 				</Paper>
 			</Container>
 			<Modal

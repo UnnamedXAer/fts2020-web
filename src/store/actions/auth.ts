@@ -13,7 +13,7 @@ import {
 } from './actionTypes';
 import RootState, { StoreAction } from '../storeTypes';
 import User from '../../models/user';
-import { mapApiUserDataToModel, FetchUserAction } from './users';
+import { mapApiUserDataToModel, FetchUserAction, APIUser } from './users';
 
 type AuthorizeActionPayload = {
 	user: User;
@@ -28,16 +28,48 @@ type AuthorizeAction = {
 export const authorize = (
 	credentials: Credentials,
 	isLogIn: boolean
-): ThunkAction<
+): ThunkAction<Promise<void>, RootState, any, AuthorizeAction | FetchUserAction> => {
+	return async (dispatch, _getState) => {
+		const url = `/auth/${isLogIn ? 'login' : 'register'}`;
+		try {
+			const { data } = await axios.post(url, credentials);
+			const user = mapApiUserDataToModel(data.user);
+			const expirationTime = Date.now() + data.expiresIn;
+
+			dispatch({
+				type: AUTHORIZE,
+				payload: {
+					user,
+					expirationTime,
+				},
+			});
+			dispatch({
+				type: UsersActionTypes.SetUser,
+				payload: user,
+			});
+
+			setTimeout(() => {
+				dispatch(logOut());
+			}, data.expiresIn);
+
+			localStorage.setItem('loggedUser', JSON.stringify(user));
+			localStorage.setItem('expirationTime', '' + expirationTime);
+		} catch (err) {
+			throw err;
+		}
+	};
+};
+
+export const fetchLoggedUser = (): ThunkAction<
 	Promise<void>,
 	RootState,
 	any,
 	AuthorizeAction | FetchUserAction
 > => {
-	return async (dispatch, _getState) => {
-		const url = `/auth/${isLogIn ? 'login' : 'register'}`;
+	return async (dispatch) => {
+		const url = `/auth/logged-user`;
 		try {
-			const { data } = await axios.post(url, credentials);
+			const { data } = await axios.get<{ user: APIUser; expiresIn: number }>(url);
 			const user = mapApiUserDataToModel(data.user);
 			const expirationTime = Date.now() + data.expiresIn;
 
