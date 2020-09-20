@@ -85,6 +85,19 @@ const SignIn = (props: Props) => {
 					props.history.replace('/');
 				} catch (err) {
 					console.log('err', err);
+					setLoading(false);
+					const httpError = new HttpErrorParser(err);
+					const code = httpError.getCode();
+					if (code === 401) {
+						setError(
+							`Sorry could not authorize you by ${'Github'}.
+							Please try again later or use other login method.`
+						);
+					} else {
+						const msg = httpError.getMessage();
+						setError(`Sorry could not authorize you by ${'Github'} due to following error:
+						${msg}`);
+					}
 					props.history.replace('/auth');
 				}
 			})();
@@ -402,30 +415,9 @@ const SignIn = (props: Props) => {
 							onClick={(ev) => {
 								ev.preventDefault();
 								window.open(
-									'http://localhost:3020/auth/github/login',
+									`${process.env.REACT_APP_SERVER_URL}/auth/github/login`,
 									'_self'
 								);
-								// window.location.href =
-								// 	'http://192.168.1.9:3020/auth/github';
-								// const win = window.open(
-								// 	'http://192.168.1.9:3020/auth/github',
-								// 	'_blank',
-								// 	'top:150px;left:150px;height:500px;width:500px'
-								// );
-								// if (win && win !== null) {
-								// 	win.onclose = (ev) => {
-								// 		alert('closed');
-								// 		(async () => {
-								// 			try {
-								// 				await dispatch(fetchLoggedUser());
-								// 				props.history.replace('/');
-								// 			} catch (err) {
-								// 				console.log('err', err);
-								// 				props.history.replace('/auth');
-								// 			}
-								// 		})();
-								// 	};
-								// }
 							}}
 						>
 							GitHub
