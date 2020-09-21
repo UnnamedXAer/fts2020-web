@@ -79,23 +79,30 @@ const SignIn = (props: Props) => {
 		if (props.location.hash === '#success') {
 			setLoading(true);
 			(async () => {
-				console.log('#success');
 				try {
 					await dispatch(fetchLoggedUser());
 					props.history.replace('/');
 				} catch (err) {
-					console.log('err', err);
 					setLoading(false);
 					const httpError = new HttpErrorParser(err);
 					const code = httpError.getCode();
+					const provider = new URLSearchParams(props.location.search).get(
+						'provider'
+					);
+					const providerDisplayName =
+						provider === 'google'
+							? 'Google'
+							: provider === 'github'
+							? 'GitHub'
+							: '>Unknown<';
 					if (code === 401) {
 						setError(
-							`Sorry could not authorize you by ${'Github'}.
+							`Sorry could not authorize you by ${providerDisplayName}.
 							Please try again later or use other login method.`
 						);
 					} else {
 						const msg = httpError.getMessage();
-						setError(`Sorry could not authorize you by ${'Github'} due to following error:
+						setError(`Sorry could not authorize you by ${providerDisplayName} due to following error:
 						${msg}`);
 					}
 					props.history.replace('/auth');
@@ -421,6 +428,18 @@ const SignIn = (props: Props) => {
 							}}
 						>
 							GitHub
+						</Button>
+						<Button
+							color="secondary"
+							onClick={(ev) => {
+								ev.preventDefault();
+								window.open(
+									`${process.env.REACT_APP_SERVER_URL}/auth/google/login`,
+									'_self'
+								);
+							}}
+						>
+							Google
 						</Button>
 					</Grid>
 				</Paper>
