@@ -29,6 +29,7 @@ import HttpErrorParser from '../../../utils/parseError';
 import CustomMuiAlert from '../../../components/UI/CustomMuiAlert';
 import RootState from '../../../store/storeTypes';
 import { RouteComponentProps } from 'react-router-dom';
+import { ExternalProviders } from '../../../components/Auth/ExternalProviders';
 
 const initialState: FormState<AuthFormValues> = {
 	formValidity: false,
@@ -416,31 +417,25 @@ const SignIn = (props: Props) => {
 							</Grid>
 						</Grid>
 					</form>
+					<Grid
+						item
+						style={{
+							padding: '16px 8px',
+						}}
+					>
+						<Typography align="center">{`Or ${
+							isSignIn ? 'Sign Up' : 'Sign In'
+						} with`}</Typography>
+					</Grid>
 					<Grid item container justify="center">
-						<Button
-							color="secondary"
-							onClick={(ev) => {
-								ev.preventDefault();
+						<ExternalProviders
+							clickHandler={(provider: 'google' | 'github') => {
 								window.open(
-									`${process.env.REACT_APP_SERVER_URL}/auth/github/login`,
+									`${process.env.REACT_APP_SERVER_URL}/auth/${provider}/login`,
 									'_self'
 								);
 							}}
-						>
-							GitHub
-						</Button>
-						<Button
-							color="secondary"
-							onClick={(ev) => {
-								ev.preventDefault();
-								window.open(
-									`${process.env.REACT_APP_SERVER_URL}/auth/google/login`,
-									'_self'
-								);
-							}}
-						>
-							Google
-						</Button>
+						/>
 					</Grid>
 				</Paper>
 			</Container>
