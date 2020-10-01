@@ -160,7 +160,6 @@ const StyledApp: React.FC<Props> = () => {
 				<Route path="/invitation/:token" component={SignIn} />
 				<Route path="/auth" component={SignIn} />
 				<Route path="/" component={Home} />
-				{/* <Redirect to="/" /> */}
 			</Switch>
 		);
 	}
