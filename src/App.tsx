@@ -6,16 +6,11 @@ import {
 	makeStyles,
 	Container,
 	Box,
-	CssBaseline,
+	CssBaseline
 } from '@material-ui/core';
 import * as colors from '@material-ui/core/colors/';
 import { Provider, useSelector, useDispatch } from 'react-redux';
-import {
-	BrowserRouter as Router,
-	Switch,
-	Route,
-	Redirect,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 import store from './store/store';
 import AppNavBar from './containers/Navigation/AppNavBar';
 import NewFlat from './containers/Flat/NewFlat';
@@ -40,7 +35,7 @@ import Home from './containers/Home/Home';
 import Cookies from './components/Cookies/Cookies';
 import {
 	setCookiesAlertVisible,
-	setCookiesInactiveElementsVisibility,
+	setCookiesInactiveElementsVisibility
 } from './store/actions/settings';
 
 const drawerWidth = 240;
@@ -48,11 +43,11 @@ const drawerWidth = 240;
 const theme = createMuiTheme({
 	palette: {
 		primary: colors.teal,
-		secondary: colors.orange,
+		secondary: colors.orange
 	},
 	typography: {
-		fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-	},
+		fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
+	}
 });
 
 interface Props {}
@@ -72,15 +67,9 @@ const StyledApp: React.FC<Props> = () => {
 	useEffect(() => {
 		if (user) {
 			(async () => {
-				dispatch(
-					setCookiesInactiveElementsVisibility('flats', user.id)
-				);
-				dispatch(
-					setCookiesInactiveElementsVisibility('tasks', user.id)
-				);
-				dispatch(
-					setCookiesInactiveElementsVisibility('invitations', user.id)
-				);
+				dispatch(setCookiesInactiveElementsVisibility('flats', user.id));
+				dispatch(setCookiesInactiveElementsVisibility('tasks', user.id));
+				dispatch(setCookiesInactiveElementsVisibility('invitations', user.id));
 			})();
 		}
 	}, [dispatch, user]);
@@ -134,19 +123,13 @@ const StyledApp: React.FC<Props> = () => {
 						<Route path="/tasks/:id" component={TaskDetails} />
 						<Route path="/my-tasks" component={UserTasks} />
 						<Route path="/profile/:id" component={Profile} />
-						<Route
-							path="/change-password"
-							component={ChangePassword}
-						/>
+						<Route path="/change-password" component={ChangePassword} />
 						<Route path="/my-invitations" component={Invitations} />
 						<Route
 							path="/invitation/:token/summary"
 							component={InvitationResponseSummary}
 						/>
-						<Route
-							path="/invitation/:token"
-							component={InvitationResponse}
-						/>
+						<Route path="/invitation/:token" component={InvitationResponse} />
 						<Redirect path="/" to="/flats" />
 					</Switch>
 				</Container>
@@ -169,9 +152,7 @@ const StyledApp: React.FC<Props> = () => {
 			{layout}
 			<Cookies
 				visible={cookiesVisible}
-				onDismiss={() =>
-					dispatch(setCookiesAlertVisible(user?.id, false))
-				}
+				onDismiss={() => dispatch(setCookiesAlertVisible(user?.id, false))}
 			/>
 		</div>
 	);
@@ -193,12 +174,12 @@ const useStyles = makeStyles({
 	app: {
 		display: 'flex',
 		background: '#fafafa',
-		minHeight: '100vh',
+		minHeight: '100vh'
 	},
 	appBody: {
 		flexGrow: 1,
 		backgroundColor: theme.palette.background.default,
-		padding: theme.spacing(3),
+		padding: theme.spacing(3)
 	},
 	container: {
 		backgroundColor: 'white',
@@ -206,9 +187,9 @@ const useStyles = makeStyles({
 		borderRadius: 5,
 		marginBottom: theme.spacing(2),
 		padding: theme.spacing(3),
-		flexGrow: 1,
+		flexGrow: 1
 	},
-	toolbar: theme.mixins.toolbar,
+	toolbar: theme.mixins.toolbar
 });
 
 export default App;
