@@ -1,44 +1,30 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## ![alt text](https://fts2020-api.herokuapp.com/assets/screen/logo_64.png) FTS2020 Web 
 
-## Available Scripts
+#### Keep track of your flat task schedule.
+  - Create flats (as groups of people)
+  - Create Tasks like "weekly cleaning"
+  - Create schedule for tasks & keep track of your turn
 
-In the project directory, you can run:
+- ![alt text](https://fts2020.herokuapp.com/static/media/flat_view.9935ba70.png)
 
-### `yarn start`
+- ![alt text](https://fts2020.herokuapp.com/static/media/task_view.d94d238b.png)
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- ![alt text](https://fts2020.herokuapp.com/static/media/schedule_view.383f3f21.png)
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+- ![Login screen](https://fts2020-api.herokuapp.com/assets/screen/login_screen.png)
 
-### `yarn test`
+- ![Flat Invitation](https://fts2020-api.herokuapp.com/assets/screen/flat_invitation.png)
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- ![Inviting people to flat](https://fts2020-api.herokuapp.com/assets/screen/inviting_members.png)
 
-### `yarn build`
+- ![User flat invitations](https://fts2020-api.herokuapp.com/assets/screen/you_invitations.png)
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- ![Add Task](https://fts2020-api.herokuapp.com/assets/screen/add_task.png)
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+- ![User tasks](https://fts2020-api.herokuapp.com/assets/screen/your_tasks.png)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- ![View Task](https://fts2020-api.herokuapp.com/assets/screen/view_task1.png)
 
-### `yarn eject`
+- ![View Task](https://fts2020-api.herokuapp.com/assets/screen/view_task2.png)
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- ![View Task](https://fts2020-api.herokuapp.com/assets/screen/view_task3.png)
